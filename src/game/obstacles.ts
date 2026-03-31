@@ -72,7 +72,7 @@ export function updateObstacles(
 
     // Rotating spikes spin continuously
     if (obs.type === 'rotating_spikes') {
-      obs.angle += Math.PI * dt; // rotate at pi rad/s
+      obs.angle += Math.PI * 0.5 * dt; // rotate at pi/2 rad/s (quarter rotation per second)
     }
 
     // Animation timer

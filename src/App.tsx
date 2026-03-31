@@ -21,6 +21,7 @@ export default function App() {
   });
   const [results, setResults] = useState<GameResults | null>(null);
   const [visible, setVisible] = useState(true);
+  const [gameKey, setGameKey] = useState(0);
   const nextScreen = useRef<ScreenId | null>(null);
 
   const navigateTo = useCallback((target: ScreenId) => {
@@ -43,7 +44,6 @@ export default function App() {
   const goPlayerCount = useCallback(() => navigateTo('playerCount'), [navigateTo]);
   const goTrackSelect = useCallback(() => navigateTo('trackSelect'), [navigateTo]);
   const goCharacterSelect = useCallback(() => navigateTo('characterSelect'), [navigateTo]);
-  const goGame = useCallback(() => navigateTo('game'), [navigateTo]);
   const goResults = useCallback(() => navigateTo('results'), [navigateTo]);
 
   const handlePlayerCount = useCallback(
@@ -78,6 +78,10 @@ export default function App() {
     [navigateTo],
   );
 
+  const handleRestart = useCallback(() => {
+    setGameKey(k => k + 1);
+  }, []);
+
   const handleRematch = useCallback(() => {
     navigateTo('game');
   }, [navigateTo]);
@@ -94,12 +98,12 @@ export default function App() {
 
   const innerStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: 480,
     height: '100%',
     position: 'relative',
     overflow: 'hidden',
     opacity: visible ? 1 : 0,
     transition: `opacity ${TRANSITION_MS}ms ease`,
+    ...(screen === 'game' ? {} : { maxWidth: 480 }),
   };
 
   function renderScreen() {
@@ -121,10 +125,11 @@ export default function App() {
       case 'game':
         return (
           <GameScreen
+            key={gameKey}
             config={config}
             onFinish={handleGameFinish}
             onQuit={goTitle}
-            onRestart={goGame}
+            onRestart={handleRestart}
           />
         );
       case 'results':

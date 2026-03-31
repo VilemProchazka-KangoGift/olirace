@@ -242,7 +242,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
   const canvasStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
-    objectFit: 'contain',
+    display: 'block',
     imageRendering: 'pixelated',
   };
 

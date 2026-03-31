@@ -15,7 +15,6 @@ import {
   TETHER_TELEPORT_DISTANCE,
   TETHER_TELEPORT_BEHIND,
   PLAYER_HITBOX_RADIUS,
-  PUSH_STRENGTH,
 } from '../utils/constants';
 import {
   distance,
@@ -122,7 +121,7 @@ export function startGame(
       }
     }
 
-    // 5b. Player-player collisions (push apart based on weight)
+    // 5b. Player-player collisions (bumper car physics)
     if (state.phase === 'racing' && state.players.length >= 2) {
       for (let i = 0; i < state.players.length; i++) {
         for (let j = i + 1; j < state.players.length; j++) {
@@ -137,35 +136,56 @@ export function startGame(
           const minDist = PLAYER_HITBOX_RADIUS * 2;
 
           if (dist < minDist && dist > 0.001) {
-            // Collision normal from a to b
             const nx = dx / dist;
             const ny = dy / dist;
             const overlap = minDist - dist;
 
-            // Push proportional to inverse weight: lighter player pushed more
+            // Separate positions (immediate, no dt needed)
             const totalInvWeight = 1 / (a.weight + 0.1) + 1 / (b.weight + 0.1);
             const aRatio = (1 / (a.weight + 0.1)) / totalInvWeight;
             const bRatio = (1 / (b.weight + 0.1)) / totalInvWeight;
 
-            // Separate positions
             a.position.x -= nx * overlap * aRatio;
             a.position.y -= ny * overlap * aRatio;
             b.position.x += nx * overlap * bRatio;
             b.position.y += ny * overlap * bRatio;
 
-            // Apply velocity impulse
-            const pushA = PUSH_STRENGTH / (a.weight + 0.1) * dt;
-            const pushB = PUSH_STRENGTH / (b.weight + 0.1) * dt;
-            a.velocity.x -= nx * pushA;
-            a.velocity.y -= ny * pushA;
-            b.velocity.x += nx * pushB;
-            b.velocity.y += ny * pushB;
+            // Relative velocity along collision normal
+            const relVx = b.velocity.x - a.velocity.x;
+            const relVy = b.velocity.y - a.velocity.y;
+            const relVn = relVx * nx + relVy * ny;
 
-            // Affect speeds based on impact direction vs facing direction
-            const aDot = nx * Math.cos(a.angle) + ny * (-Math.sin(a.angle));
-            const bDot = -(nx * Math.cos(b.angle) + ny * (-Math.sin(b.angle)));
-            a.speed += aDot * pushA * 0.5;
-            b.speed += bDot * pushB * 0.5;
+            // Only resolve if cars are moving toward each other
+            if (relVn < 0) {
+              // Impulse magnitude (elastic collision with weight)
+              const restitution = 0.8; // bouncy!
+              const impulse = -(1 + restitution) * relVn / totalInvWeight;
+
+              const impulseA = impulse / (a.weight + 0.1);
+              const impulseB = impulse / (b.weight + 0.1);
+
+              // Apply velocity impulse
+              a.velocity.x -= nx * impulseA;
+              a.velocity.y -= ny * impulseA;
+              b.velocity.x += nx * impulseB;
+              b.velocity.y += ny * impulseB;
+
+              // Update scalar speeds from new velocities
+              const aDirX = Math.cos(a.angle);
+              const aDirY = -Math.sin(a.angle);
+              a.speed = a.velocity.x * aDirX + a.velocity.y * aDirY;
+
+              const bDirX = Math.cos(b.angle);
+              const bDirY = -Math.sin(b.angle);
+              b.speed = b.velocity.x * bDirX + b.velocity.y * bDirY;
+
+              // Add a slight spin (angle perturbation) for visual fun
+              const spinForce = 0.15;
+              const crossA = nx * aDirY - ny * aDirX;
+              a.angle += crossA * spinForce;
+              const crossB = nx * bDirY - ny * bDirX;
+              b.angle -= crossB * spinForce;
+            }
           }
         }
       }

@@ -178,7 +178,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 40,
-    patrolSpeed: 12,
+    patrolSpeed: 6,
   },
   // Extra rotating spike at Y=1500
   {
@@ -188,7 +188,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 15,
+    patrolSpeed: 7.5,
   },
 
   // --- Mid-track boost (sideways right for fun!) ---
