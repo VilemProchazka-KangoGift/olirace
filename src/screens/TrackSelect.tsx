@@ -120,7 +120,8 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
         setSelected((s) => (s - 1 + tracks.length) % tracks.length);
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         setSelected((s) => (s + 1) % tracks.length);
-      } else if (e.key === 'Enter') {
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
         onSelect(tracks[selected].id);
       } else if (e.key === 'Escape') {
         onBack();

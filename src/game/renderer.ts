@@ -27,6 +27,44 @@ function toScreenY(worldY: number, cameraY: number): number {
 
 // ── Main render entry point ──────────────────────────────────────────
 
+/**
+ * Draw lava background at RAW canvas size (no scale transform).
+ * Called before the viewport scale so lava fills the entire window.
+ */
+export function renderLavaFullscreen(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  canvasH: number,
+  time: number,
+  camX: number,
+  camY: number,
+): void {
+  const lavaFrame = Math.floor(time * 3) % 3;
+  const tile = drawLavaTile(lavaFrame);
+  const tileW = 128;
+  const tileH = 128;
+
+  const offsetX = ((camX % tileW) + tileW) % tileW;
+  const offsetY = ((camY % tileH) + tileH) % tileH;
+
+  const tilesX = Math.ceil(canvasW / tileW) + 2;
+  const tilesY = Math.ceil(canvasH / tileH) + 2;
+
+  for (let ty = -1; ty < tilesY; ty++) {
+    for (let tx = -1; tx < tilesX; tx++) {
+      // Draw slightly larger to avoid sub-pixel gaps between tiles
+      ctx.drawImage(
+        tile,
+        0, 0, tileW, tileH,
+        Math.floor(tx * tileW - offsetX),
+        Math.floor(ty * tileH - offsetY),
+        tileW + 1,
+        tileH + 1,
+      );
+    }
+  }
+}
+
 export function render(
   ctx: CanvasRenderingContext2D,
   state: GameState,
@@ -38,7 +76,7 @@ export function render(
   const camX = lerp(state.camera.position.x, state.camera.target.x, alpha * 0.5);
   const camY = lerp(state.camera.position.y, state.camera.target.y, alpha * 0.5);
 
-  // 1. Lava background
+  // 1. Lava background (in virtual viewport coordinates — for the game area)
   drawLavaBackground(ctx, state, camX, camY);
 
   // 2. Road
@@ -90,8 +128,11 @@ function drawLavaBackground(
     for (let tx = -1; tx < tilesX; tx++) {
       ctx.drawImage(
         tile,
-        tx * tileW - offsetX,
-        ty * tileH - offsetY,
+        0, 0, tileW, tileH,
+        Math.floor(tx * tileW - offsetX),
+        Math.floor(ty * tileH - offsetY),
+        tileW + 1,
+        tileH + 1,
       );
     }
   }

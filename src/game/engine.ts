@@ -39,7 +39,7 @@ import {
 import { updateCountdown } from './countdown';
 import { isPointOnRoad, findNearestRoadPoint } from './collision';
 import { getCharacter } from '../data/characters';
-import { render as renderGame } from './renderer';
+import { render as renderGame, renderLavaFullscreen } from './renderer';
 import { audioManager } from './audio';
 
 export function startGame(
@@ -483,10 +483,23 @@ export function startGame(
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Non-uniform stretch: map virtual viewport directly to window dimensions.
-    // This stretches slightly on non-9:16 screens but fills 100% with no bars.
+    // Interpolated camera for lava parallax
+    const camX = state.camera.position.x + (state.camera.target.x - state.camera.position.x) * 0.5 * alpha;
+    const camY = state.camera.position.y + (state.camera.target.y - state.camera.position.y) * 0.5 * alpha;
+
+    // Phase 1: Draw lava at raw canvas resolution — fills entire window
+    renderLavaFullscreen(ctx, canvas.width, canvas.height, state.time, camX, camY);
+
+    // Phase 2: Draw game content with uniform scaling (proper aspect ratio)
+    const scaleX = canvas.width / CANVAS_WIDTH;
+    const scaleY = canvas.height / CANVAS_HEIGHT;
+    const uniformScale = Math.min(scaleX, scaleY);
+    const offsetX = (canvas.width - CANVAS_WIDTH * uniformScale) / 2;
+    const offsetY = (canvas.height - CANVAS_HEIGHT * uniformScale) / 2;
+
     ctx.save();
-    ctx.scale(canvas.width / CANVAS_WIDTH, canvas.height / CANVAS_HEIGHT);
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(uniformScale, uniformScale);
 
     renderGame(ctx, state, alpha);
 

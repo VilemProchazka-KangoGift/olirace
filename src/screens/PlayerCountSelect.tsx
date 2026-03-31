@@ -22,7 +22,7 @@ const keyframesStyle = `
 
 export default function PlayerCountSelect({ onSelect }: Props) {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState<1 | 2 | 3 | 4 | null>(null);
+  const [hovered, setHovered] = useState<1 | 2 | 3 | 4>(1);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -40,7 +40,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
           if (h === null || h === 4) return 4;
           return (h + 1) as 1 | 2 | 3 | 4;
         });
-      } else if (e.key === 'Enter' && hovered) onSelect(hovered);
+      } else if (e.key === 'Enter' || e.key === ' ') onSelect(hovered);
     },
     [onSelect, hovered],
   );
@@ -176,7 +176,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
             style={makeCardStyle(count)}
             onClick={() => onSelect(count)}
             onMouseEnter={() => setHovered(count)}
-            onMouseLeave={() => setHovered(null)}
+            onMouseLeave={() => {}}
           >
             {carIcon(count)}
             <div style={numberStyle}>{count}</div>
