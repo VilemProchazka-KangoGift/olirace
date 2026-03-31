@@ -526,6 +526,13 @@ function drawPlayer(
     }
   }
 
+  // Always use the north-facing (direction=0) sprite, rotate via canvas transform
+  const sprite = generatePlayerSprite(
+    player.characterId,
+    player.palette,
+    0,
+  );
+
   // Death animation
   if (!player.alive) {
     const deathProgress = 1 - Math.max(0, player.deathTimer / DEATH_ANIMATION_DURATION);
@@ -534,38 +541,47 @@ function drawPlayer(
     // Spin and shrink
     ctx.save();
     ctx.translate(sx, sy);
-    ctx.rotate(deathProgress * Math.PI * 4);
+    ctx.rotate(-(player.angle - Math.PI / 2) + deathProgress * Math.PI * 4);
     ctx.scale(1 - deathProgress * 0.8, 1 - deathProgress * 0.8);
 
-    const sprite = generatePlayerSprite(
-      player.characterId,
-      player.palette,
-      player.directionIndex,
-    );
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+    ctx.drawImage(sprite, -24, -24, 48, 48);
     ctx.restore();
     ctx.restore();
     return;
   }
 
-  // Normal rendering
-  const sprite = generatePlayerSprite(
-    player.characterId,
-    player.palette,
-    player.directionIndex,
-  );
+  // Apply jump height offset (visual only, for finish line celebration)
+  const jumpOffset = player.jumpHeight ?? 0;
 
-  ctx.translate(sx, sy);
+  // Normal rendering with continuous rotation
+  ctx.save();
+  ctx.translate(sx, sy - jumpOffset);
+  ctx.rotate(-(player.angle - Math.PI / 2));
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+  ctx.drawImage(sprite, -24, -24, 48, 48);
+  ctx.restore();
+
+  // Effects drawn in screen-space (not rotated), centered on player
+  ctx.save();
+  ctx.translate(sx, sy - jumpOffset);
+
+  // Draw shadow when jumping
+  if (jumpOffset > 1) {
+    ctx.globalAlpha = 0.2 * Math.min(1, jumpOffset / 20);
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.ellipse(0, jumpOffset, 16, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
 
   // Boost glow effect
   if (player.boostTimer > 0) {
     ctx.globalAlpha = 0.3 + Math.sin(time * 20) * 0.15;
     ctx.fillStyle = COLORS.cyan;
     ctx.beginPath();
-    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.arc(0, 0, 24, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -575,12 +591,14 @@ function drawPlayer(
     const starCount = 3;
     for (let i = 0; i < starCount; i++) {
       const starAngle = time * 5 + (i * Math.PI * 2) / starCount;
-      const starX = Math.cos(starAngle) * 14;
-      const starY = Math.sin(starAngle) * 14 - 10;
+      const starX = Math.cos(starAngle) * 18;
+      const starY = Math.sin(starAngle) * 18 - 12;
       ctx.fillStyle = COLORS.yellow;
       ctx.fillRect(starX - 2, starY - 2, 4, 4);
     }
   }
+
+  ctx.restore();
 
   ctx.restore();
 }

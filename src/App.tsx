@@ -16,6 +16,8 @@ export default function App() {
     trackId: 'sunday-drive',
     p1Character: 'formula',
     p2Character: 'cat',
+    p3Character: 'muscle',
+    p4Character: 'buggy',
   });
   const [results, setResults] = useState<GameResults | null>(null);
   const [visible, setVisible] = useState(true);
@@ -45,7 +47,7 @@ export default function App() {
   const goResults = useCallback(() => navigateTo('results'), [navigateTo]);
 
   const handlePlayerCount = useCallback(
-    (count: 1 | 2) => {
+    (count: 1 | 2 | 3 | 4) => {
       setConfig((c) => ({ ...c, playerCount: count }));
       navigateTo('trackSelect');
     },
@@ -61,8 +63,8 @@ export default function App() {
   );
 
   const handleCharacterConfirm = useCallback(
-    (p1: string, p2: string) => {
-      setConfig((c) => ({ ...c, p1Character: p1, p2Character: p2 }));
+    (p1: string, p2: string, p3: string, p4: string) => {
+      setConfig((c) => ({ ...c, p1Character: p1, p2Character: p2, p3Character: p3, p4Character: p4 }));
       navigateTo('game');
     },
     [navigateTo],

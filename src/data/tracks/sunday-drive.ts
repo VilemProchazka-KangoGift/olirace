@@ -89,7 +89,10 @@ const seg10 = curve(260, 1200, 800, -30, 230, 240);
 // Seg 11: Y 800→300 - Final straight, width 240→260 (widens for finish)
 const seg11 = curve(230, 800, 300, 10, 240, 260, 40);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11);
+// Segment 12: Extension past finish line Y=300→-100
+const seg12 = straight(240, 300, -100, 260);
+
+const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12);
 
 function indexAtY(y: number): number {
   let best = 0;
@@ -113,7 +116,7 @@ const startLineIdx = indexAtY(4800);
 const finishLineIdx = indexAtY(400);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Early boost to get players going ---
+  // --- Early boost to get players going (forward) ---
   { type: 'arrow_pad', x: roadAt(4600).x, y: 4600, angle: 0 },
 
   // --- A few friendly logs in Seg 3, well spaced ---
@@ -130,8 +133,8 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.2,
   },
 
-  // --- Arrow pad reward after logs ---
-  { type: 'arrow_pad', x: roadAt(3400).x, y: 3400, angle: 0 },
+  // --- Arrow pad reward after logs (sideways left!) ---
+  { type: 'arrow_pad', x: roadAt(3400).x, y: 3400, angle: Math.PI / 2 },
 
   // --- Single log in the bend ---
   {
@@ -150,7 +153,7 @@ const obstacles: ObstaclePlacement[] = [
     width: 60,
   },
 
-  // --- Arrow pad as encouragement ---
+  // --- Arrow pad as encouragement (forward) ---
   { type: 'arrow_pad', x: roadAt(2600).x, y: 2600, angle: 0 },
 
   // --- Pair of logs, staggered ---
@@ -167,7 +170,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.3,
   },
 
-  // --- A slow rotating spike, easy to time ---
+  // --- A slow rotating spike, easy to time (reduced speed) ---
   {
     type: 'rotating_spikes',
     x: roadAt(1900).x,
@@ -175,11 +178,21 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 40,
-    patrolSpeed: 20,
+    patrolSpeed: 12,
+  },
+  // Extra rotating spike at Y=1500
+  {
+    type: 'rotating_spikes',
+    x: roadAt(1500).x - roadAt(1500).width * 0.15,
+    y: 1500,
+    angle: 0,
+    patrolAxis: 'x',
+    patrolDistance: 35,
+    patrolSpeed: 15,
   },
 
-  // --- Mid-track boost ---
-  { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: 0 },
+  // --- Mid-track boost (sideways right for fun!) ---
+  { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: -Math.PI / 2 },
 
   // --- Log chicane before finish area ---
   {
@@ -210,7 +223,7 @@ const obstacles: ObstaclePlacement[] = [
     width: 50,
   },
 
-  // --- Final boost before finish ---
+  // --- Final boost before finish (forward) ---
   { type: 'arrow_pad', x: roadAt(600).x, y: 600, angle: 0 },
 ];
 
@@ -226,6 +239,8 @@ const sundayDrive: TrackData = {
   startPositions: {
     p1: { x: startRoad.x - 35, y: 4760, angle: Math.PI / 2 },
     p2: { x: startRoad.x + 35, y: 4760, angle: Math.PI / 2 },
+    p3: { x: startRoad.x - 35, y: 4800, angle: Math.PI / 2 },
+    p4: { x: startRoad.x + 35, y: 4800, angle: Math.PI / 2 },
   },
 };
 

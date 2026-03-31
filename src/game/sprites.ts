@@ -115,8 +115,8 @@ export function generateLavaTile(frame: number): HTMLCanvasElement {
   return c;
 }
 
-// ── Player sprite generator (32x32) ─────────────────────────────────
-const SPRITE_SIZE = 32;
+// ── Player sprite generator (48x48) ─────────────────────────────────
+const SPRITE_SIZE = 48;
 
 export function generatePlayerSprite(
   characterId: string,
@@ -235,163 +235,163 @@ export function generatePlayerSprite(
     case 'formula': {
       // Sleek F1-style racer
       // Body - narrow elongated
-      fillRect(-3, -8, 6, 16, cr, cg, cb);
+      fillRect(-5, -12, 9, 24, cr, cg, cb);
       // Nose cone
-      fillRect(-2, -10, 4, 3, hr, hg, hb);
-      fillRect(-1, -12, 2, 2, hr, hg, hb);
+      fillRect(-3, -15, 6, 5, hr, hg, hb);
+      fillRect(-2, -18, 3, 3, hr, hg, hb);
       // Rear wing
-      fillRect(-6, 5, 12, 2, sr, sg, sb);
-      fillRect(-5, 4, 10, 1, sr, sg, sb);
+      fillRect(-9, 8, 18, 3, sr, sg, sb);
+      fillRect(-8, 6, 15, 2, sr, sg, sb);
       // Front wing
-      fillRect(-5, -9, 10, 1, sr, sg, sb);
+      fillRect(-8, -14, 15, 2, sr, sg, sb);
       // Cockpit
-      fillRect(-2, -3, 4, 4, 40, 40, 50);
-      fillRect(-1, -2, 2, 2, 80, 80, 100);
+      fillRect(-3, -5, 6, 6, 40, 40, 50);
+      fillRect(-2, -3, 3, 3, 80, 80, 100);
       // Wheels
-      fillRect(-6, -6, 2, 4, 30, 30, 30);
-      fillRect(4, -6, 2, 4, 30, 30, 30);
-      fillRect(-6, 3, 2, 4, 30, 30, 30);
-      fillRect(4, 3, 2, 4, 30, 30, 30);
+      fillRect(-9, -9, 3, 6, 30, 30, 30);
+      fillRect(6, -9, 3, 6, 30, 30, 30);
+      fillRect(-9, 5, 3, 6, 30, 30, 30);
+      fillRect(6, 5, 3, 6, 30, 30, 30);
       // Exhaust pipes
-      plot(1, 7, 100, 100, 110);
-      plot(-1, 7, 100, 100, 110);
+      plot(2, 11, 100, 100, 110);
+      plot(-2, 11, 100, 100, 110);
       break;
     }
 
     case 'yeti': {
       // Boxy SUV shape
       // Body - wide boxy
-      fillRect(-7, -7, 14, 16, cr, cg, cb);
+      fillRect(-11, -11, 21, 24, cr, cg, cb);
       // Roof - slightly inset
-      fillRect(-5, -5, 10, 10, hr, hg, hb);
+      fillRect(-8, -8, 15, 15, hr, hg, hb);
       // Windshield
-      fillRect(-4, -6, 8, 3, 100, 140, 180);
-      fillRect(-3, -5, 6, 2, 140, 180, 220);
+      fillRect(-6, -9, 12, 5, 100, 140, 180);
+      fillRect(-5, -8, 9, 3, 140, 180, 220);
       // Rear window
-      fillRect(-4, 4, 8, 2, 80, 120, 160);
+      fillRect(-6, 6, 12, 3, 80, 120, 160);
       // Bumpers
-      fillRect(-7, -8, 14, 2, sr, sg, sb);
-      fillRect(-7, 8, 14, 2, sr, sg, sb);
+      fillRect(-11, -12, 21, 3, sr, sg, sb);
+      fillRect(-11, 12, 21, 3, sr, sg, sb);
       // Headlights
-      plot(-5, -8, 255, 255, 200);
-      plot(4, -8, 255, 255, 200);
+      plot(-8, -12, 255, 255, 200);
+      plot(6, -12, 255, 255, 200);
       // Taillights
-      plot(-5, 9, 255, 40, 40);
-      plot(4, 9, 255, 40, 40);
+      plot(-8, 14, 255, 40, 40);
+      plot(6, 14, 255, 40, 40);
       // Wheels - big chunky
-      fillRect(-8, -5, 2, 4, 30, 30, 30);
-      fillRect(6, -5, 2, 4, 30, 30, 30);
-      fillRect(-8, 3, 2, 4, 30, 30, 30);
-      fillRect(6, 3, 2, 4, 30, 30, 30);
+      fillRect(-12, -8, 3, 6, 30, 30, 30);
+      fillRect(9, -8, 3, 6, 30, 30, 30);
+      fillRect(-12, 5, 3, 6, 30, 30, 30);
+      fillRect(9, 5, 3, 6, 30, 30, 30);
       // Side stripe
-      fillRect(-7, 0, 1, 1, 255, 255, 255);
-      fillRect(6, 0, 1, 1, 255, 255, 255);
+      fillRect(-11, 0, 2, 2, 255, 255, 255);
+      fillRect(9, 0, 2, 2, 255, 255, 255);
       break;
     }
 
     case 'cat': {
       // Round cat shape with ears
       // Body circle
-      fillCircle(0, 0, 7, cr, cg, cb);
+      fillCircle(0, 0, 11, cr, cg, cb);
       // Highlight belly
-      fillCircle(0, 1, 4, hr, hg, hb);
+      fillCircle(0, 2, 6, hr, hg, hb);
       // Ears (triangular)
-      fillRect(-6, -9, 3, 3, cr, cg, cb);
-      fillRect(-5, -10, 2, 2, cr, cg, cb);
-      fillRect(3, -9, 3, 3, cr, cg, cb);
-      fillRect(3, -10, 2, 2, cr, cg, cb);
+      fillRect(-9, -14, 5, 5, cr, cg, cb);
+      fillRect(-8, -15, 3, 3, cr, cg, cb);
+      fillRect(5, -14, 5, 5, cr, cg, cb);
+      fillRect(5, -15, 3, 3, cr, cg, cb);
       // Inner ears
-      plot(-5, -9, hr, hg, hb);
-      plot(4, -9, hr, hg, hb);
+      plot(-8, -14, hr, hg, hb);
+      plot(6, -14, hr, hg, hb);
       // Eyes
-      plot(-3, -3, 40, 40, 40);
-      plot(2, -3, 40, 40, 40);
-      plot(-3, -4, 200, 220, 200);
-      plot(2, -4, 200, 220, 200);
+      plot(-5, -5, 40, 40, 40);
+      plot(3, -5, 40, 40, 40);
+      plot(-5, -6, 200, 220, 200);
+      plot(3, -6, 200, 220, 200);
       // Nose
-      plot(0, -1, 255, 140, 160);
+      plot(0, -2, 255, 140, 160);
       // Whiskers
-      plot(-5, -1, 180, 180, 180);
-      plot(-6, -2, 180, 180, 180);
-      plot(4, -1, 180, 180, 180);
-      plot(5, -2, 180, 180, 180);
+      plot(-8, -2, 180, 180, 180);
+      plot(-9, -3, 180, 180, 180);
+      plot(6, -2, 180, 180, 180);
+      plot(8, -3, 180, 180, 180);
       // Wheels (small, cat cart)
-      fillRect(-7, -3, 2, 2, 30, 30, 30);
-      fillRect(5, -3, 2, 2, 30, 30, 30);
-      fillRect(-7, 4, 2, 2, 30, 30, 30);
-      fillRect(5, 4, 2, 2, 30, 30, 30);
+      fillRect(-11, -5, 3, 3, 30, 30, 30);
+      fillRect(8, -5, 3, 3, 30, 30, 30);
+      fillRect(-11, 6, 3, 3, 30, 30, 30);
+      fillRect(8, 6, 3, 3, 30, 30, 30);
       // Tail
-      plot(3, 7, cr, cg, cb);
-      plot(4, 8, cr, cg, cb);
-      plot(5, 7, cr, cg, cb);
+      plot(5, 11, cr, cg, cb);
+      plot(6, 12, cr, cg, cb);
+      plot(8, 11, cr, cg, cb);
       break;
     }
 
     case 'pig': {
       // Round pink shape
       // Body
-      fillCircle(0, 0, 8, cr, cg, cb);
+      fillCircle(0, 0, 12, cr, cg, cb);
       // Highlight
-      fillCircle(-2, -2, 3, hr, hg, hb);
+      fillCircle(-3, -3, 5, hr, hg, hb);
       // Snout
-      fillOval(0, -2, 3, 2, Math.min(255, cr + 30), cg, Math.min(255, cb + 20));
+      fillOval(0, -3, 5, 3, Math.min(255, cr + 30), cg, Math.min(255, cb + 20));
       // Nostrils
-      plot(-1, -2, sr, sg, sb);
-      plot(1, -2, sr, sg, sb);
+      plot(-2, -3, sr, sg, sb);
+      plot(2, -3, sr, sg, sb);
       // Eyes
-      plot(-3, -5, 40, 40, 40);
-      plot(3, -5, 40, 40, 40);
+      plot(-5, -8, 40, 40, 40);
+      plot(5, -8, 40, 40, 40);
       // Ears
-      fillRect(-6, -8, 3, 3, Math.min(255, cr + 15), cg, cb);
-      fillRect(3, -8, 3, 3, Math.min(255, cr + 15), cg, cb);
+      fillRect(-9, -12, 5, 5, Math.min(255, cr + 15), cg, cb);
+      fillRect(5, -12, 5, 5, Math.min(255, cr + 15), cg, cb);
       // Wheels
-      fillRect(-8, -3, 2, 3, 30, 30, 30);
-      fillRect(6, -3, 2, 3, 30, 30, 30);
-      fillRect(-8, 3, 2, 3, 30, 30, 30);
-      fillRect(6, 3, 2, 3, 30, 30, 30);
+      fillRect(-12, -5, 3, 5, 30, 30, 30);
+      fillRect(9, -5, 3, 5, 30, 30, 30);
+      fillRect(-12, 5, 3, 5, 30, 30, 30);
+      fillRect(9, 5, 3, 5, 30, 30, 30);
       // Curly tail
-      plot(0, 8, cr, cg, cb);
-      plot(1, 9, cr, cg, cb);
-      plot(0, 10, cr, cg, cb);
+      plot(0, 12, cr, cg, cb);
+      plot(2, 14, cr, cg, cb);
+      plot(0, 15, cr, cg, cb);
       break;
     }
 
     case 'frog': {
       // Green oval with big eyes
       // Body oval
-      fillOval(0, 0, 7, 8, cr, cg, cb);
+      fillOval(0, 0, 11, 12, cr, cg, cb);
       // Lighter belly
-      fillOval(0, 2, 4, 4, hr, hg, hb);
+      fillOval(0, 3, 6, 6, hr, hg, hb);
       // Big eyes (protruding at top)
-      fillCircle(-4, -8, 3, cr, cg, cb);
-      fillCircle(4, -8, 3, cr, cg, cb);
+      fillCircle(-6, -12, 5, cr, cg, cb);
+      fillCircle(6, -12, 5, cr, cg, cb);
       // Eye whites
-      fillCircle(-4, -8, 2, 220, 230, 220);
-      fillCircle(4, -8, 2, 220, 230, 220);
+      fillCircle(-6, -12, 3, 220, 230, 220);
+      fillCircle(6, -12, 3, 220, 230, 220);
       // Pupils
-      plot(-4, -8, 20, 20, 20);
-      plot(4, -8, 20, 20, 20);
+      plot(-6, -12, 20, 20, 20);
+      plot(6, -12, 20, 20, 20);
       // Mouth line
-      fillRect(-4, 1, 8, 1, sr, sg, sb);
+      fillRect(-6, 2, 12, 2, sr, sg, sb);
       // Leg spots
-      plot(-6, 4, sr, sg, sb);
-      plot(6, 4, sr, sg, sb);
+      plot(-9, 6, sr, sg, sb);
+      plot(9, 6, sr, sg, sb);
       // Wheels
-      fillRect(-8, -3, 2, 3, 30, 30, 30);
-      fillRect(6, -3, 2, 3, 30, 30, 30);
-      fillRect(-8, 4, 2, 3, 30, 30, 30);
-      fillRect(6, 4, 2, 3, 30, 30, 30);
+      fillRect(-12, -5, 3, 5, 30, 30, 30);
+      fillRect(9, -5, 3, 5, 30, 30, 30);
+      fillRect(-12, 6, 3, 5, 30, 30, 30);
+      fillRect(9, 6, 3, 5, 30, 30, 30);
       break;
     }
 
     default: {
       // Fallback generic car
-      fillRect(-5, -7, 10, 14, cr, cg, cb);
-      fillRect(-4, -5, 8, 5, hr, hg, hb);
-      fillRect(-6, -5, 2, 4, 30, 30, 30);
-      fillRect(4, -5, 2, 4, 30, 30, 30);
-      fillRect(-6, 3, 2, 4, 30, 30, 30);
-      fillRect(4, 3, 2, 4, 30, 30, 30);
+      fillRect(-8, -11, 15, 21, cr, cg, cb);
+      fillRect(-6, -8, 12, 8, hr, hg, hb);
+      fillRect(-9, -8, 3, 6, 30, 30, 30);
+      fillRect(6, -8, 3, 6, 30, 30, 30);
+      fillRect(-9, 5, 3, 6, 30, 30, 30);
+      fillRect(6, 5, 3, 6, 30, 30, 30);
       break;
     }
   }

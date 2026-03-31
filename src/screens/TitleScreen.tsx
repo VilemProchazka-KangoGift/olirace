@@ -209,7 +209,7 @@ export default function TitleScreen({ onStart }: Props) {
 
       <div style={logoContainer}>
         <div style={logo}>{t('title')}</div>
-        <div style={subtitle}>Racing Game</div>
+        <div style={subtitle}>{t('racing_game')}</div>
       </div>
 
       <div style={pressKey}>{t('press_any_key')}</div>

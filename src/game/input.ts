@@ -24,7 +24,7 @@ export function destroyInput(): void {
   }
 }
 
-function readKeyboard(playerIndex: 0 | 1): PlayerInput {
+function readKeyboard(playerIndex: number): PlayerInput {
   if (playerIndex === 0) {
     // P1: Arrow keys + Enter
     const up = keyState['ArrowUp'] ? 1 : 0;
@@ -37,7 +37,7 @@ function readKeyboard(playerIndex: 0 | 1): PlayerInput {
       steerX: right - left,
       honk: !!keyState['Enter'],
     };
-  } else {
+  } else if (playerIndex === 1) {
     // P2: WASD + Space
     const up = keyState['KeyW'] ? 1 : 0;
     const down = keyState['KeyS'] ? 1 : 0;
@@ -49,6 +49,30 @@ function readKeyboard(playerIndex: 0 | 1): PlayerInput {
       steerX: right - left,
       honk: !!keyState['Space'],
     };
+  } else if (playerIndex === 2) {
+    // P3: IJKL + H
+    const up = keyState['KeyI'] ? 1 : 0;
+    const down = keyState['KeyK'] ? 1 : 0;
+    const left = keyState['KeyJ'] ? 1 : 0;
+    const right = keyState['KeyL'] ? 1 : 0;
+    return {
+      accelerate: up,
+      brake: down,
+      steerX: right - left,
+      honk: !!keyState['KeyH'],
+    };
+  } else {
+    // P4: Numpad 8456 + Numpad0
+    const up = keyState['Numpad8'] ? 1 : 0;
+    const down = keyState['Numpad5'] ? 1 : 0;
+    const left = keyState['Numpad4'] ? 1 : 0;
+    const right = keyState['Numpad6'] ? 1 : 0;
+    return {
+      accelerate: up,
+      brake: down,
+      steerX: right - left,
+      honk: !!keyState['Numpad0'],
+    };
   }
 }
 
@@ -58,7 +82,7 @@ function applyDeadzone(value: number): number {
   return Math.abs(value) < GAMEPAD_DEADZONE ? 0 : value;
 }
 
-export function readPlayerInput(playerIndex: 0 | 1): PlayerInput {
+export function readPlayerInput(playerIndex: number): PlayerInput {
   const input = readKeyboard(playerIndex);
 
   // Override with gamepad if connected

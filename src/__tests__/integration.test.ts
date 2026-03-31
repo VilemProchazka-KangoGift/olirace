@@ -83,6 +83,8 @@ function make1PConfig(
     trackId,
     p1Character: charId,
     p2Character: 'cat',
+    p3Character: 'muscle',
+    p4Character: 'buggy',
   };
 }
 

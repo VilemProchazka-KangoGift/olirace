@@ -116,14 +116,17 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  const is2P = results.playerCount === 2;
+  const isMulti = results.playerCount >= 2;
   const hasWinner = results.winner !== null;
 
   let winnerText = '';
-  if (is2P && hasWinner) {
-    winnerText = results.winner === 0 ? t('p1_wins') : t('p2_wins');
-  } else if (!is2P) {
-    winnerText = results.players[0].finishTime !== null ? '🏁 Finished!' : 'DNF';
+  if (isMulti && hasWinner) {
+    const winnerLabels = ['P1', 'P2', 'P3', 'P4'];
+    const winnerIdx = results.winner!;
+    const winKey = `p${winnerIdx + 1}_wins` as any;
+    winnerText = t(winKey);
+  } else if (!isMulti) {
+    winnerText = results.players[0].finishTime !== null ? t('finished') : t('dnf');
   }
 
   const container: React.CSSProperties = {
@@ -144,7 +147,7 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
   };
 
   const winnerStyle: React.CSSProperties = {
-    fontSize: is2P ? 14 : 18,
+    fontSize: isMulti ? 14 : 18,
     color: '#ff8020',
     animation: 'result-appear 0.6s ease-out both, winner-glow 2s ease-in-out infinite',
     textAlign: 'center',
@@ -170,7 +173,10 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     if (!p) return null;
     const char = getCharacter(p.characterId);
     const isWinner = results.winner === playerIndex;
-    const palette = playerIndex === 1 && config.p1Character === config.p2Character ? 'rival' : 'primary';
+    // Determine if this player shares a character with another, use rival palette
+    const charIds = [config.p1Character, config.p2Character, config.p3Character, config.p4Character];
+    const hasDupe = charIds.slice(0, playerIndex).includes(p.characterId);
+    const palette = hasDupe ? 'rival' : 'primary';
     const color = palette === 'rival' ? char.rivalColor : char.primaryColor;
 
     const cardStyle: React.CSSProperties = {
@@ -208,10 +214,10 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
 
     return (
       <div key={playerIndex} style={cardStyle}>
-        {is2P && (
+        {isMulti && (
           <div style={{ fontSize: 6, color: '#a0a0b0' }}>
-            {playerIndex === 0 ? 'P1' : 'P2'}
-            {isWinner && <span style={{ marginLeft: 6, color: '#e0c000' }}>👑</span>}
+            {`P${playerIndex + 1}`}
+            {isWinner && <span style={{ marginLeft: 6, color: '#e0c000' }}>&#128081;</span>}
           </div>
         )}
         {/* Car icon */}
@@ -292,7 +298,9 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
         }}
       >
         {playerCard(0, 0.3)}
-        {is2P && playerCard(1, 0.45)}
+        {results.playerCount >= 2 && playerCard(1, 0.45)}
+        {results.playerCount >= 3 && playerCard(2, 0.6)}
+        {results.playerCount >= 4 && playerCard(3, 0.75)}
       </div>
 
       <div

@@ -22,8 +22,8 @@ export const characters: CharacterDef[] = [
     weight: 0.85,
     brakeForce: 200,
     description: 'Chunky Czech SUV. Slow but heavy.',
-    primaryColor: '#40a040',
-    rivalColor: '#a04040',
+    primaryColor: '#e8e8f0',
+    rivalColor: '#404050',
   },
   {
     id: 'cat',

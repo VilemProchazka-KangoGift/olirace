@@ -50,6 +50,8 @@ describe('createGameState - 1P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -63,6 +65,8 @@ describe('createGameState - 1P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -78,6 +82,8 @@ describe('createGameState - 1P mode', () => {
       trackId: 'test',
       p1Character: 'cat',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -91,6 +97,8 @@ describe('createGameState - 1P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -107,6 +115,8 @@ describe('createGameState - 2P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -120,6 +130,8 @@ describe('createGameState - 2P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -136,6 +148,8 @@ describe('createGameState - 2P mode', () => {
       trackId: 'test',
       p1Character: 'pig',
       p2Character: 'frog',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -150,6 +164,8 @@ describe('createGameState - 2P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -164,6 +180,8 @@ describe('createGameState - 2P mode', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -182,6 +200,8 @@ describe('createGameState - countdown', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -195,6 +215,8 @@ describe('createGameState - countdown', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -209,6 +231,8 @@ describe('createGameState - countdown', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -224,6 +248,8 @@ describe('createGameState - obstacles', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -237,6 +263,8 @@ describe('createGameState - obstacles', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -252,6 +280,8 @@ describe('createGameState - obstacles', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -272,6 +302,8 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -285,6 +317,8 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -298,6 +332,8 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -311,6 +347,8 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -324,6 +362,8 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
     const state = createGameState(config, track);
@@ -337,12 +377,16 @@ describe('createGameState - initial values', () => {
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const config2p: GameConfig = {
       playerCount: 2,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
+      p3Character: 'muscle',
+      p4Character: 'buggy',
     };
     const track = createTestTrack();
 

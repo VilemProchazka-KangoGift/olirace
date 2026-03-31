@@ -87,7 +87,10 @@ const seg9 = curve(210, 1200, 800, 40, 160, 200);
 // Segment 10: Y 800→400, straight, width 200
 const seg10 = straight(250, 800, 400, 200);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10);
+// Segment 11: Extension past finish line Y=400→0 to prevent lava death
+const seg11 = straight(250, 400, 0, 200);
+
+const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11);
 
 // Find road index closest to a Y value
 function indexAtY(y: number): number {
@@ -113,7 +116,7 @@ const startLineIdx = indexAtY(5000);
 const finishLineIdx = indexAtY(500);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Segment 1: Arrow pad at Y=4800, centered ---
+  // --- Segment 1: Arrow pad at Y=4800, centered (forward) ---
   { type: 'arrow_pad', x: roadAt(4800).x, y: 4800, angle: 0 },
 
   // --- Segment 3: Logs ---
@@ -157,8 +160,8 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(3500).width * 0.5,
   },
 
-  // --- Segment 6: Arrow pad and rotating spike ---
-  { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: 0 },
+  // --- Segment 6: Arrow pad (sideways right!) and rotating spikes ---
+  { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: -Math.PI / 2 },
   {
     type: 'rotating_spikes',
     x: roadAt(2500).x,
@@ -166,11 +169,21 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 60,
-    patrolSpeed: 40,
+    patrolSpeed: 24,
+  },
+  // Extra rotating spike in segment 6
+  {
+    type: 'rotating_spikes',
+    x: roadAt(2600).x + roadAt(2600).width * 0.15,
+    y: 2600,
+    angle: 0,
+    patrolAxis: 'y',
+    patrolDistance: 30,
+    patrolSpeed: 18,
   },
 
   // --- Segment 8: Rotating spike pair + logs ---
-  // Y=1700, patrols left half
+  // Y=1700, patrols left half (slower)
   {
     type: 'rotating_spikes',
     x: roadAt(1700).x - roadAt(1700).width * 0.2,
@@ -178,9 +191,9 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 45,
+    patrolSpeed: 27,
   },
-  // Y=1500, patrols right half (offset timing via different speed)
+  // Y=1500, patrols right half (slower)
   {
     type: 'rotating_spikes',
     x: roadAt(1500).x + roadAt(1500).width * 0.2,
@@ -188,7 +201,17 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 35,
+    patrolSpeed: 21,
+  },
+  // Extra rotating spike at Y=1600, center
+  {
+    type: 'rotating_spikes',
+    x: roadAt(1600).x,
+    y: 1600,
+    angle: 0,
+    patrolAxis: 'y',
+    patrolDistance: 25,
+    patrolSpeed: 24,
   },
   // Log at Y=1400, centered
   { type: 'log', x: roadAt(1400).x, y: 1400, angle: 0.1 },
@@ -200,8 +223,8 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.4,
   },
 
-  // --- Segment 9: Arrow pad at Y=1000, centered ---
-  { type: 'arrow_pad', x: roadAt(1000).x, y: 1000, angle: 0 },
+  // --- Segment 9: Arrow pad at Y=1000, backward boost (surprise!) ---
+  { type: 'arrow_pad', x: roadAt(1000).x, y: 1000, angle: Math.PI },
 ];
 
 const startRoad = roadAt(4960);
@@ -216,6 +239,8 @@ const lavaGauntlet: TrackData = {
   startPositions: {
     p1: { x: startRoad.x - 30, y: 4960, angle: Math.PI / 2 },
     p2: { x: startRoad.x + 30, y: 4960, angle: Math.PI / 2 },
+    p3: { x: startRoad.x - 30, y: 5000, angle: Math.PI / 2 },
+    p4: { x: startRoad.x + 30, y: 5000, angle: Math.PI / 2 },
   },
 };
 

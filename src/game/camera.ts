@@ -22,7 +22,7 @@ export function createCamera(x: number, y: number): CameraState {
 export function updateCamera(
   camera: CameraState,
   players: PlayerState[],
-  playerCount: 1 | 2,
+  playerCount: 1 | 2 | 3 | 4,
   dt: number,
 ): void {
   let target = camera.target;
@@ -33,18 +33,22 @@ export function updateCamera(
     const lookDir = directionFromAngle(p.angle);
     target = add(p.position, scale(lookDir, CAMERA_LOOK_AHEAD));
   } else {
-    // 2P: target = lerp(midpoint(p1, p2), leader.position, 0.3)
-    const p1 = players[0];
-    const p2 = players[1];
-
-    const midpoint = {
-      x: (p1.position.x + p2.position.x) / 2,
-      y: (p1.position.y + p2.position.y) / 2,
-    };
+    // Multi-player: target = lerp(midpoint of all players, leader.position, 0.3)
+    const midpoint = { x: 0, y: 0 };
+    for (const p of players) {
+      midpoint.x += p.position.x;
+      midpoint.y += p.position.y;
+    }
+    midpoint.x /= players.length;
+    midpoint.y /= players.length;
 
     // Leader is the player further along the track
-    const leader =
-      p1.trackProgress >= p2.trackProgress ? p1 : p2;
+    let leader = players[0];
+    for (let i = 1; i < players.length; i++) {
+      if (players[i].trackProgress > leader.trackProgress) {
+        leader = players[i];
+      }
+    }
 
     target = lerpVec2(midpoint, leader.position, CAMERA_LEADER_BIAS);
   }

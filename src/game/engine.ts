@@ -14,6 +14,8 @@ import {
   INVINCIBILITY_DURATION,
   TETHER_TELEPORT_DISTANCE,
   TETHER_TELEPORT_BEHIND,
+  PLAYER_HITBOX_RADIUS,
+  PUSH_STRENGTH,
 } from '../utils/constants';
 import {
   distance,
@@ -120,6 +122,55 @@ export function startGame(
       }
     }
 
+    // 5b. Player-player collisions (push apart based on weight)
+    if (state.phase === 'racing' && state.players.length >= 2) {
+      for (let i = 0; i < state.players.length; i++) {
+        for (let j = i + 1; j < state.players.length; j++) {
+          const a = state.players[i];
+          const b = state.players[j];
+          if (!a.alive || !b.alive) continue;
+          if (a.finishTime !== null || b.finishTime !== null) continue;
+
+          const dx = b.position.x - a.position.x;
+          const dy = b.position.y - a.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const minDist = PLAYER_HITBOX_RADIUS * 2;
+
+          if (dist < minDist && dist > 0.001) {
+            // Collision normal from a to b
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = minDist - dist;
+
+            // Push proportional to inverse weight: lighter player pushed more
+            const totalInvWeight = 1 / (a.weight + 0.1) + 1 / (b.weight + 0.1);
+            const aRatio = (1 / (a.weight + 0.1)) / totalInvWeight;
+            const bRatio = (1 / (b.weight + 0.1)) / totalInvWeight;
+
+            // Separate positions
+            a.position.x -= nx * overlap * aRatio;
+            a.position.y -= ny * overlap * aRatio;
+            b.position.x += nx * overlap * bRatio;
+            b.position.y += ny * overlap * bRatio;
+
+            // Apply velocity impulse
+            const pushA = PUSH_STRENGTH / (a.weight + 0.1) * dt;
+            const pushB = PUSH_STRENGTH / (b.weight + 0.1) * dt;
+            a.velocity.x -= nx * pushA;
+            a.velocity.y -= ny * pushA;
+            b.velocity.x += nx * pushB;
+            b.velocity.y += ny * pushB;
+
+            // Affect speeds based on impact direction vs facing direction
+            const aDot = nx * Math.cos(a.angle) + ny * (-Math.sin(a.angle));
+            const bDot = -(nx * Math.cos(b.angle) + ny * (-Math.sin(b.angle)));
+            a.speed += aDot * pushA * 0.5;
+            b.speed += bDot * pushB * 0.5;
+          }
+        }
+      }
+    }
+
     // 6. Handle death -> respawn flow
     for (let i = 0; i < state.players.length; i++) {
       const player = state.players[i];
@@ -177,8 +228,8 @@ export function startGame(
       checkWinCondition(state);
     }
 
-    // 13. Check tether in 2P mode
-    if (state.playerCount === 2 && state.phase === 'racing') {
+    // 13. Check tether in multi-player mode
+    if (state.playerCount >= 2 && state.phase === 'racing') {
       checkTether(state);
     }
   }
@@ -326,13 +377,13 @@ export function startGame(
       onFinish(buildResults(gs));
     }
 
-    // In 2P mode, end after both finish or after a timeout
+    // In multi-player mode, end after all finish or after a timeout
     if (
-      gs.playerCount === 2 &&
+      gs.playerCount >= 2 &&
       gs.winner !== null &&
       gs.players.some((p) => p.finishTime === null)
     ) {
-      // Give the other player some time to finish (10 seconds)
+      // Give the other players some time to finish (10 seconds)
       const winnerTime = gs.players[gs.winner].finishTime!;
       if (gs.raceTimer - winnerTime > 10) {
         gs.phase = 'finished';
@@ -344,41 +395,44 @@ export function startGame(
   function checkTether(gs: GameState): void {
     if (gs.players.length < 2) return;
 
-    const p1 = gs.players[0];
-    const p2 = gs.players[1];
+    // Find the leader (max trackProgress among alive, unfinished players)
+    let leader: typeof gs.players[0] | null = null;
+    for (const p of gs.players) {
+      if (!p.alive || p.finishTime !== null) continue;
+      if (!leader || p.trackProgress > leader.trackProgress) {
+        leader = p;
+      }
+    }
+    if (!leader) return;
 
-    if (!p1.alive || !p2.alive) return;
-    if (p1.finishTime !== null || p2.finishTime !== null) return;
+    // Teleport any trailer that is too far behind the leader
+    for (const p of gs.players) {
+      if (p === leader) continue;
+      if (!p.alive || p.finishTime !== null) continue;
 
-    const dist = distance(p1.position, p2.position);
-    if (dist > TETHER_TELEPORT_DISTANCE) {
-      // Teleport the trailing player behind the leader
-      const leader =
-        p1.trackProgress >= p2.trackProgress ? p1 : p2;
-      const trailer =
-        leader === p1 ? p2 : p1;
+      const dist = distance(p.position, leader.position);
+      if (dist > TETHER_TELEPORT_DISTANCE) {
+        const leaderNearest = findNearestRoadPoint(
+          leader.position,
+          track.road,
+        );
+        const teleportPos = findRespawnPosition(
+          leaderNearest.segIdx,
+          leaderNearest.t,
+          TETHER_TELEPORT_BEHIND,
+          track.road,
+        );
 
-      // Place trailer behind leader along their road direction
-      const leaderNearest = findNearestRoadPoint(
-        leader.position,
-        track.road,
-      );
-      const teleportPos = findRespawnPosition(
-        leaderNearest.segIdx,
-        leaderNearest.t,
-        TETHER_TELEPORT_BEHIND,
-        track.road,
-      );
+        p.position = { ...teleportPos };
+        p.prevPosition = { ...teleportPos };
+        p.speed = leader.speed * 0.5;
 
-      trailer.position = { ...teleportPos };
-      trailer.prevPosition = { ...teleportPos };
-      trailer.speed = leader.speed * 0.5;
-
-      emitRespawnParticles(
-        trailer.position.x,
-        trailer.position.y,
-        gs.particles,
-      );
+        emitRespawnParticles(
+          p.position.x,
+          p.position.y,
+          gs.particles,
+        );
+      }
     }
   }
 

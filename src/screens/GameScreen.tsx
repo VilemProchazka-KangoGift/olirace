@@ -38,6 +38,10 @@ const keyframesStyle = `
 @keyframes speed-needle {
   0%   { stroke-dashoffset: 157; }
 }
+@keyframes lava-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 28px 28px; }
+}
 `;
 
 function formatTime(seconds: number): string {
@@ -116,12 +120,9 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
   const [pauseIndex, setPauseIndex] = useState(0);
   const [hudState, setHudState] = useState({
     raceTimer: 0,
-    p1Deaths: 0,
-    p2Deaths: 0,
-    p1Speed: 0,
-    p2Speed: 0,
-    p1MaxSpeed: 200,
-    p2MaxSpeed: 200,
+    deaths: [0, 0, 0, 0],
+    speeds: [0, 0, 0, 0],
+    maxSpeeds: [200, 200, 200, 200],
     phase: 'countdown' as GameState['phase'],
   });
 
@@ -166,12 +167,24 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
         gameStateRef.current = gs;
         setHudState({
           raceTimer: gs.raceTimer,
-          p1Deaths: gs.players[0]?.deaths ?? 0,
-          p2Deaths: gs.players[1]?.deaths ?? 0,
-          p1Speed: gs.players[0]?.speed ?? 0,
-          p2Speed: gs.players[1]?.speed ?? 0,
-          p1MaxSpeed: gs.players[0]?.maxSpeed ?? 200,
-          p2MaxSpeed: gs.players[1]?.maxSpeed ?? 200,
+          deaths: [
+            gs.players[0]?.deaths ?? 0,
+            gs.players[1]?.deaths ?? 0,
+            gs.players[2]?.deaths ?? 0,
+            gs.players[3]?.deaths ?? 0,
+          ],
+          speeds: [
+            gs.players[0]?.speed ?? 0,
+            gs.players[1]?.speed ?? 0,
+            gs.players[2]?.speed ?? 0,
+            gs.players[3]?.speed ?? 0,
+          ],
+          maxSpeeds: [
+            gs.players[0]?.maxSpeed ?? 200,
+            gs.players[1]?.maxSpeed ?? 200,
+            gs.players[2]?.maxSpeed ?? 200,
+            gs.players[3]?.maxSpeed ?? 200,
+          ],
           phase: gs.phase,
         });
       }
@@ -217,7 +230,9 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     width: '100%',
     height: '100%',
     position: 'relative',
-    background: '#0a0a18',
+    background: 'repeating-linear-gradient(45deg, #8a2000, #8a2000 10px, #c0400a 10px, #c0400a 20px)',
+    backgroundSize: '28px 28px',
+    animation: 'lava-scroll 1.5s linear infinite',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -355,15 +370,81 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
         <div style={timerStyle}>{formatTime(hudState.raceTimer)}</div>
 
         {/* P1 deaths - top left */}
-        {deathCounter(hudState.p1Deaths, 'left', config.playerCount === 2 ? 'P1' : '')}
+        {deathCounter(hudState.deaths[0], 'left', config.playerCount >= 2 ? 'P1' : '')}
 
-        {/* P2 deaths - top right (2P only) */}
-        {config.playerCount === 2 && deathCounter(hudState.p2Deaths, 'right', 'P2')}
+        {/* P2 deaths - top right */}
+        {config.playerCount >= 2 && deathCounter(hudState.deaths[1], 'right', 'P2')}
 
-        {/* Speed gauges */}
-        <SpeedGauge speed={hudState.p1Speed} maxSpeed={hudState.p1MaxSpeed} side="left" />
-        {config.playerCount === 2 && (
-          <SpeedGauge speed={hudState.p2Speed} maxSpeed={hudState.p2MaxSpeed} side="right" />
+        {/* Speed gauges - P1 bottom-left, P2 bottom-right */}
+        <SpeedGauge speed={hudState.speeds[0]} maxSpeed={hudState.maxSpeeds[0]} side="left" />
+        {config.playerCount >= 2 && (
+          <SpeedGauge speed={hudState.speeds[1]} maxSpeed={hudState.maxSpeeds[1]} side="right" />
+        )}
+
+        {/* P3 deaths + gauge - stacked below P1 (bottom-left area) */}
+        {config.playerCount >= 3 && (
+          <>
+            <div style={{
+              position: 'absolute', top: 28, left: 10, fontSize: 8,
+              display: 'flex', alignItems: 'center', gap: 4,
+              textShadow: '0 0 4px #000, 1px 1px 0 #000',
+              animation: 'hud-fade-in 0.5s ease-out both', animationDelay: '0.7s',
+            }}>
+              <span style={{ fontSize: 6, color: '#666680' }}>P3</span>
+              <span style={{ color: '#e02020' }}>&#128128;</span>
+              <span>{hudState.deaths[2]}</span>
+            </div>
+            <div style={{
+              position: 'absolute', bottom: 48, left: 8, width: 64, height: 36,
+              animation: 'hud-fade-in 0.5s ease-out both', animationDelay: '1s',
+            }}>
+              <svg width="64" height="36" viewBox="0 0 108 58">
+                <path d="M 4 54 A 50 50 0 0 1 104 54" fill="none" stroke="#2a2a3a" strokeWidth="6" strokeLinecap="round" />
+                <path d="M 4 54 A 50 50 0 0 1 104 54" fill="none"
+                  stroke={Math.min(1, hudState.speeds[2] / hudState.maxSpeeds[2]) > 0.85 ? '#e02020' : Math.min(1, hudState.speeds[2] / hudState.maxSpeeds[2]) > 0.6 ? '#e07020' : Math.min(1, hudState.speeds[2] / hudState.maxSpeeds[2]) > 0.3 ? '#00e0e0' : '#e8e8f0'}
+                  strokeWidth="6" strokeLinecap="round"
+                  strokeDasharray="157"
+                  strokeDashoffset={157 * (1 - Math.min(1, hudState.speeds[2] / hudState.maxSpeeds[2]))}
+                  style={{ transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s' }} />
+                <text x="54" y="50" textAnchor="middle" fill="#a0a0b0" fontSize="14" fontFamily="'Press Start 2P', monospace">
+                  {Math.round(hudState.speeds[2])}
+                </text>
+              </svg>
+            </div>
+          </>
+        )}
+
+        {/* P4 deaths + gauge - stacked below P2 (bottom-right area) */}
+        {config.playerCount >= 4 && (
+          <>
+            <div style={{
+              position: 'absolute', top: 28, right: 10, fontSize: 8,
+              display: 'flex', alignItems: 'center', gap: 4,
+              textShadow: '0 0 4px #000, 1px 1px 0 #000',
+              animation: 'hud-fade-in 0.5s ease-out both', animationDelay: '0.7s',
+            }}>
+              <span style={{ fontSize: 6, color: '#666680' }}>P4</span>
+              <span style={{ color: '#e02020' }}>&#128128;</span>
+              <span>{hudState.deaths[3]}</span>
+            </div>
+            <div style={{
+              position: 'absolute', bottom: 48, right: 8, width: 64, height: 36,
+              animation: 'hud-fade-in 0.5s ease-out both', animationDelay: '1s',
+            }}>
+              <svg width="64" height="36" viewBox="0 0 108 58">
+                <path d="M 4 54 A 50 50 0 0 1 104 54" fill="none" stroke="#2a2a3a" strokeWidth="6" strokeLinecap="round" />
+                <path d="M 4 54 A 50 50 0 0 1 104 54" fill="none"
+                  stroke={Math.min(1, hudState.speeds[3] / hudState.maxSpeeds[3]) > 0.85 ? '#e02020' : Math.min(1, hudState.speeds[3] / hudState.maxSpeeds[3]) > 0.6 ? '#e07020' : Math.min(1, hudState.speeds[3] / hudState.maxSpeeds[3]) > 0.3 ? '#00e0e0' : '#e8e8f0'}
+                  strokeWidth="6" strokeLinecap="round"
+                  strokeDasharray="157"
+                  strokeDashoffset={157 * (1 - Math.min(1, hudState.speeds[3] / hudState.maxSpeeds[3]))}
+                  style={{ transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s' }} />
+                <text x="54" y="50" textAnchor="middle" fill="#a0a0b0" fontSize="14" fontFamily="'Press Start 2P', monospace">
+                  {Math.round(hudState.speeds[3])}
+                </text>
+              </svg>
+            </div>
+          </>
         )}
       </div>
 

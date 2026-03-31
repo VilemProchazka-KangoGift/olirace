@@ -1,0 +1,29 @@
+- generic [ref=e121]:
+  - generic [ref=e122]: Vyber vozidlo
+  - generic [ref=e123]:
+    - generic [ref=e124]: Vyber vozidlo
+    - generic [ref=e125]:
+      - button "Formule" [ref=e126] [cursor=pointer]:
+        - img [ref=e127]
+        - generic [ref=e143]: Formule
+      - button "Škoda Yeti" [ref=e144] [cursor=pointer]:
+        - img [ref=e145]
+        - generic [ref=e164]: Škoda Yeti
+      - button "Kočka" [ref=e165] [cursor=pointer]:
+        - img [ref=e166]
+        - generic [ref=e186]: Kočka
+      - button "Prasátko" [ref=e187] [cursor=pointer]:
+        - img [ref=e188]
+        - generic [ref=e207]: Prasátko
+      - button "Žabák" [ref=e208] [cursor=pointer]:
+        - img [ref=e209]
+        - generic [ref=e229]: Žabák
+    - generic [ref=e230]:
+      - generic [ref=e232]: Rychlost
+      - generic [ref=e235]: Ovládání
+      - generic [ref=e238]: Váha
+    - generic [ref=e240]:
+      - generic [ref=e241]: ↑↓←→
+      - generic [ref=e242]: +
+      - generic [ref=e243]: Enter
+  - button "Esc" [ref=e244] [cursor=pointer]

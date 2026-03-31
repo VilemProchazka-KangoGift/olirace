@@ -37,6 +37,8 @@ export interface TrackData {
   startPositions: {
     p1: { x: number; y: number; angle: number };
     p2: { x: number; y: number; angle: number };
+    p3?: { x: number; y: number; angle: number };
+    p4?: { x: number; y: number; angle: number };
   };
 }
 
@@ -68,6 +70,8 @@ export interface PlayerState {
   directionIndex: number; // 0-7 for 8 directions
   boostParticleTimer: number;
   honkTimer: number;
+  jumpTimer: number;
+  jumpHeight: number;
 }
 
 export interface CameraState {
@@ -114,7 +118,7 @@ export interface GameState {
   obstacles: ObstacleState[];
   particles: Particle[];
   winner: number | null;
-  playerCount: 1 | 2;
+  playerCount: 1 | 2 | 3 | 4;
   time: number; // total elapsed time for animations
 }
 
@@ -140,14 +144,16 @@ export type ScreenId =
   | 'results';
 
 export interface GameConfig {
-  playerCount: 1 | 2;
+  playerCount: 1 | 2 | 3 | 4;
   trackId: string;
   p1Character: string;
   p2Character: string;
+  p3Character: string;
+  p4Character: string;
 }
 
 export interface GameResults {
-  playerCount: 1 | 2;
+  playerCount: 1 | 2 | 3 | 4;
   winner: number | null;
   players: Array<{
     characterId: string;

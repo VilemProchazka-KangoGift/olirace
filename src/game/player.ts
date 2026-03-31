@@ -61,6 +61,8 @@ export function createPlayer(
     directionIndex: angleToDirectionIndex(angle),
     boostParticleTimer: 0,
     honkTimer: 0,
+    jumpTimer: 0,
+    jumpHeight: 0,
   };
 }
 
@@ -89,7 +91,7 @@ export function updatePlayer(
   }
 
   // 1. Read input
-  const playerIndex = gameState.players.indexOf(player) as 0 | 1;
+  const playerIndex = gameState.players.indexOf(player);
   const input = readPlayerInput(playerIndex);
   player.input = input;
 
@@ -99,10 +101,13 @@ export function updatePlayer(
     return;
   }
 
-  // Don't allow input after finishing
+  // Don't allow input after finishing - coast to stop with jump animation
   if (player.finishTime !== null) {
     player.speed *= FRICTION_DECAY;
     updatePositionFromSpeed(player, dt);
+    player.jumpTimer += dt;
+    const diminish = Math.max(0, 1 - player.jumpTimer * 0.5);
+    player.jumpHeight = Math.abs(Math.sin(player.jumpTimer * 8)) * 20 * diminish;
     return;
   }
 

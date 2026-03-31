@@ -185,8 +185,10 @@ export function checkObstacleCollisions(
           }
           obs.triggeredBy.add(playerIndex);
           player.boostTimer = BOOST_DURATION;
-          // Align player to arrow direction
-          player.angle = obs.angle;
+          // Boost in the direction the arrow pad points
+          // pad angle 0 = "up" (north, -Y) = player angle Math.PI/2
+          player.angle = Math.PI / 2 - obs.angle;
+          player.speed = player.maxSpeed * 1.5;
           return 'boost';
         } else {
           // If player is far enough from pad, allow retrigger
