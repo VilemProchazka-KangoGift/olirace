@@ -86,17 +86,13 @@ export default function App() {
     navigateTo('game');
   }, [navigateTo]);
 
-  const isGame = screen === 'game';
   const containerStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: isGame
-      ? 'repeating-linear-gradient(45deg, #8a2000, #8a2000 10px, #c0400a 10px, #c0400a 20px)'
-      : '#1a1a2e',
-    backgroundSize: isGame ? '28px 28px' : undefined,
+    background: '#1a1a2e',
     overflow: 'hidden',
   };
 

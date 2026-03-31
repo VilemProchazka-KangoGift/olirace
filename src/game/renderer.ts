@@ -13,11 +13,7 @@ import {
   COUNTDOWN_STEP_DURATION,
 } from '../utils/constants';
 import { lerp, lerpVec2 } from '../utils/math';
-import {
-  generatePlayerSprite,
-  generateLavaTile,
-  generateObstacleSprite,
-} from './sprites';
+import { drawPlayerVector, drawObstacleVector, drawLavaTile } from './vector-sprites';
 
 // ── World-to-screen transform ────────────────────────────────────────
 
@@ -78,9 +74,9 @@ function drawLavaBackground(
 ): void {
   // 3 animation frames at 3 FPS
   const lavaFrame = Math.floor(state.time * 3) % 3;
-  const tile = generateLavaTile(lavaFrame);
-  const tileW = tile.width;
-  const tileH = tile.height;
+  const tile = drawLavaTile(lavaFrame);
+  const tileW = 64;
+  const tileH = 64;
 
   // Calculate tile offset based on camera position for parallax scrolling
   const offsetX = ((camX % tileW) + tileW) % tileW;
@@ -89,8 +85,6 @@ function drawLavaBackground(
   // Tile the entire canvas
   const tilesX = Math.ceil(CANVAS_WIDTH / tileW) + 2;
   const tilesY = Math.ceil(CANVAS_HEIGHT / tileH) + 2;
-
-  ctx.imageSmoothingEnabled = false;
 
   for (let ty = -1; ty < tilesY; ty++) {
     for (let tx = -1; tx < tilesX; tx++) {
@@ -417,15 +411,10 @@ function drawArrowPad(
   sx: number,
   sy: number,
 ): void {
-  // 3 animation frames at 6 FPS
-  const frame = obs.animFrame % 3;
-  const sprite = generateObstacleSprite('arrow_pad', frame);
-
   ctx.save();
   ctx.translate(sx, sy);
   ctx.rotate(-obs.angle + Math.PI / 2);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+  drawObstacleVector(ctx, obs.type, obs.animFrame, obs.width, obs.height);
   ctx.restore();
 }
 
@@ -435,19 +424,10 @@ function drawSpikes(
   sx: number,
   sy: number,
 ): void {
-  const sprite = generateObstacleSprite('spikes');
-
   ctx.save();
   ctx.translate(sx, sy);
   ctx.rotate(obs.angle);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    sprite,
-    -obs.width / 2,
-    -obs.height / 2,
-    obs.width,
-    obs.height,
-  );
+  drawObstacleVector(ctx, obs.type, obs.animFrame, obs.width, obs.height);
   ctx.restore();
 }
 
@@ -457,13 +437,10 @@ function drawLog(
   sx: number,
   sy: number,
 ): void {
-  const sprite = generateObstacleSprite('log');
-
   ctx.save();
   ctx.translate(sx, sy);
   ctx.rotate(obs.angle);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+  drawObstacleVector(ctx, obs.type, obs.animFrame, obs.width, obs.height);
   ctx.restore();
 }
 
@@ -473,14 +450,9 @@ function drawRotatingSpikes(
   sx: number,
   sy: number,
 ): void {
-  // Use animFrame for saw rotation
-  const frame = obs.animFrame % 24;
-  const sprite = generateObstacleSprite('rotating_spikes', frame);
-
   ctx.save();
   ctx.translate(sx, sy);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+  drawObstacleVector(ctx, obs.type, obs.animFrame, obs.width, obs.height);
   ctx.restore();
 }
 
@@ -526,13 +498,6 @@ function drawPlayer(
     }
   }
 
-  // Always use the north-facing (direction=0) sprite, rotate via canvas transform
-  const sprite = generatePlayerSprite(
-    player.characterId,
-    player.palette,
-    0,
-  );
-
   // Death animation
   if (!player.alive) {
     const deathProgress = 1 - Math.max(0, player.deathTimer / DEATH_ANIMATION_DURATION);
@@ -544,8 +509,7 @@ function drawPlayer(
     ctx.rotate(-(player.angle - Math.PI / 2) + deathProgress * Math.PI * 4);
     ctx.scale(1 - deathProgress * 0.8, 1 - deathProgress * 0.8);
 
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(sprite, -24, -24, 48, 48);
+    drawPlayerVector(ctx, player.characterId, player.palette, 48);
     ctx.restore();
     ctx.restore();
     return;
@@ -558,8 +522,7 @@ function drawPlayer(
   ctx.save();
   ctx.translate(sx, sy - jumpOffset);
   ctx.rotate(-(player.angle - Math.PI / 2));
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprite, -24, -24, 48, 48);
+  drawPlayerVector(ctx, player.characterId, player.palette, 48);
   ctx.restore();
 
   // Effects drawn in screen-space (not rotated), centered on player

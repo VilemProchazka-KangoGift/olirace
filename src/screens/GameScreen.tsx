@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameConfig, GameResults, GameState } from '../types';
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../utils/constants';
 import { startGame } from '../game/engine';
 import { audioManager } from '../game/audio';
 import sundayDrive from '../data/tracks/sunday-drive';
@@ -37,10 +36,6 @@ const keyframesStyle = `
 }
 @keyframes speed-needle {
   0%   { stroke-dashoffset: 157; }
-}
-@keyframes lava-scroll {
-  0%   { background-position: 0 0; }
-  100% { background-position: 28px 28px; }
 }
 `;
 
@@ -225,26 +220,17 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  // Canvas scaling to maintain 9:16 aspect
   const wrapperStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
     position: 'relative',
-    background: 'repeating-linear-gradient(45deg, #8a2000, #8a2000 10px, #c0400a 10px, #c0400a 20px)',
-    backgroundSize: '28px 28px',
-    animation: 'lava-scroll 1.5s linear infinite',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     overflow: 'hidden',
   };
 
   const canvasStyle: React.CSSProperties = {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
+    width: '100%',
+    height: '100%',
     display: 'block',
-    imageRendering: 'pixelated',
   };
 
   // HUD overlay
@@ -358,12 +344,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     <div style={wrapperStyle}>
       <style>{keyframesStyle}</style>
 
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        style={canvasStyle}
-      />
+      <canvas ref={canvasRef} style={canvasStyle} />
 
       {/* HUD Overlay */}
       <div style={hudOverlay}>

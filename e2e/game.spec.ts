@@ -91,8 +91,9 @@ test.describe('Canvas renders', () => {
 
     const width = await canvas.getAttribute('width');
     const height = await canvas.getAttribute('height');
-    expect(width).toBe('480');
-    expect(height).toBe('854');
+    // Canvas is dynamically sized to fill the viewport
+    expect(Number(width)).toBeGreaterThan(0);
+    expect(Number(height)).toBeGreaterThan(0);
   });
 });
 

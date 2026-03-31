@@ -49,8 +49,14 @@ export function startGame(
   onFinish: (results: GameResults) => void,
 ): { stop: () => void } {
   const ctx = canvas.getContext('2d')!;
-  canvas.width = CANVAS_WIDTH;
-  canvas.height = CANVAS_HEIGHT;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const onResize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  window.addEventListener('resize', onResize);
 
   initInput();
   audioManager.init();
@@ -469,7 +475,21 @@ export function startGame(
   }
 
   function render(alpha: number): void {
+    // Handle resize
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Scale virtual viewport (480x854) to fill the actual canvas
+    ctx.save();
+    ctx.scale(canvas.width / CANVAS_WIDTH, canvas.height / CANVAS_HEIGHT);
+
     renderGame(ctx, state, alpha);
+
+    ctx.restore();
 
     // Expose state to HUD overlay via custom canvas property
     (canvas as unknown as { __gameState: GameState }).__gameState = state;
@@ -500,6 +520,7 @@ export function startGame(
       running = false;
       cancelAnimationFrame(rafId);
       destroyInput();
+      window.removeEventListener('resize', onResize);
     },
   };
 }
