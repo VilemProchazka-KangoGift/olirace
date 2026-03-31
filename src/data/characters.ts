@@ -61,6 +61,18 @@ export const characters: CharacterDef[] = [
     primaryColor: '#40c040',
     rivalColor: '#c04040',
   },
+  {
+    id: 'toilet',
+    name: 'char_toilet',
+    maxSpeed: 200,
+    acceleration: 130,
+    handling: 1.4,
+    weight: 0.65,
+    brakeForce: 240,
+    description: 'A racing toilet. Medium stats, solid build.',
+    primaryColor: '#f0f0ff',
+    rivalColor: '#90c0ff',
+  },
 ];
 
 export function getCharacter(id: string): CharacterDef {

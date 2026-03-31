@@ -3,8 +3,8 @@ import { characters, getCharacter } from '../characters';
 import type { CharacterDef } from '../../types';
 
 describe('characters data', () => {
-  it('contains exactly 5 characters', () => {
-    expect(characters).toHaveLength(5);
+  it('contains exactly 6 characters', () => {
+    expect(characters).toHaveLength(6);
   });
 
   it('has formula character', () => {

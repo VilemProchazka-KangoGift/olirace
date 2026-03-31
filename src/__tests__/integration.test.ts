@@ -545,8 +545,8 @@ describe('Obstacle interaction', () => {
 // 6. Character stats validation
 // ---------------------------------------------------------------------------
 describe('Character stats validation', () => {
-  it('all characters have 5 entries', () => {
-    expect(characters.length).toBe(5);
+  it('all characters have 6 entries', () => {
+    expect(characters.length).toBe(6);
   });
 
   it('every character has valid stat ranges', () => {

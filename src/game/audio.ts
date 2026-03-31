@@ -231,12 +231,32 @@ class AudioManager {
     this.stopEngine();
   }
 
-  /** Call every frame during gameplay to modulate engine pitch / volume. */
+  /** Call every frame during gameplay to modulate engine pitch / volume.
+   *  Simulates 4-gear transmission: each gear starts at a lower freq and rises,
+   *  creating the characteristic rising-then-dropping pitch of gear shifts. */
   updateEngineSound(speed: number, maxSpeed: number): void {
     if (!this.ctx || !this.engineOsc || !this.engineGain) return;
     const t = Math.max(0, Math.min(1, speed / maxSpeed));
-    const freq = 80 + t * (200 - 80); // 80–200 Hz
-    const gain = 0.05 + t * (0.15 - 0.05);
+
+    // Determine gear (0-3) and position within gear (0-1)
+    let gear: number;
+    let gearT: number;
+    if (t < 0.25) {
+      gear = 0; gearT = t / 0.25;
+    } else if (t < 0.5) {
+      gear = 1; gearT = (t - 0.25) / 0.25;
+    } else if (t < 0.75) {
+      gear = 2; gearT = (t - 0.5) / 0.25;
+    } else {
+      gear = 3; gearT = (t - 0.75) / 0.25;
+    }
+
+    // Each gear: base freq rises, range rises within gear
+    const gearBases = [80, 100, 120, 140];
+    const gearTops  = [160, 180, 200, 220];
+    const freq = gearBases[gear] + gearT * (gearTops[gear] - gearBases[gear]);
+
+    const gain = 0.02 + t * (0.08 - 0.02);
     const now = this.ctx.currentTime;
     this.engineOsc.frequency.setTargetAtTime(freq, now, 0.05);
     this.engineGain.gain.setTargetAtTime(gain, now, 0.05);

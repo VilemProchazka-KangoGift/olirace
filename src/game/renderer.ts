@@ -75,8 +75,8 @@ function drawLavaBackground(
   // 3 animation frames at 3 FPS
   const lavaFrame = Math.floor(state.time * 3) % 3;
   const tile = drawLavaTile(lavaFrame);
-  const tileW = 64;
-  const tileH = 64;
+  const tileW = 128;
+  const tileH = 128;
 
   // Calculate tile offset based on camera position for parallax scrolling
   const offsetX = ((camX % tileW) + tileW) % tileW;

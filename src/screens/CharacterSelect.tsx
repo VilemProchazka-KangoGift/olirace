@@ -212,6 +212,43 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
         </svg>
       );
 
+    case 'toilet':
+      return (
+        <svg width="48" height="48" viewBox="0 0 56 56">
+          {/* Tank/cistern */}
+          <rect x="18" y="36" width="20" height="14" rx="3" fill={color} opacity="0.85" />
+          <rect x="20" y="38" width="8" height="10" rx="2" fill="white" opacity="0.15" />
+          {/* Flush handle */}
+          <path d="M 34 40 L 40 38 L 42 40" fill="none" stroke="#b0b0c0" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="42" cy="40" r="2" fill="#c0c0d0" />
+          {/* Bowl body */}
+          <ellipse cx="28" cy="24" rx="14" ry="16" fill={color} />
+          {/* Bowl shadow */}
+          <ellipse cx="28" cy="28" rx="13" ry="10" fill="#000" opacity="0.1" />
+          {/* Seat ring */}
+          <ellipse cx="28" cy="22" rx="10" ry="12" fill="none" stroke="#c0c0d8" strokeWidth="3" />
+          {/* Water */}
+          <ellipse cx="28" cy="22" rx="7" ry="8" fill="#60a0e0" opacity="0.5" />
+          {/* Splash drops */}
+          <circle cx="25" cy="18" r="2" fill="#80d0ff" opacity="0.6" />
+          <circle cx="32" cy="20" r="1.5" fill="#80d0ff" opacity="0.6" />
+          <circle cx="28" cy="15" r="1" fill="#80d0ff" opacity="0.6" />
+          {/* Lid slightly open */}
+          <ellipse cx="28" cy="32" rx="10" ry="3" fill={color} opacity="0.9" />
+          {/* Porcelain highlight */}
+          <ellipse cx="22" cy="18" rx="4" ry="6" fill="white" opacity="0.2" transform="rotate(-15 22 18)" />
+          {/* Wheels */}
+          <circle cx="16" cy="12" r="3.5" fill="#2a2a3a" />
+          <circle cx="40" cy="12" r="3.5" fill="#2a2a3a" />
+          <circle cx="16" cy="46" r="3.5" fill="#2a2a3a" />
+          <circle cx="40" cy="46" r="3.5" fill="#2a2a3a" />
+          <circle cx="16" cy="12" r="1.5" fill="#666680" />
+          <circle cx="40" cy="12" r="1.5" fill="#666680" />
+          <circle cx="16" cy="46" r="1.5" fill="#666680" />
+          <circle cx="40" cy="46" r="1.5" fill="#666680" />
+        </svg>
+      );
+
     default:
       return (
         <svg width="48" height="48" viewBox="0 0 56 56">

@@ -169,7 +169,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 60,
-    patrolSpeed: 12,
+    patrolSpeed: 6,
   },
   // Extra rotating spike in segment 6
   {
@@ -179,7 +179,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'y',
     patrolDistance: 30,
-    patrolSpeed: 9,
+    patrolSpeed: 4.5,
   },
 
   // --- Segment 8: Rotating spike pair + logs ---
@@ -191,7 +191,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 13.5,
+    patrolSpeed: 6.75,
   },
   // Y=1500, patrols right half (slower)
   {
@@ -201,7 +201,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 10.5,
+    patrolSpeed: 5.25,
   },
   // Extra rotating spike at Y=1600, center
   {
@@ -211,7 +211,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'y',
     patrolDistance: 25,
-    patrolSpeed: 12,
+    patrolSpeed: 6,
   },
   // Log at Y=1400, centered
   { type: 'log', x: roadAt(1400).x, y: 1400, angle: 0.1 },

@@ -24,6 +24,7 @@ export default {
   char_cat: "Kočka",
   char_pig: "Prasátko",
   char_frog: "Žabák",
+  char_toilet: "Záchod",
   stat_speed: "Rychlost",
   stat_handling: "Ovládání",
   stat_weight: "Váha",

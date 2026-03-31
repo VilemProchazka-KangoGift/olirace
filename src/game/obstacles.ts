@@ -41,6 +41,7 @@ export function createObstacleStates(
       x: p.x,
       y: p.y,
       angle: p.angle,
+      boostAngle: p.angle,
       width: p.width ?? defaults.width,
       height: defaults.height,
       patrolAxis: p.patrolAxis,
@@ -72,7 +73,7 @@ export function updateObstacles(
 
     // Rotating spikes spin continuously
     if (obs.type === 'rotating_spikes') {
-      obs.angle += Math.PI * 0.5 * dt; // rotate at pi/2 rad/s (quarter rotation per second)
+      obs.angle += Math.PI * 0.3 * dt; // rotate slower for less frantic feel
     }
 
     // Animation timer
@@ -187,7 +188,7 @@ export function checkObstacleCollisions(
           player.boostTimer = BOOST_DURATION;
           // Boost in the direction the arrow pad points
           // pad angle 0 = "up" (north, -Y) = player angle Math.PI/2
-          player.angle = Math.PI / 2 - obs.angle;
+          player.angle = Math.PI / 2 - obs.boostAngle;
           player.speed = player.maxSpeed * 1.5;
           return 'boost';
         } else {

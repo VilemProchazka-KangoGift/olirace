@@ -24,6 +24,7 @@ export default {
   char_cat: "Cat",
   char_pig: "Pig",
   char_frog: "Frog",
+  char_toilet: "Toilet",
   stat_speed: "Speed",
   stat_handling: "Handling",
   stat_weight: "Weight",

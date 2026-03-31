@@ -97,6 +97,7 @@ export interface ObstacleState {
   x: number;
   y: number;
   angle: number;
+  boostAngle: number; // original angle from placement, never modified
   width: number;
   height: number;
   patrolAxis?: 'x' | 'y';

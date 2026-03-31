@@ -158,7 +158,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 40,
-    patrolSpeed: 15,
+    patrolSpeed: 7.5,
   },
 
   // --- Seg 4: Spike strip across most of the narrow straight ---
@@ -184,7 +184,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 16.5,
+    patrolSpeed: 8.25,
   },
   {
     type: 'log',
@@ -199,7 +199,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 30,
-    patrolSpeed: 13.5,
+    patrolSpeed: 6.75,
   },
 
   // --- Seg 6: The gauntlet (narrowest section, 120px) ---
@@ -227,7 +227,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 30,
-    patrolSpeed: 18,
+    patrolSpeed: 9,
   },
 
   // --- Seg 7-8: Hairpin pair with obstacles at apexes ---
@@ -244,7 +244,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 45,
-    patrolSpeed: 15,
+    patrolSpeed: 7.5,
   },
   {
     type: 'spikes',
@@ -266,7 +266,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 40,
-    patrolSpeed: 16.5,
+    patrolSpeed: 8.25,
   },
 
   // --- Seg 9: Straight of death ---
@@ -279,7 +279,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 25,
-    patrolSpeed: 15,
+    patrolSpeed: 7.5,
   },
   {
     type: 'rotating_spikes',
@@ -288,7 +288,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 25,
-    patrolSpeed: 12,
+    patrolSpeed: 6,
   },
   {
     type: 'rotating_spikes',
@@ -297,7 +297,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 30,
-    patrolSpeed: 18,
+    patrolSpeed: 9,
   },
 
   // --- Seg 10: Triple S-curve, log-spike combos ---
@@ -327,7 +327,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 15,
+    patrolSpeed: 7.5,
   },
   {
     type: 'log',
@@ -374,7 +374,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 40,
-    patrolSpeed: 16.5,
+    patrolSpeed: 8.25,
   },
   {
     type: 'log',
@@ -391,7 +391,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 45,
-    patrolSpeed: 19.5,
+    patrolSpeed: 9.75,
   },
   {
     type: 'spikes',
@@ -415,7 +415,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 21,
+    patrolSpeed: 10.5,
   },
   // Extra rotating spike at Y=4550, left side of narrow straight
   {
@@ -425,7 +425,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'y',
     patrolDistance: 30,
-    patrolSpeed: 12,
+    patrolSpeed: 6,
   },
   // Extra rotating spike at Y=1650, between the spike-log sandwich
   {
@@ -435,7 +435,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 25,
-    patrolSpeed: 13.5,
+    patrolSpeed: 6.75,
   },
 ];
 

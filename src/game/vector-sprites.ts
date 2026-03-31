@@ -102,6 +102,9 @@ export function drawPlayerVector(
     case 'frog':
       drawFrog(ctx, color, shadow, highlight);
       break;
+    case 'toilet':
+      drawToilet(ctx, color, shadow, highlight);
+      break;
     default:
       drawDefaultCar(ctx, color, shadow);
       break;
@@ -698,6 +701,132 @@ function drawFrog(
   ctx.globalAlpha = 1.0;
 }
 
+// ── Toilet: Racing toilet on wheels ─────────────────────────────────
+
+function drawToilet(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  shadow: string,
+  highlight: string,
+): void {
+  // -- Tank/cistern (rectangle behind, at the back/top) --
+  ctx.fillStyle = colorShade(color, -20);
+  roundRect(ctx, 18, 36, 20, 14, 3);
+  ctx.fill();
+  // Tank highlight
+  ctx.fillStyle = highlight;
+  ctx.globalAlpha = 0.2;
+  roundRect(ctx, 20, 38, 8, 10, 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Flush handle (lever on top of tank) --
+  ctx.strokeStyle = '#b0b0c0';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(34, 40);
+  ctx.lineTo(40, 38);
+  ctx.lineTo(42, 40);
+  ctx.stroke();
+  // Handle knob
+  ctx.fillStyle = '#c0c0d0';
+  ctx.beginPath();
+  ctx.arc(42, 40, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // -- Bowl body (oval, slightly taller than wide) --
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(28, 24, 14, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // -- Bowl shadow (darker bottom edge) --
+  ctx.fillStyle = shadow;
+  ctx.globalAlpha = 0.2;
+  ctx.beginPath();
+  ctx.ellipse(28, 28, 13, 10, 0, 0, Math.PI);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Toilet seat (darker oval ring on top) --
+  ctx.strokeStyle = colorShade(color, -40);
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(28, 22, 10, 12, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // -- Lid slightly open (arc at back of seat) --
+  ctx.fillStyle = colorShade(color, -15);
+  ctx.beginPath();
+  ctx.ellipse(28, 32, 10, 3, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = colorShade(color, -30);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 32, 10, 3, 0, Math.PI, Math.PI * 2);
+  ctx.stroke();
+
+  // -- Water inside (blue oval visible through seat hole) --
+  ctx.fillStyle = '#60a0e0';
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 22, 7, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Water splash effect (blue highlights) --
+  ctx.fillStyle = '#80d0ff';
+  ctx.globalAlpha = 0.6;
+  ctx.beginPath();
+  ctx.arc(25, 18, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(32, 20, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(28, 15, 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Porcelain highlight --
+  ctx.fillStyle = highlight;
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.ellipse(22, 18, 4, 6, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Wheels (4 small circles) --
+  ctx.fillStyle = COLORS.darkGray;
+  ctx.beginPath();
+  ctx.arc(16, 12, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(40, 12, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(16, 46, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(40, 46, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Hubs
+  ctx.fillStyle = COLORS.lightGray;
+  ctx.beginPath();
+  ctx.arc(16, 12, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(40, 12, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(16, 46, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(40, 46, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 // ── Default fallback car ────────────────────────────────────────────
 
 function drawDefaultCar(
@@ -1020,11 +1149,74 @@ function drawRotatingSpikesVector(
 // ── 3. drawLavaTile ─────────────────────────────────────────────────
 
 const lavaTileCache = new Map<number, HTMLCanvasElement>();
-const LAVA_TILE_SIZE = 64;
+const LAVA_TILE_SIZE = 128;
 
 /**
- * Returns a cached 64x64 canvas with a lava tile drawn using vector
- * operations (radial gradients, no ImageData pixel manipulation).
+ * Helper: draw a single radial gradient, wrapping around tile edges so the
+ * pattern tiles seamlessly. For a cell near an edge, we also draw it at the
+ * mirrored position on the opposite side (and corners).
+ */
+function drawWrappedGradient(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  S: number,
+  createGrad: (gx: number, gy: number) => CanvasGradient,
+): void {
+  // Collect all wrapped positions for this cell
+  const offsets: [number, number][] = [[0, 0]];
+  if (cx - radius < 0) offsets.push([S, 0]);
+  if (cx + radius > S) offsets.push([-S, 0]);
+  if (cy - radius < 0) offsets.push([0, S]);
+  if (cy + radius > S) offsets.push([0, -S]);
+  // Corners
+  if (cx - radius < 0 && cy - radius < 0) offsets.push([S, S]);
+  if (cx + radius > S && cy - radius < 0) offsets.push([-S, S]);
+  if (cx - radius < 0 && cy + radius > S) offsets.push([S, -S]);
+  if (cx + radius > S && cy + radius > S) offsets.push([-S, -S]);
+
+  for (const [ox, oy] of offsets) {
+    ctx.fillStyle = createGrad(cx + ox, cy + oy);
+    ctx.fillRect(0, 0, S, S);
+  }
+}
+
+/**
+ * Helper: draw a wrapped circle (for bright spot highlights).
+ */
+function drawWrappedCircle(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  S: number,
+  createGrad: (gx: number, gy: number) => CanvasGradient,
+): void {
+  const offsets: [number, number][] = [[0, 0]];
+  if (cx - radius < 0) offsets.push([S, 0]);
+  if (cx + radius > S) offsets.push([-S, 0]);
+  if (cy - radius < 0) offsets.push([0, S]);
+  if (cy + radius > S) offsets.push([0, -S]);
+  if (cx - radius < 0 && cy - radius < 0) offsets.push([S, S]);
+  if (cx + radius > S && cy - radius < 0) offsets.push([-S, S]);
+  if (cx - radius < 0 && cy + radius > S) offsets.push([S, -S]);
+  if (cx + radius > S && cy + radius > S) offsets.push([-S, -S]);
+
+  for (const [ox, oy] of offsets) {
+    const gx = cx + ox;
+    const gy = cy + oy;
+    ctx.fillStyle = createGrad(gx, gy);
+    ctx.beginPath();
+    ctx.arc(gx, gy, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+/**
+ * Returns a cached 128x128 canvas with a seamlessly-tiling lava tile drawn
+ * using vector operations (radial gradients, no ImageData pixel manipulation).
+ * Cells near edges are wrapped so left matches right and top matches bottom.
  * Caches 3 frames (frame 0, 1, 2).
  */
 export function drawLavaTile(frame: number): HTMLCanvasElement {
@@ -1038,63 +1230,64 @@ export function drawLavaTile(frame: number): HTMLCanvasElement {
   ctx.fillStyle = COLORS.lavaMid;
   ctx.fillRect(0, 0, S, S);
 
-  // -- Lava cells: overlapping radial gradients --
+  // -- Lava cells: overlapping radial gradients with edge wrapping --
   const rng = seeded(42 + frame * 1337);
-  const cellCount = 8;
+  const cellCount = 14;
 
   for (let i = 0; i < cellCount; i++) {
-    // Deterministic positions with frame-dependent shift
-    const cx = (rng() * S + frame * 5 * (i % 2 === 0 ? 1 : -1)) % S;
-    const cy = (rng() * S + frame * 3 * (i % 2 === 0 ? -1 : 1)) % S;
-    const radius = 12 + rng() * 18;
+    // Deterministic positions with frame-dependent shift, wrapped to [0, S)
+    const cx = ((rng() * S + frame * 5 * (i % 2 === 0 ? 1 : -1)) % S + S) % S;
+    const cy = ((rng() * S + frame * 3 * (i % 2 === 0 ? -1 : 1)) % S + S) % S;
+    const radius = 16 + rng() * 28;
+    const alpha = 0.5 + rng() * 0.3;
 
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    grad.addColorStop(0, COLORS.lavaGlow);
-    grad.addColorStop(0.4, COLORS.lavaBright);
-    grad.addColorStop(1, 'rgba(192, 64, 10, 0)'); // lavaMid fading to transparent
-
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.5 + rng() * 0.3;
-    ctx.fillRect(0, 0, S, S);
+    ctx.globalAlpha = alpha;
+    drawWrappedGradient(ctx, cx, cy, radius, S, (gx, gy) => {
+      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
+      grad.addColorStop(0, COLORS.lavaGlow);
+      grad.addColorStop(0.4, COLORS.lavaBright);
+      grad.addColorStop(1, 'rgba(192, 64, 10, 0)');
+      return grad;
+    });
   }
 
   ctx.globalAlpha = 1.0;
 
-  // -- Dark crust patches --
-  const crustCount = 5;
+  // -- Dark crust patches with edge wrapping --
+  const crustCount = 8;
   for (let i = 0; i < crustCount; i++) {
     const cx = rng() * S;
     const cy = rng() * S;
-    const radius = 6 + rng() * 10;
+    const radius = 8 + rng() * 16;
+    const alpha = 0.3 + rng() * 0.25;
 
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    grad.addColorStop(0, COLORS.lavaDark);
-    grad.addColorStop(1, 'rgba(138, 32, 0, 0)');
-
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.3 + rng() * 0.25;
-    ctx.fillRect(0, 0, S, S);
+    ctx.globalAlpha = alpha;
+    drawWrappedGradient(ctx, cx, cy, radius, S, (gx, gy) => {
+      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
+      grad.addColorStop(0, COLORS.lavaDark);
+      grad.addColorStop(1, 'rgba(138, 32, 0, 0)');
+      return grad;
+    });
   }
 
   ctx.globalAlpha = 1.0;
 
-  // -- Bright spot highlights --
-  const spotCount = 4;
+  // -- Bright spot highlights with edge wrapping --
+  const spotCount = 6;
   for (let i = 0; i < spotCount; i++) {
     const cx = rng() * S;
     const cy = rng() * S;
-    const radius = 3 + rng() * 5;
+    const radius = 4 + rng() * 7;
+    const alpha = 0.3 + rng() * 0.2;
 
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    grad.addColorStop(0, '#ffe060');
-    grad.addColorStop(0.5, COLORS.lavaGlow);
-    grad.addColorStop(1, 'rgba(255, 128, 32, 0)');
-
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 0.3 + rng() * 0.2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.globalAlpha = alpha;
+    drawWrappedCircle(ctx, cx, cy, radius, S, (gx, gy) => {
+      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
+      grad.addColorStop(0, '#ffe060');
+      grad.addColorStop(0.5, COLORS.lavaGlow);
+      grad.addColorStop(1, 'rgba(255, 128, 32, 0)');
+      return grad;
+    });
   }
 
   ctx.globalAlpha = 1.0;
