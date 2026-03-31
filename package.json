@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "clean": "npx rimraf node_modules/.vite dist"
   },
   "dependencies": {
     "i18next": "^26.0.3",

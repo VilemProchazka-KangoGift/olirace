@@ -483,9 +483,22 @@ export function startGame(
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Scale virtual viewport (480x854) to fill the actual canvas
+    // Uniform scale: fit the virtual viewport into the window without distortion
+    const scaleX = canvas.width / CANVAS_WIDTH;
+    const scaleY = canvas.height / CANVAS_HEIGHT;
+    const uniformScale = Math.min(scaleX, scaleY);
+    const offsetX = (canvas.width - CANVAS_WIDTH * uniformScale) / 2;
+    const offsetY = (canvas.height - CANVAS_HEIGHT * uniformScale) / 2;
+
+    // Fill letterbox areas with lava color
+    if (offsetX > 0 || offsetY > 0) {
+      ctx.fillStyle = '#8a2000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     ctx.save();
-    ctx.scale(canvas.width / CANVAS_WIDTH, canvas.height / CANVAS_HEIGHT);
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(uniformScale, uniformScale);
 
     renderGame(ctx, state, alpha);
 

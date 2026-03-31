@@ -115,7 +115,7 @@ describe('getCharacter', () => {
     expect(char.id).toBe('formula');
     expect(char.maxSpeed).toBe(280);
     expect(char.acceleration).toBe(200);
-    expect(char.handling).toBe(3.5);
+    expect(char.handling).toBe(1.8);
     expect(char.weight).toBe(0.15);
     expect(char.brakeForce).toBe(300);
   });
@@ -130,7 +130,7 @@ describe('getCharacter', () => {
   it('returns correct data for cat', () => {
     const char = getCharacter('cat');
     expect(char.id).toBe('cat');
-    expect(char.handling).toBe(4.5);
+    expect(char.handling).toBe(2.2);
   });
 
   it('returns correct data for pig', () => {
@@ -143,7 +143,7 @@ describe('getCharacter', () => {
     const char = getCharacter('frog');
     expect(char.id).toBe('frog');
     expect(char.maxSpeed).toBe(230);
-    expect(char.handling).toBe(3.2);
+    expect(char.handling).toBe(1.6);
   });
 
   it('throws for unknown character ID', () => {

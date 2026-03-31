@@ -268,19 +268,6 @@ const PLAYER_HINTS = [
 export default function CharacterSelect({ playerCount, onConfirm, onBack }: Props) {
   const { t } = useTranslation();
   const [indices, setIndices] = useState([0, 2, 1, 3]);
-  const [confirmed, setConfirmed] = useState([false, false, false, false]);
-
-  // In single player, mark P2-P4 as confirmed automatically
-  useEffect(() => {
-    setConfirmed((prev) => {
-      const next = [...prev];
-      for (let i = playerCount; i < 4; i++) {
-        next[i] = true;
-      }
-      return next;
-    });
-  }, [playerCount]);
-
   const setPlayerIndex = (pIdx: number, fn: (i: number) => number) => {
     setIndices((prev) => {
       const next = [...prev];
@@ -289,102 +276,93 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
     });
   };
 
-  const setPlayerConfirmed = (pIdx: number, val: boolean) => {
-    setConfirmed((prev) => {
-      const next = [...prev];
-      next[pIdx] = val;
-      return next;
+
+
+  // Countdown timer - 10 seconds to pick characters, then auto-start
+  const [countdown, setCountdown] = useState(10);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Submit when countdown hits 0 or Enter is pressed
+  const submitAll = useCallback(() => {
+    const chars = indices.map((idx, pIdx) => {
+      if (pIdx < playerCount) return characters[idx].id;
+      return characters[(indices[0] + pIdx * 2) % characters.length].id;
     });
-  };
+    onConfirm(chars[0], chars[1], chars[2], chars[3]);
+  }, [indices, playerCount, onConfirm]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      submitAll();
+    }
+  }, [countdown, submitAll]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      // P1 controls: Arrow Left/Right + Enter
-      if (!confirmed[0]) {
-        if (e.key === 'ArrowLeft') {
-          setPlayerIndex(0, (i) => (i - 1 + characters.length) % characters.length);
-        } else if (e.key === 'ArrowRight') {
-          setPlayerIndex(0, (i) => (i + 1) % characters.length);
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          setPlayerConfirmed(0, true);
-        }
+      // Enter or Space from any player starts immediately
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        submitAll();
+        return;
       }
 
-      // P2 controls: A/D + Space
-      if (playerCount >= 2 && !confirmed[1]) {
+      // P1 controls: Arrow Left/Right
+      if (e.key === 'ArrowLeft') {
+        setPlayerIndex(0, (i) => (i - 1 + characters.length) % characters.length);
+      } else if (e.key === 'ArrowRight') {
+        setPlayerIndex(0, (i) => (i + 1) % characters.length);
+      }
+
+      // P2 controls: A/D
+      if (playerCount >= 2) {
         if (e.key === 'a' || e.key === 'A') {
           setPlayerIndex(1, (i) => (i - 1 + characters.length) % characters.length);
         } else if (e.key === 'd' || e.key === 'D') {
           setPlayerIndex(1, (i) => (i + 1) % characters.length);
-        } else if (e.key === ' ') {
-          e.preventDefault();
-          setPlayerConfirmed(1, true);
         }
       }
 
-      // P3 controls: J/L + H
-      if (playerCount >= 3 && !confirmed[2]) {
+      // P3 controls: J/L
+      if (playerCount >= 3) {
         if (e.key === 'j' || e.key === 'J') {
           setPlayerIndex(2, (i) => (i - 1 + characters.length) % characters.length);
         } else if (e.key === 'l' || e.key === 'L') {
           setPlayerIndex(2, (i) => (i + 1) % characters.length);
-        } else if (e.key === 'h' || e.key === 'H') {
-          e.preventDefault();
-          setPlayerConfirmed(2, true);
         }
       }
 
-      // P4 controls: Numpad4/Numpad6 + Numpad0
-      if (playerCount >= 4 && !confirmed[3]) {
+      // P4 controls: Numpad4/Numpad6
+      if (playerCount >= 4) {
         if (e.code === 'Numpad4') {
           setPlayerIndex(3, (i) => (i - 1 + characters.length) % characters.length);
         } else if (e.code === 'Numpad6') {
           setPlayerIndex(3, (i) => (i + 1) % characters.length);
-        } else if (e.code === 'Numpad0') {
-          e.preventDefault();
-          setPlayerConfirmed(3, true);
         }
       }
 
       if (e.key === 'Escape') {
-        // Find the last confirmed player and unconfirm them
-        let unconfirmedSomeone = false;
-        for (let i = Math.min(playerCount, 4) - 1; i >= 0; i--) {
-          if (confirmed[i] && i < playerCount) {
-            setPlayerConfirmed(i, false);
-            unconfirmedSomeone = true;
-            break;
-          }
-        }
-        if (!unconfirmedSomeone) {
-          onBack();
-        }
+        onBack();
       }
     },
-    [confirmed, playerCount, onBack],
+    [playerCount, onBack, submitAll],
   );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
-
-  // Auto-advance when all active players are confirmed
-  useEffect(() => {
-    const allConfirmed = confirmed.slice(0, playerCount).every(Boolean);
-    if (allConfirmed) {
-      const timer = setTimeout(() => {
-        const chars = indices.map((idx, pIdx) => {
-          if (pIdx < playerCount) return characters[idx].id;
-          // For unused players, pick an auto character
-          return characters[(indices[0] + pIdx * 2) % characters.length].id;
-        });
-        onConfirm(chars[0], chars[1], chars[2], chars[3]);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [confirmed, indices, playerCount, onConfirm]);
 
   // Check for duplicate character selections among confirmed players
   const getDuplicateSet = () => {
@@ -432,7 +410,6 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
   function renderPlayerSection(playerNum: number) {
     const pIdx = playerNum - 1;
     const selectedIndex = indices[pIdx];
-    const isConfirmed = confirmed[pIdx];
     const isRival = duplicateSet.has(pIdx) && pIdx > 0;
     const compact = playerCount > 2;
 
@@ -468,9 +445,6 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
       <div style={sectionStyle}>
         <div style={playerLabel}>
           {labelText}
-          {isConfirmed && (
-            <span style={{ color: '#00c040', marginLeft: 8 }}>&#10003;</span>
-          )}
         </div>
 
         <div style={row}>
@@ -480,11 +454,7 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
             return (
               <button
                 key={char.id}
-                onClick={() => {
-                  if (!isConfirmed) {
-                    setPlayerIndex(pIdx, () => i);
-                  }
-                }}
+                onClick={() => setPlayerIndex(pIdx, () => i)}
                 style={{
                   width: compact ? 64 : (playerCount === 2 ? 78 : 84),
                   display: 'flex',
@@ -498,9 +468,9 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
                   border: 'none',
                   fontFamily: "'Press Start 2P', monospace",
                   color: '#e8e8f0',
-                  cursor: isConfirmed ? 'default' : 'pointer',
-                  opacity: isConfirmed && !isSelected ? 0.35 : 1,
-                  animation: `card-pop 0.3s ease-out ${i * 0.06}s both${isSelected && !isConfirmed ? ', glow-selected 1.5s ease infinite' : ''}`,
+                  cursor: 'pointer',
+                  opacity: 1,
+                  animation: `card-pop 0.3s ease-out ${i * 0.06}s both${isSelected ? ', glow-selected 1.5s ease infinite' : ''}`,
                   boxShadow: isSelected
                     ? `0 0 14px ${cardColor}, inset 0 0 0 2px ${cardColor}`
                     : 'inset 0 0 0 2px #2a2a3a',
@@ -560,7 +530,7 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
           alignItems: 'center',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          opacity: isConfirmed ? 0.4 : 1,
+          opacity: 1,
           transition: 'opacity 0.3s',
         }}>
           {PLAYER_HINTS[pIdx].split(/(\s*\+\s*|\s+)/).filter(Boolean).map((part, ki) => {
@@ -639,6 +609,26 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
           {renderPlayerSection(4)}
         </>
       )}
+
+      {/* Countdown timer */}
+      <div style={{
+        fontSize: 20,
+        color: countdown <= 3 ? '#e02020' : '#ff8020',
+        textShadow: `0 0 ${countdown <= 3 ? 20 : 10}px ${countdown <= 3 ? '#e02020' : '#e06010'}`,
+        textAlign: 'center',
+        animation: countdown <= 3 ? 'logo-pulse 0.5s ease infinite' : undefined,
+        marginTop: 8,
+      }}>
+        {countdown}
+      </div>
+      <div style={{
+        fontSize: 6,
+        color: '#666680',
+        textAlign: 'center',
+        marginTop: 4,
+      }}>
+        Enter / Space
+      </div>
 
       <button style={backBtn} onClick={onBack}>
         Esc
