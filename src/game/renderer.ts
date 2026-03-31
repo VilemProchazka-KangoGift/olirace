@@ -413,7 +413,8 @@ function drawArrowPad(
 ): void {
   ctx.save();
   ctx.translate(sx, sy);
-  ctx.rotate(-obs.angle + Math.PI / 2);
+  // boostAngle 0 = arrows point up (sprite default), so rotate by -boostAngle
+  ctx.rotate(-obs.boostAngle);
   drawObstacleVector(ctx, obs.type, obs.animFrame, obs.width, obs.height);
   ctx.restore();
 }

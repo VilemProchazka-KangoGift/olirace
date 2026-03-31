@@ -103,7 +103,7 @@ export default function App() {
     overflow: 'hidden',
     opacity: visible ? 1 : 0,
     transition: `opacity ${TRANSITION_MS}ms ease`,
-    ...(screen === 'game' ? {} : { maxWidth: 480 }),
+    // No maxWidth — all screens fill the window
   };
 
   function renderScreen() {

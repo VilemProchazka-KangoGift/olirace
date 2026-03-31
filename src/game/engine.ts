@@ -483,16 +483,10 @@ export function startGame(
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Uniform scale: fill the window (crop edges) rather than fit (letterbox)
-    const scaleX = canvas.width / CANVAS_WIDTH;
-    const scaleY = canvas.height / CANVAS_HEIGHT;
-    const uniformScale = Math.max(scaleX, scaleY);
-    const offsetX = (canvas.width - CANVAS_WIDTH * uniformScale) / 2;
-    const offsetY = (canvas.height - CANVAS_HEIGHT * uniformScale) / 2;
-
+    // Non-uniform stretch: map virtual viewport directly to window dimensions.
+    // This stretches slightly on non-9:16 screens but fills 100% with no bars.
     ctx.save();
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(uniformScale, uniformScale);
+    ctx.scale(canvas.width / CANVAS_WIDTH, canvas.height / CANVAS_HEIGHT);
 
     renderGame(ctx, state, alpha);
 
