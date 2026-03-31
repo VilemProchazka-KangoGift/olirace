@@ -52,9 +52,16 @@ export default function TitleScreen({ onStart }: Props) {
   useEffect(() => {
     audioManager.init();
     audioManager.playLoop('music_menu');
-    window.addEventListener('keydown', handleKey);
-    window.addEventListener('click', handleClick);
+
+    // Small delay before enabling input to prevent false triggers
+    // (e.g. Vite HMR messages, browser focus events)
+    const delayId = setTimeout(() => {
+      window.addEventListener('keydown', handleKey);
+      window.addEventListener('click', handleClick);
+    }, 200);
+
     return () => {
+      clearTimeout(delayId);
       window.removeEventListener('keydown', handleKey);
       window.removeEventListener('click', handleClick);
       audioManager.stop('music_menu');
