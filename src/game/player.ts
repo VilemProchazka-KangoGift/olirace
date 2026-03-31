@@ -84,7 +84,7 @@ export function updatePlayer(
     player.stunTimer -= dt;
     // Still apply friction while stunned
     player.speed *= FRICTION_DECAY;
-    updatePositionFromSpeed(player);
+    updatePositionFromSpeed(player, dt);
     return;
   }
 
@@ -102,7 +102,7 @@ export function updatePlayer(
   // Don't allow input after finishing
   if (player.finishTime !== null) {
     player.speed *= FRICTION_DECAY;
-    updatePositionFromSpeed(player);
+    updatePositionFromSpeed(player, dt);
     return;
   }
 
@@ -137,15 +137,18 @@ export function updatePlayer(
     }
   }
 
-  // 5. Steering: angle += handling * steerX * (speed / maxSpeed) * dt
-  // Speed naturally inverts direction when reversing (negative speed)
+  // 5. Steering: angle -= handling * steerX * (speed / maxSpeed) * dt
+  // Negative because in our coordinate system (Y-down canvas, angle 0=right, π/2=up),
+  // pressing right (steerX>0) should rotate clockwise = decrease angle.
+  // When speed is negative (reversing), the sign flips naturally, so pressing
+  // left while reversing turns the car right — matching real car behavior.
   if (input.steerX !== 0 && player.speed !== 0) {
     const speedRatio = player.speed / player.maxSpeed;
-    player.angle += player.handling * input.steerX * speedRatio * dt;
+    player.angle -= player.handling * input.steerX * speedRatio * dt;
   }
 
   // 6. Update velocity and position
-  updatePositionFromSpeed(player);
+  updatePositionFromSpeed(player, dt);
 
   // 7. Update timers
   if (player.boostTimer > 0) {
@@ -184,10 +187,10 @@ export function updatePlayer(
   }
 }
 
-function updatePositionFromSpeed(player: PlayerState): void {
+function updatePositionFromSpeed(player: PlayerState, dt: number): void {
   const dir = directionFromAngle(player.angle);
   player.velocity = scale(dir, player.speed);
-  player.position = add(player.position, scale(dir, player.speed / 60));
+  player.position = add(player.position, scale(player.velocity, dt));
 }
 
 export function computeTrackProgress(

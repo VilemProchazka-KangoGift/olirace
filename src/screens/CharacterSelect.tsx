@@ -106,32 +106,28 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      // P1 controls: A/D + Space or W for confirm
+      // P1 controls: Arrow Left/Right + Enter
       if (!p1Confirmed) {
-        if (e.key === 'a' || e.key === 'A') {
+        if (e.key === 'ArrowLeft') {
           setP1Index((i) => (i - 1 + characters.length) % characters.length);
-        } else if (e.key === 'd' || e.key === 'D') {
+        } else if (e.key === 'ArrowRight') {
           setP1Index((i) => (i + 1) % characters.length);
-        } else if (e.key === ' ' || e.key === 'w' || e.key === 'W') {
+        } else if (e.key === 'Enter') {
           e.preventDefault();
           setP1Confirmed(true);
         }
       }
 
-      // P2 controls: Arrow Left/Right + Enter
+      // P2 controls: A/D + Space
       if (playerCount === 2 && !p2Confirmed) {
-        if (e.key === 'ArrowLeft') {
+        if (e.key === 'a' || e.key === 'A') {
           setP2Index((i) => (i - 1 + characters.length) % characters.length);
-        } else if (e.key === 'ArrowRight') {
+        } else if (e.key === 'd' || e.key === 'D') {
           setP2Index((i) => (i + 1) % characters.length);
-        } else if (e.key === 'Enter') {
+        } else if (e.key === ' ') {
+          e.preventDefault();
           setP2Confirmed(true);
         }
-      }
-
-      // Single player: Enter also confirms P1
-      if (playerCount === 1 && !p1Confirmed && e.key === 'Enter') {
-        setP1Confirmed(true);
       }
 
       if (e.key === 'Escape') {
@@ -313,8 +309,8 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
         {!confirmed && (
           <div style={{ fontSize: 6, color: '#666680' }}>
             {playerNum === 1
-              ? (playerCount === 2 ? 'A/D + Space' : '← → + Enter')
-              : '← → + Enter'}
+              ? '← → + Enter'
+              : 'A/D + Space'}
           </div>
         )}
       </div>

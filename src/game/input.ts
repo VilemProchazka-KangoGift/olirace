@@ -26,19 +26,7 @@ export function destroyInput(): void {
 
 function readKeyboard(playerIndex: 0 | 1): PlayerInput {
   if (playerIndex === 0) {
-    // P1: WASD + Space
-    const up = keyState['KeyW'] ? 1 : 0;
-    const down = keyState['KeyS'] ? 1 : 0;
-    const left = keyState['KeyA'] ? 1 : 0;
-    const right = keyState['KeyD'] ? 1 : 0;
-    return {
-      accelerate: up,
-      brake: down,
-      steerX: right - left,
-      honk: !!keyState['Space'],
-    };
-  } else {
-    // P2: Arrows + Enter
+    // P1: Arrow keys + Enter
     const up = keyState['ArrowUp'] ? 1 : 0;
     const down = keyState['ArrowDown'] ? 1 : 0;
     const left = keyState['ArrowLeft'] ? 1 : 0;
@@ -48,6 +36,18 @@ function readKeyboard(playerIndex: 0 | 1): PlayerInput {
       brake: down,
       steerX: right - left,
       honk: !!keyState['Enter'],
+    };
+  } else {
+    // P2: WASD + Space
+    const up = keyState['KeyW'] ? 1 : 0;
+    const down = keyState['KeyS'] ? 1 : 0;
+    const left = keyState['KeyA'] ? 1 : 0;
+    const right = keyState['KeyD'] ? 1 : 0;
+    return {
+      accelerate: up,
+      brake: down,
+      steerX: right - left,
+      honk: !!keyState['Space'],
     };
   }
 }

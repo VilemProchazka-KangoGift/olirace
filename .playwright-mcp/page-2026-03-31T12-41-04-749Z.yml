@@ -1,0 +1,12 @@
+- generic [ref=e11]:
+  - generic [ref=e12]: Vyber mód
+  - generic [ref=e13]:
+    - button "1 1 hráč" [ref=e14] [cursor=pointer]:
+      - img [ref=e15]
+      - generic [ref=e25]: "1"
+      - generic [ref=e26]: 1 hráč
+    - button "2 2 hráči" [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - generic [ref=e47]: "2"
+      - generic [ref=e48]: 2 hráči
+  - generic [ref=e49]: Press 1 or 2

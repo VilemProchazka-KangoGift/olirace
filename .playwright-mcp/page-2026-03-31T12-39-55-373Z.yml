@@ -1,0 +1,6 @@
+- generic [ref=e5] [cursor=pointer]:
+  - button "Jazyk" [ref=e6]: EN
+  - generic [ref=e7]:
+    - generic [ref=e8]: Olíkův závod
+    - generic [ref=e9]: Racing Game
+  - generic [ref=e10]: Stiskni libovolnou klávesu
