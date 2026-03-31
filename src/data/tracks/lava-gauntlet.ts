@@ -161,7 +161,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Segment 6: Arrow pad (sideways right!) and rotating spikes ---
-  { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: -Math.PI / 2 },
+  { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: 0 },
   {
     type: 'rotating_spikes',
     x: roadAt(2500).x,
@@ -224,7 +224,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Segment 9: Arrow pad at Y=1000, backward boost (surprise!) ---
-  { type: 'arrow_pad', x: roadAt(1000).x, y: 1000, angle: Math.PI },
+  { type: 'arrow_pad', x: roadAt(1000).x, y: 1000, angle: 0 },
 ];
 
 const startRoad = roadAt(4960);

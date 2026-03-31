@@ -204,7 +204,7 @@ const obstacles: ObstaclePlacement[] = [
 
   // --- Seg 6: The gauntlet (narrowest section, 120px) ---
   // Arrow pad to bait players into speed before the traps (backward - surprise!)
-  { type: 'arrow_pad', x: roadAt(3850).x, y: 3850, angle: Math.PI },
+  { type: 'arrow_pad', x: roadAt(3850).x, y: 3850, angle: 0 },
   // Alternating spike walls
   {
     type: 'spikes',
@@ -270,7 +270,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Seg 9: Straight of death ---
-  { type: 'arrow_pad', x: roadAt(2650).x, y: 2650, angle: -Math.PI / 2 },
+  { type: 'arrow_pad', x: roadAt(2650).x, y: 2650, angle: 0 },
   // Triple rotating spike corridor
   {
     type: 'rotating_spikes',
@@ -337,7 +337,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Seg 11: Another straight gauntlet (sideways left arrow pad) ---
-  { type: 'arrow_pad', x: roadAt(1750).x, y: 1750, angle: Math.PI / 2 },
+  { type: 'arrow_pad', x: roadAt(1750).x, y: 1750, angle: 0 },
   // Spike-log-spike sandwich
   {
     type: 'spikes',

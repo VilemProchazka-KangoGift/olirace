@@ -134,7 +134,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Arrow pad reward after logs (sideways left!) ---
-  { type: 'arrow_pad', x: roadAt(3400).x, y: 3400, angle: Math.PI / 2 },
+  { type: 'arrow_pad', x: roadAt(3400).x, y: 3400, angle: 0 },
 
   // --- Single log in the bend ---
   {
@@ -192,7 +192,7 @@ const obstacles: ObstaclePlacement[] = [
   },
 
   // --- Mid-track boost (sideways right for fun!) ---
-  { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: -Math.PI / 2 },
+  { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: 0 },
 
   // --- Log chicane before finish area ---
   {
