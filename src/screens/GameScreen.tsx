@@ -389,7 +389,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
 
         {/* Progress bar */}
         {hudState.phase !== 'countdown' && (
-          <ProgressBar progress={hudState.trackProgress} playerCount={config.playerCount} />
+          <ProgressBar progress={hudState.trackProgress} playerCount={config.playerCount + (config.botCount ?? 0)} />
         )}
 
         {/* P1 deaths */}
