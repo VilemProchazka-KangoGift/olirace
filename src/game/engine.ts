@@ -240,19 +240,26 @@ export function startGame(
       state.raceTimer += dt;
     }
 
-    // 3. Update players
+    // 3. Cache road position for each player (used by AI, road collision, track progress, win check)
+    for (const player of state.players) {
+      if (player.alive) {
+        player.nearestRoad = findNearestRoadPoint(player.position, track.road);
+      }
+    }
+
+    // 4. Update players
     for (const player of state.players) {
       updatePlayer(player, dt, state);
     }
 
-    // 4. Check road collision (lava death) for alive players + update road edge info
+    // 5. Check road collision (lava death) for alive players + update road edge info
     if (state.phase === 'racing') {
       for (let i = 0; i < state.players.length; i++) {
         const player = state.players[i];
         if (!player.alive || player.finishTime !== null) continue;
 
-        // Single findNearestRoadPoint call for both road check and width
-        const nearest = findNearestRoadPoint(player.position, track.road);
+        // Reuse cached nearestRoad from step 3
+        const nearest = player.nearestRoad;
         player.distFromRoadCenter = nearest.distance;
         player.roadHalfWidth = nearest.roadWidth / 2;
         const onRoad = nearest.distance <= player.roadHalfWidth + LAVA_GRACE_ZONE;
@@ -283,7 +290,7 @@ export function startGame(
       }
     }
 
-    // 5. Check obstacle collisions
+    // 6. Check obstacle collisions
     if (state.phase === 'racing') {
       for (let i = 0; i < state.players.length; i++) {
         const player = state.players[i];
@@ -427,7 +434,7 @@ export function startGame(
       }
     }
 
-    // 6. Handle death -> respawn flow
+    // 7. Handle death -> respawn flow
     for (let i = 0; i < state.players.length; i++) {
       const player = state.players[i];
       if (!player.alive && player.deathTimer <= 0) {
@@ -435,7 +442,7 @@ export function startGame(
       }
     }
 
-    // 7. Compute track progress and race positions
+    // 8. Compute track progress and race positions
     const prevPositions = state.players.map(p => p.racePosition);
     for (const player of state.players) {
       if (player.alive) {
@@ -464,16 +471,16 @@ export function startGame(
       }
     }
 
-    // 8. Update obstacles
+    // 9. Update obstacles
     updateObstacles(state.obstacles, state.time, dt);
 
-    // 9. Update camera (follow all players including bots)
+    // 10. Update camera (follow all players including bots)
     updateCamera(state.camera, state.players, state.players.length as 1 | 2 | 3 | 4, dt);
 
-    // 10. Update particles
+    // 11. Update particles
     updateParticles(state.particles, dt);
 
-    // 11. Update engine sound for P1
+    // 12. Update engine sound for P1
     if (state.players.length > 0 && state.players[0].alive) {
       audioManager.updateEngineSound(
         Math.abs(state.players[0].speed),
@@ -481,7 +488,7 @@ export function startGame(
       );
     }
 
-    // 12. Emit particles for players
+    // 13. Emit particles for players
     for (let pIdx = 0; pIdx < state.players.length; pIdx++) {
       const player = state.players[pIdx];
       if (!player.alive) continue;
@@ -568,7 +575,7 @@ export function startGame(
       }
     }
 
-    // 13. Random events
+    // 14. Random events
     if (state.phase === 'racing') {
       nextRandomEventTimer -= dt;
       if (nextRandomEventTimer <= 0 && state.randomEvents.length === 0) {
@@ -579,12 +586,12 @@ export function startGame(
       updateLavaBursts(state, dt);
     }
 
-    // 14. Check win condition
+    // 15. Check win condition
     if (state.phase === 'racing') {
       checkWinCondition(state);
     }
 
-    // 15. Check tether in multi-player mode
+    // 16. Check tether in multi-player mode
     if (state.players.length >= 2 && state.phase === 'racing') {
       checkTether(state);
     }
@@ -768,8 +775,7 @@ export function startGame(
       const player = gs.players[i];
       if (!player.alive || player.finishTime !== null) continue;
 
-      const nearest = findNearestRoadPoint(player.position, track.road);
-      if (nearest.segIdx >= track.finishLine) {
+      if (player.nearestRoad.segIdx >= track.finishLine) {
         player.finishTime = gs.raceTimer;
 
         if (gs.winner === null) {

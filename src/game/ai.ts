@@ -1,5 +1,4 @@
 import type { PlayerInput, PlayerState, GameState, Vec2, AIState } from '../types';
-import { findNearestRoadPoint } from './collision';
 import { clamp } from '../utils/math';
 import { FIXED_TIMESTEP } from '../utils/constants';
 
@@ -170,8 +169,8 @@ export function computeAIInput(
     }
   }
 
-  // 1. Find current road position
-  const nearest = findNearestRoadPoint(player.position, road);
+  // 1. Use cached road position (computed once per frame in engine)
+  const nearest = player.nearestRoad;
 
   // 2. Compute look-ahead target
   const lookAheadDist = BASE_LOOK_AHEAD + Math.abs(player.speed) * SPEED_LOOK_AHEAD_FACTOR * (0.5 + personality.cornerSkill * 0.5);

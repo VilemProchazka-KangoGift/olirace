@@ -148,6 +148,9 @@ function simulateTick(state: GameState, dt: number): void {
   if (state.phase === 'countdown') {
     updateCountdown(state, dt);
     for (const player of state.players) {
+      if (player.alive) {
+        player.nearestRoad = findNearestRoadPoint(player.position, state.track.road);
+      }
       updatePlayer(player, dt, state);
     }
     return;
@@ -156,7 +159,14 @@ function simulateTick(state: GameState, dt: number): void {
   // 2. Race timer
   state.raceTimer += dt;
 
-  // 3. Update players (readPlayerInput is called inside updatePlayer,
+  // 3. Cache road position per player
+  for (const player of state.players) {
+    if (player.alive) {
+      player.nearestRoad = findNearestRoadPoint(player.position, state.track.road);
+    }
+  }
+
+  // 4. Update players (readPlayerInput is called inside updatePlayer,
   //    which routes to AI for bot indices via the mock)
   for (const player of state.players) {
     updatePlayer(player, dt, state);

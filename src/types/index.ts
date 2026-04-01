@@ -160,7 +160,14 @@ export interface PlayerState {
   // ── Mud ───────────────────────────────────────────────────────────
   mudTimer: number;          // slow effect remaining
 
-  // ── Road edge distance ────────────────────────────────────────────
+  // ── Cached road query (computed once per frame in engine) ──────────
+  nearestRoad: {
+    segIdx: number;
+    t: number;
+    centerPoint: Vec2;
+    distance: number;
+    roadWidth: number;
+  };
   distFromRoadCenter: number;
   roadHalfWidth: number;
 

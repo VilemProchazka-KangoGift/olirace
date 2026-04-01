@@ -64,6 +64,14 @@ import en from '../i18n/en';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+function cacheRoadPositions(state: GameState): void {
+  for (const p of state.players) {
+    if (p.alive) {
+      p.nearestRoad = findNearestRoadPoint(p.position, state.track.road);
+    }
+  }
+}
+
 function setInput(playerIdx: 0 | 1, input: Partial<PlayerInput>): void {
   mockInputs[playerIdx] = {
     accelerate: 0,
@@ -369,6 +377,7 @@ describe('Full game tick simulation', () => {
       }
     }
 
+    cacheRoadPositions(state);
     const progressBefore = computeTrackProgress(
       state.players[0],
       track.road,
@@ -379,9 +388,11 @@ describe('Full game tick simulation', () => {
     for (let i = 0; i < 120; i++) {
       state.time += dt;
       state.raceTimer += dt;
+      cacheRoadPositions(state);
       updatePlayer(state.players[0], dt, state);
     }
 
+    cacheRoadPositions(state);
     const progressAfter = computeTrackProgress(
       state.players[0],
       track.road,

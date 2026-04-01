@@ -29,7 +29,6 @@ import {
 } from '../utils/math';
 import { getCharacter } from '../data/characters';
 import { readPlayerInput } from './input';
-import { findNearestRoadPoint } from './collision';
 import { audioManager } from './audio';
 
 export function createPlayer(
@@ -106,7 +105,8 @@ export function createPlayer(
     // Mud
     mudTimer: 0,
 
-    // Road edge info
+    // Road query cache
+    nearestRoad: { segIdx: 0, t: 0, centerPoint: vec2(x, y), distance: 0, roadWidth: 280 },
     distFromRoadCenter: 0,
     roadHalfWidth: 140,
 
@@ -370,7 +370,8 @@ export function computeTrackProgress(
   player: PlayerState,
   road: RoadPoint[],
 ): number {
-  const nearest = findNearestRoadPoint(player.position, road);
+  // Use cached nearestRoad from the current frame (computed once in engine)
+  const nearest = player.nearestRoad;
 
   // Sum the lengths of all segments before the nearest segment
   let distanceAlong = 0;
