@@ -202,10 +202,12 @@ export function computeAIInput(
   for (const obs of gameState.obstacles) {
     if (obs.destroyed) continue;
 
+    // Cheap axis-aligned pre-filter before expensive sqrt
     const odx = obs.x - player.position.x;
     const ody = obs.y - player.position.y;
-    const dist = Math.sqrt(odx * odx + ody * ody);
+    if (Math.abs(odx) > OBSTACLE_DETECT_AHEAD || Math.abs(ody) > OBSTACLE_DETECT_AHEAD) continue;
 
+    const dist = Math.sqrt(odx * odx + ody * ody);
     if (dist > OBSTACLE_DETECT_AHEAD) continue;
 
     // Transform to player-local coordinates (forward, right)
