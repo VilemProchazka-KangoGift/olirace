@@ -41,6 +41,8 @@ function createCountdownState(): GameState {
     randomEvents: [],
     flashTimer: 0,
     countdownParticles: [],
+    botCount: 0,
+    aiStates: [],
   };
 }
 

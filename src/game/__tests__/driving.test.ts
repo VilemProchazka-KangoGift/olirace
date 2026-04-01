@@ -69,6 +69,8 @@ function makeState(players?: PlayerState[]): GameState {
     randomEvents: [],
     flashTimer: 0,
     countdownParticles: [],
+    botCount: 0,
+    aiStates: [],
   };
 }
 

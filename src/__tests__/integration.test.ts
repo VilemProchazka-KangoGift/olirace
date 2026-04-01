@@ -80,6 +80,7 @@ function make1PConfig(
 ): GameConfig {
   return {
     playerCount: 1,
+    botCount: 0,
     trackId,
     p1Character: charId,
     p2Character: 'cat',

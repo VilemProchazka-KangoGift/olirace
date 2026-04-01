@@ -47,6 +47,7 @@ describe('createGameState - 1P mode', () => {
   it('creates exactly 1 player for 1P config', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -62,6 +63,7 @@ describe('createGameState - 1P mode', () => {
   it('player is at p1 start position', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -79,6 +81,7 @@ describe('createGameState - 1P mode', () => {
   it('player has correct character', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'cat',
       p2Character: 'yeti',
@@ -94,6 +97,7 @@ describe('createGameState - 1P mode', () => {
   it('camera starts at p1 position in 1P mode', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -112,6 +116,7 @@ describe('createGameState - 2P mode', () => {
   it('creates exactly 2 players for 2P config', () => {
     const config: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -127,6 +132,7 @@ describe('createGameState - 2P mode', () => {
   it('players are at correct start positions', () => {
     const config: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -145,6 +151,7 @@ describe('createGameState - 2P mode', () => {
   it('players have correct characters', () => {
     const config: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'pig',
       p2Character: 'frog',
@@ -161,6 +168,7 @@ describe('createGameState - 2P mode', () => {
   it('players have correct palettes', () => {
     const config: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -177,6 +185,7 @@ describe('createGameState - 2P mode', () => {
   it('camera starts at midpoint of player positions in 2P', () => {
     const config: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -197,6 +206,7 @@ describe('createGameState - countdown', () => {
   it('starts in countdown phase', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -212,6 +222,7 @@ describe('createGameState - countdown', () => {
   it('initializes countdown timer to correct total', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -228,6 +239,7 @@ describe('createGameState - countdown', () => {
   it('countdown step starts at 3', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -245,6 +257,7 @@ describe('createGameState - obstacles', () => {
   it('creates obstacle states from track placements', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -260,6 +273,7 @@ describe('createGameState - obstacles', () => {
   it('obstacle types match track placements', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -277,6 +291,7 @@ describe('createGameState - obstacles', () => {
   it('obstacle positions match track placements', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -299,6 +314,7 @@ describe('createGameState - initial values', () => {
   it('race timer starts at 0', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -314,6 +330,7 @@ describe('createGameState - initial values', () => {
   it('no winner at start', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -329,6 +346,7 @@ describe('createGameState - initial values', () => {
   it('particles array is empty', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -344,6 +362,7 @@ describe('createGameState - initial values', () => {
   it('time starts at 0', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -359,6 +378,7 @@ describe('createGameState - initial values', () => {
   it('stores track reference', () => {
     const config: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -374,6 +394,7 @@ describe('createGameState - initial values', () => {
   it('playerCount matches config', () => {
     const config1p: GameConfig = {
       playerCount: 1,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
@@ -382,6 +403,7 @@ describe('createGameState - initial values', () => {
     };
     const config2p: GameConfig = {
       playerCount: 2,
+      botCount: 0,
       trackId: 'test',
       p1Character: 'formula',
       p2Character: 'yeti',
