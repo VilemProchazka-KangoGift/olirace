@@ -70,4 +70,6 @@ export default {
   bot_count_2: "2 Bots",
   bot_count_3: "3 Bots",
   bot_label: "BOT",
+  select_players: "Players",
+  total_racers: "{{count}} racers",
 } as const;

@@ -62,13 +62,10 @@ export function createGameState(
     );
   }
 
-  // Initialize AI states for bot players
-  const aiStates: AIState[] = [];
-  for (let i = 0; i < totalPlayers; i++) {
-    if (i >= config.playerCount) {
-      aiStates[i] = createInitialAIState();
-    }
-  }
+  // Initialize AI states — only bot slots get real state, human slots are null-like
+  const aiStates: AIState[] = Array.from({ length: totalPlayers }, (_, i) =>
+    i >= config.playerCount ? createInitialAIState() : { stuckTimer: 0, stuckReverseTimer: 0, noisePhase: 0 },
+  );
 
   const obstacles = createObstacleStates(track.obstacles);
 

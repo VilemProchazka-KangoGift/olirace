@@ -27,10 +27,12 @@ export function initInput(): void {
 export function destroyInput(): void {
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('keyup', onKeyUp);
-  // Clear state so stale keys don't persist across sessions
+  // Clear state so stale keys/AI context don't persist across sessions
   for (const key of Object.keys(keyState)) {
     delete keyState[key];
   }
+  activeGameState = null;
+  humanPlayerCount = 0;
 }
 
 function readKeyboard(playerIndex: number): PlayerInput {

@@ -70,4 +70,6 @@ export default {
   bot_count_2: "2 boti",
   bot_count_3: "3 boti",
   bot_label: "BOT",
+  select_players: "Hráči",
+  total_racers: "{{count}} závodníků",
 } as const;

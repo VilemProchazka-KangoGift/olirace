@@ -716,7 +716,7 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
                     P{botSlot + 1}
                   </div>
                   <div style={{ fontSize: 6, color: '#666680' }}>
-                    {t('bot_count_1').split(' ').pop()}
+                    {t('bot_label')}
                   </div>
                 </div>
               );

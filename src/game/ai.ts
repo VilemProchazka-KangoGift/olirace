@@ -1,5 +1,7 @@
 import type { PlayerInput, PlayerState, GameState, Vec2, AIState } from '../types';
 import { findNearestRoadPoint } from './collision';
+import { clamp } from '../utils/math';
+import { FIXED_TIMESTEP } from '../utils/constants';
 
 // Personality per character
 interface AIPersonality {
@@ -114,15 +116,10 @@ function normalizeAngle(a: number): number {
   return r;
 }
 
-function clamp(v: number, min: number, max: number): number {
-  return v < min ? min : v > max ? max : v;
-}
-
 export function createInitialAIState(): AIState {
   return {
     stuckTimer: 0,
     stuckReverseTimer: 0,
-    driftIntentTimer: 0,
     noisePhase: Math.random() * Math.PI * 2,
   };
 }
@@ -154,12 +151,12 @@ export function computeAIInput(
   // Update stuck detection
   if (aiState) {
     if (aiState.stuckReverseTimer > 0) {
-      aiState.stuckReverseTimer -= 1 / 60;
+      aiState.stuckReverseTimer -= FIXED_TIMESTEP;
       return { accelerate: 0, brake: 1, steerX: Math.sin(time * 5 + playerIndex) > 0 ? 1 : -1, honk: false };
     }
 
     if (Math.abs(player.speed) < STUCK_THRESHOLD && player.stunTimer <= 0) {
-      aiState.stuckTimer += 1 / 60;
+      aiState.stuckTimer += FIXED_TIMESTEP;
       if (aiState.stuckTimer > STUCK_TIME) {
         aiState.stuckTimer = 0;
         aiState.stuckReverseTimer = STUCK_REVERSE_TIME;
@@ -191,7 +188,7 @@ export function computeAIInput(
 
   // Add personality noise for human-like feel
   if (aiState) {
-    aiState.noisePhase += 1 / 60 * 3;
+    aiState.noisePhase += FIXED_TIMESTEP * 3;
     steerX += Math.sin(aiState.noisePhase + playerIndex * 7.3) * personality.steeringNoise;
   }
 

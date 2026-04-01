@@ -264,7 +264,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
       </div>
 
       {/* Player count row (second, constrained by bots) */}
-      <div style={sectionLabel}>{t('select_mode')}</div>
+      <div style={sectionLabel}>{t('select_players')}</div>
       <div style={cardsRow}>
         {playerOptions.map(({ count, label }) => {
           const isDisabled = count > maxPlayers;
@@ -309,7 +309,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
         color: '#666680',
         textAlign: 'center',
       }}>
-        {totalRacers} {totalRacers === 1 ? 'racer' : 'racers'}
+        {t('total_racers', { count: totalRacers })}
       </div>
 
       {/* Confirm */}

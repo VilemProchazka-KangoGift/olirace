@@ -268,7 +268,6 @@ export type ScreenId =
 export interface AIState {
   stuckTimer: number;
   stuckReverseTimer: number;
-  driftIntentTimer: number;
   noisePhase: number;
 }
 
