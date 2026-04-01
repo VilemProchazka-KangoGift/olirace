@@ -2,14 +2,14 @@
 
 ## Overview
 
-Top-down vertical-scrolling racing game. React 19 + TypeScript + Vite + HTML5 Canvas + Web Audio API. 1-4 player local multiplayer. 6 characters, 3 tracks, all assets procedurally generated (no image/audio files).
+Top-down vertical-scrolling racing game. React 19 + TypeScript + Vite + HTML5 Canvas + Web Audio API. 1-4 player local multiplayer with 0-3 AI bot opponents (max 4 total racers). 6 characters, 6 tracks, all assets procedurally generated (no image/audio files).
 
 ## Commands
 
 ```
 npm run dev          # Dev server (port 3000)
 npm run build        # TypeScript check + Vite build (~320KB, ~98KB gzip)
-npm run test         # Vitest (382 tests)
+npm run test         # Vitest (427 tests)
 npm run test:e2e     # Playwright (12 tests, needs port 4174)
 npm run lint         # TypeScript --noEmit
 ```
@@ -47,8 +47,15 @@ Visual systems: skid marks (persistent on road), comic text popups ("POW!", "SPL
 - Mud: 50% speed multiplier, lingers 0.5s after leaving zone
 - Airborne: from ramps, 0.6s flight, no collisions while airborne
 
+### AI Opponents (`src/game/ai.ts`)
+`computeAIInput(player, playerIndex, gameState): PlayerInput` — generates the same 4-value input that human players produce. Injected at `readPlayerInput()` in `input.ts` — if `playerIndex >= humanPlayerCount`, routes to AI instead of keyboard/gamepad. All physics, collision, and rendering code is unchanged.
+
+AI features: road-following with look-ahead, obstacle avoidance (deadly vs beneficial), curvature braking, drift initiation, rubber-banding (speeds up when behind human, slows when ahead), stuck recovery. Per-character personalities defined in `PERSONALITIES` map (cornerSkill, seekBoosts, driftSkill, steeringNoise, rubberBandFactor).
+
+`GameConfig.botCount: 0|1|2|3` controls how many AI players. Human indices `0..playerCount-1`, bot indices `playerCount..playerCount+botCount-1`.
+
 ### Input (`src/game/input.ts`)
-P1: Arrows + Enter | P2: WASD + Space | P3: IJKL + H | P4: Numpad 8456 + Num0. Gamepad API support (index → player).
+P1: Arrows + Enter | P2: WASD + Space | P3: IJKL + H | P4: Numpad 8456 + Num0. Gamepad API support (index → player). AI bots routed via `setAIContext()`.
 
 ### State (`src/game/state.ts`)
 Factory: `createGameState(config, track)`. Types in `src/types/index.ts`. Key interfaces: `GameState`, `PlayerState`, `TrackData`, `ObstacleState`.
@@ -68,10 +75,13 @@ Web Audio API synthesis. SFX: engine (4-gear transmission), boost, death (generi
 | frog | 230 | 150 | 1.6 | 0.45 |
 | toilet | 200 | 130 | 1.4 | 0.65 |
 
-### Tracks (`src/data/tracks/`) — 3 total
+### Tracks (`src/data/tracks/`) — 6 total
 - `sunday-drive.ts` — easy, wide roads (230-280px)
+- `mud-runner.ts` — easy, mud-themed
 - `lava-gauntlet.ts` — medium, flagship track
+- `pinball-alley.ts` — medium, bouncy walls
 - `devils-highway.ts` — hard, narrow (120-180px)
+- `sky-bridge.ts` — hard, elevated bridges
 
 Track format: `RoadPoint[]` polyline with `{x, y, width}`, obstacles as `ObstaclePlacement[]`.
 
@@ -115,8 +125,9 @@ Track format: `RoadPoint[]` polyline with `{x, y, width}`, obstacles as `Obstacl
 1. `src/types/index.ts` — all interfaces
 2. `src/game/engine.ts` — game loop + car collisions
 3. `src/game/player.ts` — driving physics
-4. `src/game/renderer.ts` — rendering pipeline
-5. `src/game/vector-sprites.ts` — vector sprite drawing
-6. `src/utils/constants.ts` — all tuning values + color palette
-7. `src/App.tsx` — screen routing
-8. `olirace.md` — original game design spec
+4. `src/game/ai.ts` — AI bot brain (personalities, road following, obstacle avoidance, rubber-banding)
+5. `src/game/renderer.ts` — rendering pipeline
+6. `src/game/vector-sprites.ts` — vector sprite drawing
+7. `src/utils/constants.ts` — all tuning values + color palette
+8. `src/App.tsx` — screen routing
+9. `olirace.md` — original game design spec
