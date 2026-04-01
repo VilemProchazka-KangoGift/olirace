@@ -18,12 +18,6 @@ import {
   TETHER_TELEPORT_DISTANCE,
   TETHER_TELEPORT_BEHIND,
   PLAYER_HITBOX_RADIUS,
-  SHAKE_DEATH_INTENSITY,
-  SHAKE_DEATH_DURATION,
-  SHAKE_COLLISION_INTENSITY,
-  SHAKE_COLLISION_DURATION,
-  SHAKE_LOG_INTENSITY,
-  SHAKE_LOG_DURATION,
   SKID_MARK_INTERVAL,
   MAX_SKID_MARKS,
   SKID_MARK_LIFETIME,
@@ -42,6 +36,8 @@ import {
   COMIC_TEXTS_COLLISION,
   COMIC_TEXTS_BOOST,
   COLORS,
+  LAVA_GRACE_ZONE,
+  MAX_PARTICLES,
 } from '../utils/constants';
 import {
   distance,
@@ -74,7 +70,7 @@ import {
   emitCountdownParticles,
 } from './particles';
 import { updateCountdown } from './countdown';
-import { isPointOnRoad, findNearestRoadPoint } from './collision';
+import { findNearestRoadPoint } from './collision';
 import { getCharacter } from '../data/characters';
 import { render as renderGame, renderLavaFullscreen } from './renderer';
 import { audioManager } from './audio';
@@ -108,10 +104,6 @@ export function startGame(
   let nextRandomEventTimer = randomRange(10, 20);
   const tireScreechActive = new Set<number>();
   let rumbleStripTimer = 0;
-
-  function addScreenShake(_intensity: number, _duration: number): void {
-    // Screen shake disabled
-  }
 
   function addComicText(text: string, x: number, y: number, color: string): void {
     if (state.comicTexts.length >= MAX_COMIC_TEXTS) {
@@ -152,18 +144,6 @@ export function startGame(
   function fixedUpdate(dt: number): void {
     state.time += dt;
 
-    // Update screen shake
-    if (state.screenShake.timer > 0) {
-      state.screenShake.timer -= dt;
-      const shakeProgress = state.screenShake.timer / state.screenShake.duration;
-      const currentIntensity = state.screenShake.intensity * shakeProgress;
-      state.screenShake.offsetX = (Math.random() - 0.5) * 2 * currentIntensity;
-      state.screenShake.offsetY = (Math.random() - 0.5) * 2 * currentIntensity;
-    } else {
-      state.screenShake.offsetX = 0;
-      state.screenShake.offsetY = 0;
-    }
-
     // Update flash timer
     if (state.flashTimer > 0) {
       state.flashTimer -= dt;
@@ -178,7 +158,8 @@ export function startGame(
       const progress = 1 - ct.timer / ct.maxLife;
       ct.scale = progress < 0.2 ? progress / 0.2 : 1;
       if (ct.timer <= 0) {
-        state.comicTexts.splice(i, 1);
+        state.comicTexts[i] = state.comicTexts[state.comicTexts.length - 1];
+        state.comicTexts.pop();
       }
     }
 
@@ -190,7 +171,8 @@ export function startGame(
       evt.timer -= dt;
       evt.frame = Math.floor(state.time * 4) % 4;
       if (evt.timer <= 0) {
-        state.randomEvents.splice(i, 1);
+        state.randomEvents[i] = state.randomEvents[state.randomEvents.length - 1];
+        state.randomEvents.pop();
       }
     }
 
@@ -202,7 +184,8 @@ export function startGame(
       state.skidMarks[i].life -= dt;
       state.skidMarks[i].opacity = Math.max(0, state.skidMarks[i].life / SKID_MARK_LIFETIME);
       if (state.skidMarks[i].life <= 0) {
-        state.skidMarks.splice(i, 1);
+        state.skidMarks[i] = state.skidMarks[state.skidMarks.length - 1];
+        state.skidMarks.pop();
       }
     }
 
@@ -235,7 +218,8 @@ export function startGame(
 
     // Turbo start check
     if (turboStartReady && state.phase === 'racing') {
-      for (const player of state.players) {
+      for (let pIdx = 0; pIdx < state.players.length; pIdx++) {
+        const player = state.players[pIdx];
         if (player.input.accelerate > 0 && player.turboStartBonus === 0) {
           player.turboStartBonus = player.maxSpeed * TURBO_START_BONUS;
           player.speed = player.turboStartBonus;
@@ -244,7 +228,7 @@ export function startGame(
           player.expression = 'happy';
           player.expressionTimer = 1.0;
           addComicText('TURBO!', player.position.x, player.position.y - 30, COLORS.cyan);
-          triggerHaptic(state.players.indexOf(player), 0.5, 0.2);
+          triggerHaptic(pIdx, 0.5, 0.2);
         }
       }
       turboStartReady = false;
@@ -266,14 +250,13 @@ export function startGame(
         const player = state.players[i];
         if (!player.alive || player.finishTime !== null) continue;
 
-        const roadCheck = isPointOnRoad(player.position, track.road);
-        player.distFromRoadCenter = roadCheck.distFromCenter;
-
-        // Get road width at nearest point
+        // Single findNearestRoadPoint call for both road check and width
         const nearest = findNearestRoadPoint(player.position, track.road);
+        player.distFromRoadCenter = nearest.distance;
         player.roadHalfWidth = nearest.roadWidth / 2;
+        const onRoad = nearest.distance <= player.roadHalfWidth + LAVA_GRACE_ZONE;
 
-        if (!roadCheck.onRoad) {
+        if (!onRoad) {
           killPlayer(player, i, state);
         } else {
           // Sparks when scraping edge
@@ -322,7 +305,6 @@ export function startGame(
           triggerHaptic(i, 0.3, 0.15);
         } else if (result === 'knockback') {
           audioManager.play('sfx_log');
-          addScreenShake(SHAKE_LOG_INTENSITY, SHAKE_LOG_DURATION);
           addComicText('BONK!', player.position.x, player.position.y - 30, COLORS.orange);
           triggerHaptic(i, 0.7, 0.2);
         } else if (result === 'ramp') {
@@ -332,7 +314,6 @@ export function startGame(
         } else if (result === 'destroy') {
           emitDestructibleDebris(player.position.x, player.position.y, state.particles);
           audioManager.play('sfx_barrel_break');
-          addScreenShake(SHAKE_COLLISION_INTENSITY, SHAKE_COLLISION_DURATION);
           addComicText('SMASH!', player.position.x, player.position.y - 30, COLORS.orange);
           triggerHaptic(i, 0.5, 0.15);
         } else if (result === 'mud') {
@@ -340,7 +321,6 @@ export function startGame(
           audioManager.play('sfx_mud_splat');
         } else if (result === 'bounce') {
           audioManager.play('sfx_boing');
-          addScreenShake(SHAKE_COLLISION_INTENSITY, SHAKE_COLLISION_DURATION);
           addComicText('BOING!', player.position.x, player.position.y - 30, COLORS.yellow);
           triggerHaptic(i, 0.6, 0.15);
         }
@@ -428,8 +408,7 @@ export function startGame(
               a.bumpsReceived++;
               b.bumpsReceived++;
 
-              // Screen shake and comic text
-              addScreenShake(SHAKE_COLLISION_INTENSITY, SHAKE_COLLISION_DURATION);
+              // Comic text
               addComicText(
                 randomComicText(COMIC_TEXTS_COLLISION),
                 (a.position.x + b.position.x) / 2,
@@ -502,10 +481,10 @@ export function startGame(
     }
 
     // 12. Emit particles for players
-    for (const player of state.players) {
+    for (let pIdx = 0; pIdx < state.players.length; pIdx++) {
+      const player = state.players[pIdx];
       if (!player.alive) continue;
       const speedRatio = Math.abs(player.speed) / player.maxSpeed;
-      const pIdx = state.players.indexOf(player);
 
       // Boost particles + flame jet
       if (player.boostTimer > 0) {
@@ -631,8 +610,7 @@ export function startGame(
     const color = player.palette === 'primary' ? char.primaryColor : char.rivalColor;
     emitDeathParticles(player.position.x, player.position.y, color, gs.particles);
 
-    // Screen shake + flash
-    addScreenShake(SHAKE_DEATH_INTENSITY, SHAKE_DEATH_DURATION);
+    // Flash
     gs.flashTimer = FLASH_DURATION;
 
     // Comic text
@@ -762,6 +740,7 @@ export function startGame(
       const burstY = camY + randomRange(-CANVAS_HEIGHT / 2, CANVAS_HEIGHT / 2);
 
       // Emit lava explosion particles
+      if (gs.particles.length >= MAX_PARTICLES) return;
       const lavaColors = ['#ff8020', '#e06010', '#c0400a', '#ffcc00', '#ff4020'];
       for (let i = 0; i < 15; i++) {
         const angle = randomAngle();
@@ -778,7 +757,6 @@ export function startGame(
           type: 'flame',
         });
       }
-      addScreenShake(3, 0.15);
     }
   }
 
@@ -958,8 +936,6 @@ export function startGame(
     ctx.save();
     ctx.translate(offsetX, offsetY);
     ctx.scale(uniformScale, uniformScale);
-
-    // (screen shake removed)
 
     renderGame(ctx, state, alpha);
 

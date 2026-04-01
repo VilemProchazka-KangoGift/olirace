@@ -234,6 +234,20 @@ function getVolcanoCanvas(): HTMLCanvasElement {
   return volcanoCache;
 }
 
+// ── Per-difficulty visual config ─────────────────────────────────────
+
+const TRACK_VISUALS: Record<string, {
+  roadColor: string;
+  shadowTint: string;
+  glowColor: string;
+  glowAlpha: number;
+  glowRadius: number;
+}> = {
+  easy:   { roadColor: '#404858', shadowTint: '0,8,16',  glowColor: '255,240,180', glowAlpha: 0.3,  glowRadius: 4 },
+  medium: { roadColor: '#3a3a4a', shadowTint: '16,8,0',  glowColor: '255,140,40',  glowAlpha: 0.3,  glowRadius: 5 },
+  hard:   { roadColor: '#3a2a2a', shadowTint: '24,8,0',  glowColor: '255,80,20',   glowAlpha: 0.35, glowRadius: 5 },
+};
+
 // ── World-to-screen transform ────────────────────────────────────────
 
 function toScreenX(worldX: number, cameraX: number): number {
@@ -242,6 +256,27 @@ function toScreenX(worldX: number, cameraX: number): number {
 
 function toScreenY(worldY: number, cameraY: number): number {
   return worldY - cameraY + CANVAS_HEIGHT / 2;
+}
+
+// ── Elliptical gradient shadow helper ────────────────────────────────
+
+function drawGradientShadow(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number,
+  rx: number, ry: number,
+  alpha: number,
+  rgb: string = '0,0,0',
+): void {
+  const r = Math.max(rx, ry);
+  const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+  grad.addColorStop(0, `rgba(${rgb},${alpha})`);
+  grad.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(rx / r, ry / r);
+  ctx.fillStyle = grad;
+  ctx.fillRect(-r, -r, r * 2, r * 2);
+  ctx.restore();
 }
 
 // ── Main render entry point ──────────────────────────────────────────
@@ -621,9 +656,7 @@ function drawRoad(
   } catch { /* fallback to no texture */ }
 
   // Per-track road surface color
-  const roadColor = state.track.difficulty === 'easy' ? '#404858'
-    : state.track.difficulty === 'hard' ? '#3a2a2a'
-    : COLORS.midGray;
+  const roadColor = (TRACK_VISUALS[state.track.difficulty] ?? TRACK_VISUALS.medium).roadColor;
 
   ctx.fillStyle = roadColor;
   for (let i = 0; i < road.length - 1; i++) {
@@ -2199,30 +2232,8 @@ function drawLightingPosts(
   const road = state.track.road;
   if (road.length < 2) return;
 
-  const difficulty = state.track.difficulty;
-
-  // Glow color based on difficulty
-  let glowColor: string;
-  let glowRadius: number;
-  let glowAlpha: number;
-  switch (difficulty) {
-    case 'easy':
-      glowColor = '255,240,180';
-      glowRadius = 4;
-      glowAlpha = 0.3;
-      break;
-    case 'medium':
-      glowColor = '255,140,40';
-      glowRadius = 5;
-      glowAlpha = 0.3;
-      break;
-    case 'hard':
-    default:
-      glowColor = '255,80,20';
-      glowRadius = 5;
-      glowAlpha = 0.35;
-      break;
-  }
+  const vis = TRACK_VISUALS[state.track.difficulty] ?? TRACK_VISUALS.medium;
+  const { glowColor, glowRadius, glowAlpha } = vis;
 
   for (let i = 0; i < road.length; i += 18) {
     const postEdges = computeEdges(road, i);
@@ -2275,19 +2286,7 @@ function drawObstacles(
   state: GameState,
   camX: number, camY: number,
 ): void {
-  // Shadow color tinted by track difficulty
-  let shadowTint: string;
-  switch (state.track.difficulty) {
-    case 'easy':
-      shadowTint = '0,8,16'; // slight blue tint
-      break;
-    case 'hard':
-      shadowTint = '24,8,0'; // warmer red tint
-      break;
-    default:
-      shadowTint = '16,8,0'; // slight warm tint
-      break;
-  }
+  const shadowTint = (TRACK_VISUALS[state.track.difficulty] ?? TRACK_VISUALS.medium).shadowTint;
 
   for (const obs of state.obstacles) {
     // Skip destroyed obstacles (show rubble instead)
@@ -2304,22 +2303,7 @@ function drawObstacles(
         sy + halfSize < 0 || sy - halfSize > CANVAS_HEIGHT) continue;
 
     // ── Drop shadow under obstacle (radial gradient, difficulty-tinted) ──
-    {
-      const shadowRx = halfSize * 0.6;
-      const shadowRy = halfSize * 0.25;
-      const shadowCx = sx;
-      const shadowCy = sy + 3;
-      const shadowR = Math.max(shadowRx, shadowRy);
-      const grad = ctx.createRadialGradient(shadowCx, shadowCy, 0, shadowCx, shadowCy, shadowR);
-      grad.addColorStop(0, `rgba(${shadowTint},0.3)`);
-      grad.addColorStop(1, `rgba(${shadowTint},0)`);
-      ctx.save();
-      ctx.translate(shadowCx, shadowCy);
-      ctx.scale(shadowRx / shadowR, shadowRy / shadowR);
-      ctx.fillStyle = grad;
-      ctx.fillRect(-shadowR, -shadowR, shadowR * 2, shadowR * 2);
-      ctx.restore();
-    }
+    drawGradientShadow(ctx, sx, sy + 3, halfSize * 0.6, halfSize * 0.25, 0.3, shadowTint);
 
     // ── Red danger glow for spikes and rotating_spikes ──
     if (obs.type === 'spikes' || obs.type === 'rotating_spikes') {
@@ -2686,22 +2670,7 @@ function drawPlayer(
   }
 
   // ── Drop shadow under car (radial gradient) ──
-  {
-    const shadowRx = 20;
-    const shadowRy = 8;
-    const shadowCx = sx;
-    const shadowCy = sy + 4;
-    const shadowR = shadowRx; // max radius for gradient
-    const grad = ctx.createRadialGradient(shadowCx, shadowCy, 0, shadowCx, shadowCy, shadowR);
-    grad.addColorStop(0, 'rgba(0,0,0,0.25)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.save();
-    ctx.translate(shadowCx, shadowCy);
-    ctx.scale(1, shadowRy / shadowR);
-    ctx.fillStyle = grad;
-    ctx.fillRect(-shadowR, -shadowR, shadowR * 2, shadowR * 2);
-    ctx.restore();
-  }
+  drawGradientShadow(ctx, sx, sy + 4, 20, 8, 0.25);
 
   // Death animation (ragdoll tumble)
   if (!player.alive) {
@@ -2723,20 +2692,7 @@ function drawPlayer(
 
   // Airborne shadow (radial gradient)
   if (player.airborne && player.airborneHeight > 1) {
-    const abShadowRx = 18;
-    const abShadowRy = 6;
-    const abShadowCx = sx;
-    const abShadowCy = sy + 2;
-    const abShadowR = abShadowRx;
-    const grad = ctx.createRadialGradient(abShadowCx, abShadowCy, 0, abShadowCx, abShadowCy, abShadowR);
-    grad.addColorStop(0, 'rgba(0,0,0,0.3)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.save();
-    ctx.translate(abShadowCx, abShadowCy);
-    ctx.scale(1, abShadowRy / abShadowR);
-    ctx.fillStyle = grad;
-    ctx.fillRect(-abShadowR, -abShadowR, abShadowR * 2, abShadowR * 2);
-    ctx.restore();
+    drawGradientShadow(ctx, sx, sy + 2, 18, 6, 0.3);
   }
 
   // Jump height offset (finish celebration OR ramp jump)
@@ -2777,20 +2733,8 @@ function drawPlayer(
 
   // Draw shadow when jumping (radial gradient)
   if (jumpOffset > 1) {
-    const jShadowRx = 16;
-    const jShadowRy = 5;
-    const jShadowR = jShadowRx;
     const jAlpha = 0.2 * Math.min(1, jumpOffset / 20);
-    const jGrad = ctx.createRadialGradient(0, jumpOffset, 0, 0, jumpOffset, jShadowR);
-    jGrad.addColorStop(0, `rgba(0,0,0,${jAlpha})`);
-    jGrad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.save();
-    ctx.translate(0, jumpOffset);
-    ctx.scale(1, jShadowRy / jShadowR);
-    ctx.translate(0, -jumpOffset);
-    ctx.fillStyle = jGrad;
-    ctx.fillRect(-jShadowR, jumpOffset - jShadowR, jShadowR * 2, jShadowR * 2);
-    ctx.restore();
+    drawGradientShadow(ctx, 0, jumpOffset, 16, 5, jAlpha);
   }
 
   // Boost glow effect (character-colored)
@@ -2851,9 +2795,6 @@ function drawPlayer(
     ctx.save();
     ctx.globalAlpha = 0.15;
     ctx.fillStyle = '#ffee80';
-    // player.angle is the facing direction; compute offset 15px ahead
-    const headlightDx = Math.cos(player.angle) * 15;
-    const headlightDy = Math.sin(player.angle) * 15;
     // Note: we are in screen-space translated to (0,0) = player position
     // player.angle: 0 = right, PI/2 = down in world, but screen Y is inverted
     // Use the raw angle components for screen space offset
@@ -3417,17 +3358,28 @@ function drawCountdown(
 
 // ── 8. Vignette overlay ─────────────────────────────────────────────
 
+let vignetteCache: OffscreenCanvas | HTMLCanvasElement | null = null;
+
 function drawVignette(ctx: CanvasRenderingContext2D): void {
-  const cx = CANVAS_WIDTH / 2;
-  const cy = CANVAS_HEIGHT / 2;
-  const outerRadius = Math.sqrt(cx * cx + cy * cy);
+  if (!vignetteCache) {
+    const cx = CANVAS_WIDTH / 2;
+    const cy = CANVAS_HEIGHT / 2;
+    const outerRadius = Math.sqrt(cx * cx + cy * cy);
 
-  const grad = ctx.createRadialGradient(cx, cy, outerRadius * 0.4, cx, cy, outerRadius);
-  grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+    vignetteCache = typeof OffscreenCanvas !== 'undefined'
+      ? new OffscreenCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+      : document.createElement('canvas');
+    vignetteCache.width = CANVAS_WIDTH;
+    vignetteCache.height = CANVAS_HEIGHT;
+    const offCtx = vignetteCache.getContext('2d')! as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
-  ctx.save();
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  ctx.restore();
+    const grad = offCtx.createRadialGradient(cx, cy, outerRadius * 0.4, cx, cy, outerRadius);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+
+    offCtx.fillStyle = grad;
+    offCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  }
+
+  ctx.drawImage(vignetteCache as CanvasImageSource, 0, 0);
 }

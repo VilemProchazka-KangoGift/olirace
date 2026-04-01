@@ -119,7 +119,6 @@ export interface PlayerState {
   animState: 'idle' | 'driving' | 'death';
   animFrame: number;
   animTimer: number;
-  directionIndex: number; // 0-7 for 8 directions
   boostParticleTimer: number;
   honkTimer: number;
   jumpTimer: number;

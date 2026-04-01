@@ -1,5 +1,6 @@
 import type { Particle } from '../types';
 import { randomRange, randomAngle } from '../utils/math';
+import { MAX_PARTICLES } from '../utils/constants';
 
 export function emitDeathParticles(
   x: number,
@@ -7,6 +8,7 @@ export function emitDeathParticles(
   color: string,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   for (let i = 0; i < 12; i++) {
     const angle = randomAngle();
     const speed = randomRange(80, 200);
@@ -31,6 +33,7 @@ export function emitBoostParticles(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const colors = ['#00e0e0', '#ffffff', '#00e0e0'];
   for (let i = 0; i < 3; i++) {
     const angle = randomAngle();
@@ -53,6 +56,7 @@ export function emitRespawnParticles(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const colors = ['#ffffff', '#00e0e0'];
   for (let i = 0; i < 8; i++) {
     const angle = randomAngle();
@@ -75,6 +79,7 @@ export function emitConfetti(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const confettiColors = [
     '#e02020', '#00c040', '#2060e0', '#e0c000',
     '#e07020', '#e080a0', '#00e0e0', '#a020e0',
@@ -105,6 +110,7 @@ export function emitTireSmoke(
   playerAngle: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   // Emit behind the vehicle
   const behindX = x - Math.cos(playerAngle) * 12;
   const behindY = y + Math.sin(playerAngle) * 12;
@@ -132,6 +138,7 @@ export function emitSparks(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const sparkColors = ['#ffff40', '#ff8020', '#ffffff', '#ffcc00'];
   for (let i = 0; i < 4; i++) {
     const angle = randomAngle();
@@ -156,6 +163,7 @@ export function emitLavaSplatter(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const lavaColors = ['#ff8020', '#e06010', '#c0400a', '#ffcc00'];
   for (let i = 0; i < 3; i++) {
     const angle = randomRange(-Math.PI, 0); // spray upward
@@ -183,6 +191,7 @@ export function emitExhaust(
   speedRatio: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const behindX = x - Math.cos(playerAngle) * 16;
   const behindY = y + Math.sin(playerAngle) * 16;
 
@@ -207,6 +216,7 @@ export function emitBoostFlame(
   playerAngle: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const flameColors = ['#00e0e0', '#40ffff', '#ffffff', '#80ffff'];
   const behindX = x - Math.cos(playerAngle) * 18;
   const behindY = y + Math.sin(playerAngle) * 18;
@@ -235,6 +245,7 @@ export function emitMudSplatter(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const mudColors = ['#6a4020', '#8a6040', '#5a3010', '#7a5030'];
   for (let i = 0; i < 5; i++) {
     const angle = randomAngle();
@@ -259,6 +270,7 @@ export function emitDestructibleDebris(
   y: number,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   const woodColors = ['#8a6040', '#6a4020', '#a07050', '#5a3010'];
   for (let i = 0; i < 10; i++) {
     const angle = randomAngle();
@@ -286,6 +298,7 @@ export function emitCountdownParticles(
   color: string,
   particles: Particle[],
 ): void {
+  if (particles.length >= MAX_PARTICLES) return;
   for (let i = 0; i < 15; i++) {
     const angle = randomAngle();
     const speed = randomRange(100, 300);
@@ -358,9 +371,10 @@ export function updateParticles(
       p.rotation += p.rotationSpeed * dt;
     }
 
-    // Remove dead particles
+    // Remove dead particles (swap-and-pop: O(1) instead of O(n) splice)
     if (p.life <= 0) {
-      particles.splice(i, 1);
+      particles[i] = particles[particles.length - 1];
+      particles.pop();
     }
   }
 }

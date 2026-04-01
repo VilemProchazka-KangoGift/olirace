@@ -108,18 +108,16 @@ class AudioManager {
       case 'sfx_respawn': this.playRespawn(); break;
       case 'sfx_tether_woosh': this.playTetherWoosh(); break;
       case 'sfx_sad_trombone': this.playSadTrombone(); break;
-      // New sounds
       case 'sfx_boing': this.playBoing(); break;
       case 'sfx_drift': this.playDrift(); break;
       case 'sfx_drift_exit': this.playDriftExit(); break;
       case 'sfx_crowd': this.playCrowd(); break;
       case 'sfx_whoosh': this.playWhoosh(); break;
-      // Additional SFX
       case 'sfx_tire_screech': this.playTireScreech(); break;
       case 'sfx_car_bump': this.playCarBumpSfx(300); break;
       case 'sfx_rumble_strip': this.playRumbleStrip(); break;
-      case 'sfx_position_up': this.playPositionUp(); break;
-      case 'sfx_position_down': this.playPositionDown(); break;
+      case 'sfx_position_up': this.playPositionArpeggio([NOTE.C5, NOTE.E5, NOTE.G5], 0.12, 'sfx_position_up'); break;
+      case 'sfx_position_down': this.playPositionArpeggio([NOTE.G4, NOTE.E4, NOTE.C4], 0.10, 'sfx_position_down'); break;
       case 'sfx_ramp_launch': this.playRampLaunch(); break;
       case 'sfx_ramp_land': this.playRampLand(); break;
       case 'sfx_mud_splat': this.playMudSplat(); break;
@@ -912,15 +910,14 @@ class AudioManager {
     this.registerOneShot('sfx_rumble_strip', osc, gain, [lfo, lfoGain, modGain]);
   }
 
-  private playPositionUp(): void {
+  private playPositionArpeggio(notes: number[], volume: number, key: string): void {
     const ctx = this.ctx!;
     const master = this.masterGain!;
     const now = ctx.currentTime;
     const noteDur = 0.08;
-    const notes = [NOTE.C5, NOTE.E5, NOTE.G5];
 
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.setValueAtTime(volume, now);
     gain.connect(master);
 
     const extras: AudioNode[] = [];
@@ -930,7 +927,7 @@ class AudioManager {
       osc.frequency.setValueAtTime(freq, now);
       const ng = ctx.createGain();
       ng.gain.setValueAtTime(0, now);
-      ng.gain.setValueAtTime(0.12, now + i * noteDur);
+      ng.gain.setValueAtTime(volume, now + i * noteDur);
       ng.gain.exponentialRampToValueAtTime(0.001, now + (i + 1) * noteDur);
       osc.connect(ng);
       ng.connect(gain);
@@ -939,37 +936,7 @@ class AudioManager {
       extras.push(osc, ng);
     });
 
-    this.active.set('sfx_position_up', { source: null, gain, extras });
-  }
-
-  private playPositionDown(): void {
-    const ctx = this.ctx!;
-    const master = this.masterGain!;
-    const now = ctx.currentTime;
-    const noteDur = 0.08;
-    const notes = [NOTE.G4, NOTE.E4, NOTE.C4];
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.10, now);
-    gain.connect(master);
-
-    const extras: AudioNode[] = [];
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now);
-      const ng = ctx.createGain();
-      ng.gain.setValueAtTime(0, now);
-      ng.gain.setValueAtTime(0.10, now + i * noteDur);
-      ng.gain.exponentialRampToValueAtTime(0.001, now + (i + 1) * noteDur);
-      osc.connect(ng);
-      ng.connect(gain);
-      osc.start(now + i * noteDur);
-      osc.stop(now + (i + 1) * noteDur + 0.02);
-      extras.push(osc, ng);
-    });
-
-    this.active.set('sfx_position_down', { source: null, gain, extras });
+    this.active.set(key, { source: null, gain, extras });
   }
 
   private playRampLaunch(): void {

@@ -54,6 +54,9 @@ export const SKID_MARK_LIFETIME = 8;         // seconds before full fade
 export const SKID_MARK_INTERVAL = 0.02;      // seconds between skid mark points
 export const MAX_SKID_MARKS = 500;
 
+// ── Particles ───────────────────────────────────────────────────────
+export const MAX_PARTICLES = 600;
+
 // ── Comic text ──────────────────────────────────────────────────────
 export const COMIC_TEXT_DURATION = 0.8;
 export const MAX_COMIC_TEXTS = 10;

@@ -18,7 +18,6 @@ import {
 import {
   vec2,
   directionFromAngle,
-  angleToDirectionIndex,
   clamp,
   distance,
   projectPointOnSegment,
@@ -66,7 +65,6 @@ export function createPlayer(
     animState: 'idle',
     animFrame: 0,
     animTimer: 0,
-    directionIndex: angleToDirectionIndex(angle),
     boostParticleTimer: 0,
     honkTimer: 0,
     jumpTimer: 0,
@@ -334,8 +332,6 @@ export function updatePlayer(
   } else {
     player.animState = 'idle';
   }
-
-  player.directionIndex = angleToDirectionIndex(player.angle);
 
   // Tick animation timer
   player.animTimer += dt;

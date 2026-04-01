@@ -135,16 +135,6 @@ describe('createPlayer', () => {
     expect(player.animTimer).toBe(0);
   });
 
-  it('computes direction index from angle', () => {
-    // angle = 0 (east) -> direction index 2
-    const p1 = createPlayer('frog', 0, 0, 0, 'primary');
-    expect(p1.directionIndex).toBe(2);
-
-    // angle = pi/2 (north) -> direction index 0
-    const p2 = createPlayer('frog', 0, 0, Math.PI / 2, 'primary');
-    expect(p2.directionIndex).toBe(0);
-  });
-
   it('creates with rival palette', () => {
     const player = createPlayer('formula', 0, 0, 0, 'rival');
     expect(player.palette).toBe('rival');

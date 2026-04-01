@@ -179,7 +179,6 @@ export default function PlayerCountSelect({ onSelect }: Props) {
             style={makeCardStyle(count)}
             onClick={() => { audioManager.play('sfx_menu_confirm'); onSelect(count); }}
             onMouseEnter={() => { audioManager.play('sfx_menu_move'); setHovered(count); }}
-            onMouseLeave={() => {}}
           >
             {carIcon(count)}
             <div style={numberStyle}>{count}</div>
