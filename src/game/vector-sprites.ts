@@ -430,45 +430,7 @@ function drawCat(
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Eyes (~50% bigger + outline + gleam) --
-  // Left eye
-  ctx.fillStyle = '#c8e0c8';
-  ctx.beginPath();
-  ctx.ellipse(22, 26, 5.2, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(22, 26, 5.2, 6, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.ellipse(23, 26, 2.7, 4.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Left eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(20.5, 23.5, 1.5, 0, Math.PI * 2);
-  ctx.fill();
-  // Right eye
-  ctx.fillStyle = '#c8e0c8';
-  ctx.beginPath();
-  ctx.ellipse(34, 26, 5.2, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(34, 26, 5.2, 6, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.ellipse(35, 26, 2.7, 4.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Right eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(32.5, 23.5, 1.5, 0, Math.PI * 2);
-  ctx.fill();
+  // (Eyes drawn by googly eyes overlay in renderer)
 
   // -- Rosy cheeks --
   ctx.fillStyle = '#ff6080';
@@ -694,7 +656,7 @@ function drawFrog(
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Left eye bulge (~50% bigger eyes) --
+  // -- Left eye bulge (skin protrusion, eyes drawn by googly overlay) --
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(16, 18, 10, 0, Math.PI * 2);
@@ -702,26 +664,8 @@ function drawFrog(
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 2.5;
   ctx.stroke();
-  // Eye white (bigger)
-  ctx.fillStyle = '#dde8dd';
-  ctx.beginPath();
-  ctx.arc(16, 17, 9, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // Pupil (bigger)
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.arc(16.5, 17, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  // Left eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(14, 14, 2, 0, Math.PI * 2);
-  ctx.fill();
 
-  // -- Right eye bulge (~50% bigger eyes) --
+  // -- Right eye bulge --
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(40, 18, 10, 0, Math.PI * 2);
@@ -729,24 +673,6 @@ function drawFrog(
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 2.5;
   ctx.stroke();
-  // Eye white (bigger)
-  ctx.fillStyle = '#dde8dd';
-  ctx.beginPath();
-  ctx.arc(40, 17, 9, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // Pupil (bigger)
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.arc(40.5, 17, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  // Right eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(38, 14, 2, 0, Math.PI * 2);
-  ctx.fill();
 
   // -- Rosy cheeks --
   ctx.fillStyle = '#ff6080';
@@ -920,41 +846,7 @@ function drawToilet(
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Cartoon eyes on the bowl (~50% bigger) --
-  // Left eye
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(23, 19, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.arc(23.5, 19, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  // Left eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(21.5, 17, 1.3, 0, Math.PI * 2);
-  ctx.fill();
-  // Right eye
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(33, 19, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.arc(33.5, 19, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  // Right eye gleam
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(31.5, 17, 1.3, 0, Math.PI * 2);
-  ctx.fill();
+  // (Eyes drawn by googly eyes overlay in renderer)
 
   // -- Water splash effect (blue highlights) --
   ctx.fillStyle = '#80d0ff';
