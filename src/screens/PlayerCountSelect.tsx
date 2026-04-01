@@ -25,65 +25,59 @@ const keyframesStyle = `
 }
 `;
 
-type FocusRow = 'players' | 'bots';
+type FocusRow = 'bots' | 'players';
 
 export default function PlayerCountSelect({ onSelect }: Props) {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState<1 | 2 | 3 | 4>(1);
+  const [playerCount, setPlayerCount] = useState<1 | 2 | 3 | 4>(1);
   const [botCount, setBotCount] = useState<0 | 1 | 2 | 3>(0);
-  const [focusRow, setFocusRow] = useState<FocusRow>('players');
+  const [focusRow, setFocusRow] = useState<FocusRow>('bots');
 
-  const maxBots = (4 - hovered) as 0 | 1 | 2 | 3;
+  const maxPlayers = (4 - botCount) as 1 | 2 | 3 | 4;
 
-  // Clamp bot count when player count changes
+  // Clamp player count when bot count changes
   useEffect(() => {
-    if (botCount > maxBots) {
-      setBotCount(maxBots);
+    if (playerCount > maxPlayers) {
+      setPlayerCount(maxPlayers);
     }
-  }, [hovered, botCount, maxBots]);
+  }, [botCount, playerCount, maxPlayers]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      // Direct number keys for player count
-      if (e.key === '1') { setHovered(1); setFocusRow('players'); audioManager.play('sfx_menu_move'); }
-      else if (e.key === '2') { setHovered(2); setFocusRow('players'); audioManager.play('sfx_menu_move'); }
-      else if (e.key === '3') { setHovered(3); setFocusRow('players'); audioManager.play('sfx_menu_move'); }
-      else if (e.key === '4') { setHovered(4); setFocusRow('players'); audioManager.play('sfx_menu_move'); }
-      // Arrow navigation
-      else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        if (focusRow === 'bots') {
-          setFocusRow('players');
-          audioManager.play('sfx_menu_move');
-        }
-      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         if (focusRow === 'players') {
           setFocusRow('bots');
           audioManager.play('sfx_menu_move');
         }
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        if (focusRow === 'bots') {
+          setFocusRow('players');
+          audioManager.play('sfx_menu_move');
+        }
       } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        if (focusRow === 'players') {
-          setHovered((h) => (h <= 1 ? 1 : (h - 1) as 1 | 2 | 3 | 4));
-        } else {
+        if (focusRow === 'bots') {
           setBotCount((b) => (b <= 0 ? 0 : (b - 1) as 0 | 1 | 2 | 3));
+        } else {
+          setPlayerCount((h) => (h <= 1 ? 1 : (h - 1) as 1 | 2 | 3 | 4));
         }
         audioManager.play('sfx_menu_move');
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        if (focusRow === 'players') {
-          setHovered((h) => (h >= 4 ? 4 : (h + 1) as 1 | 2 | 3 | 4));
+        if (focusRow === 'bots') {
+          setBotCount((b) => (b >= 3 ? 3 : (b + 1) as 0 | 1 | 2 | 3));
         } else {
-          setBotCount((b) => {
-            const max = (4 - hovered) as 0 | 1 | 2 | 3;
-            return b >= max ? max : (b + 1) as 0 | 1 | 2 | 3;
+          setPlayerCount((h) => {
+            const max = (4 - botCount) as 1 | 2 | 3 | 4;
+            return h >= max ? max : (h + 1) as 1 | 2 | 3 | 4;
           });
         }
         audioManager.play('sfx_menu_move');
       } else if (e.key === 'Enter' || e.key === ' ') {
-        const effectiveBots = Math.min(botCount, 4 - hovered) as 0 | 1 | 2 | 3;
-        onSelect(hovered, effectiveBots);
+        const effectiveBots = Math.min(botCount, 4 - playerCount) as 0 | 1 | 2 | 3;
+        onSelect(playerCount, effectiveBots);
         audioManager.play('sfx_menu_confirm');
       }
     },
-    [onSelect, hovered, botCount, focusRow],
+    [onSelect, playerCount, botCount, focusRow],
   );
 
   useEffect(() => {
@@ -101,7 +95,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
     fontFamily: "'Press Start 2P', monospace",
     color: '#e8e8f0',
     background: 'linear-gradient(180deg, #1a1a2e 0%, #2a1515 100%)',
-    gap: 24,
+    gap: 20,
     padding: 20,
     userSelect: 'none',
   };
@@ -121,76 +115,69 @@ export default function PlayerCountSelect({ onSelect }: Props) {
     flexWrap: 'wrap',
   };
 
-  function makeCardStyle(count: 1 | 2 | 3 | 4): React.CSSProperties {
-    const isActive = hovered === count && focusRow === 'players';
-    const isSelected = hovered === count;
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 12,
+    color: '#a0a0b0',
+    textAlign: 'center',
+  };
+
+  function makeBotCardStyle(count: 0 | 1 | 2 | 3): React.CSSProperties {
+    const isActive = botCount === count && focusRow === 'bots';
+    const isSelected = botCount === count;
     return {
-      width: 140,
-      height: 200,
+      width: 120,
+      height: 100,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 10,
+      gap: 6,
       background: isSelected
-        ? 'linear-gradient(180deg, #3a1a0a 0%, #2a0a0a 100%)'
+        ? 'linear-gradient(180deg, #0a1a3a 0%, #0a0a2a 100%)'
         : 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2e 100%)',
       border: 'none',
       cursor: 'pointer',
       fontFamily: "'Press Start 2P', monospace",
       color: '#e8e8f0',
-      animation: `card-appear 0.4s ease-out ${(count - 1) * 0.1}s both${isActive ? ', selected-glow 1.5s ease infinite' : ''}`,
+      animation: `card-appear 0.4s ease-out ${count * 0.1}s both${isActive ? ', bot-glow 1.5s ease infinite' : ''}`,
       boxShadow: isSelected
-        ? '0 0 20px #e06010, inset 0 0 0 3px #ff8020'
-        : 'inset 0 0 0 3px #3a3a4a',
+        ? '0 0 16px #2060e0, inset 0 0 0 2px #4080ff'
+        : 'inset 0 0 0 2px #3a3a4a',
       transition: 'background 0.2s, box-shadow 0.2s',
-      padding: 12,
+      padding: 8,
     };
   }
 
-  function makeBotCardStyle(count: 0 | 1 | 2 | 3): React.CSSProperties {
-    const isDisabled = count > maxBots;
-    const isActive = botCount === count && focusRow === 'bots';
-    const isSelected = botCount === count;
+  function makePlayerCardStyle(count: 1 | 2 | 3 | 4): React.CSSProperties {
+    const isDisabled = count > maxPlayers;
+    const isActive = playerCount === count && focusRow === 'players' && !isDisabled;
+    const isSelected = playerCount === count && !isDisabled;
     return {
-      width: 100,
-      height: 64,
+      width: 120,
+      height: 140,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 4,
+      gap: 8,
       background: isDisabled
         ? '#1a1a2e'
         : isSelected
-          ? 'linear-gradient(180deg, #0a1a3a 0%, #0a0a2a 100%)'
+          ? 'linear-gradient(180deg, #3a1a0a 0%, #2a0a0a 100%)'
           : 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2e 100%)',
       border: 'none',
       cursor: isDisabled ? 'not-allowed' : 'pointer',
       fontFamily: "'Press Start 2P', monospace",
       color: isDisabled ? '#3a3a4a' : '#e8e8f0',
-      animation: isActive && !isDisabled ? 'bot-glow 1.5s ease infinite' : undefined,
-      boxShadow: isSelected && !isDisabled
-        ? '0 0 16px #2060e0, inset 0 0 0 2px #4080ff'
-        : 'inset 0 0 0 2px #3a3a4a',
+      animation: isActive ? 'selected-glow 1.5s ease infinite' : `card-appear 0.4s ease-out ${count * 0.1}s both`,
+      boxShadow: isSelected
+        ? '0 0 20px #e06010, inset 0 0 0 3px #ff8020'
+        : 'inset 0 0 0 3px #3a3a4a',
       transition: 'background 0.2s, box-shadow 0.2s',
-      padding: 8,
+      padding: 10,
       opacity: isDisabled ? 0.3 : 1,
     };
   }
-
-  const numberStyle: React.CSSProperties = {
-    fontSize: 48,
-    color: '#ff8020',
-    textShadow: '0 0 20px #e06010',
-    lineHeight: '1',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 10,
-    textAlign: 'center',
-    lineHeight: '1.5',
-  };
 
   // Pixel art car icon
   const carIcon = (count: 1 | 2 | 3 | 4) => {
@@ -224,26 +211,6 @@ export default function PlayerCountSelect({ onSelect }: Props) {
     );
   };
 
-  const hint: React.CSSProperties = {
-    fontSize: 9,
-    color: '#666680',
-    textAlign: 'center',
-    marginTop: 4,
-  };
-
-  const sectionLabel: React.CSSProperties = {
-    fontSize: 12,
-    color: '#a0a0b0',
-    textAlign: 'center',
-  };
-
-  const options: Array<{ count: 1 | 2 | 3 | 4; label: string }> = [
-    { count: 1, label: t('one_player') },
-    { count: 2, label: t('two_players') },
-    { count: 3, label: t('three_players') },
-    { count: 4, label: t('four_players') },
-  ];
-
   const botOptions: Array<{ count: 0 | 1 | 2 | 3; label: string }> = [
     { count: 0, label: t('bot_count_0') },
     { count: 1, label: t('bot_count_1') },
@@ -251,68 +218,105 @@ export default function PlayerCountSelect({ onSelect }: Props) {
     { count: 3, label: t('bot_count_3') },
   ];
 
+  const playerOptions: Array<{ count: 1 | 2 | 3 | 4; label: string }> = [
+    { count: 1, label: t('one_player') },
+    { count: 2, label: t('two_players') },
+    { count: 3, label: t('three_players') },
+    { count: 4, label: t('four_players') },
+  ];
+
+  const totalRacers = playerCount + botCount;
+
   return (
     <div style={container}>
       <style>{keyframesStyle}</style>
       <div style={header}>{t('select_mode')}</div>
 
-      {/* Player count row */}
+      {/* Bot count row (first/primary) */}
+      <div style={sectionLabel}>{t('bot_opponents')}</div>
       <div style={cardsRow}>
-        {options.map(({ count, label }) => (
+        {botOptions.map(({ count, label }) => (
           <button
-            key={count}
-            style={makeCardStyle(count)}
-            onClick={() => { audioManager.play('sfx_menu_confirm'); setHovered(count); setFocusRow('players'); }}
-            onMouseEnter={() => { audioManager.play('sfx_menu_move'); setHovered(count); setFocusRow('players'); }}
+            key={`bot-${count}`}
+            style={makeBotCardStyle(count)}
+            onClick={() => {
+              audioManager.play('sfx_menu_move');
+              setBotCount(count);
+              setFocusRow('bots');
+            }}
+            onMouseEnter={() => {
+              audioManager.play('sfx_menu_move');
+              setBotCount(count);
+              setFocusRow('bots');
+            }}
           >
-            {carIcon(count)}
-            <div style={numberStyle}>{count}</div>
-            <div style={labelStyle}>{label}</div>
+            <div style={{
+              fontSize: 28,
+              color: '#4080ff',
+              textShadow: '0 0 10px #2060e0',
+              lineHeight: '1',
+            }}>
+              {count}
+            </div>
+            <div style={{ fontSize: 7, textAlign: 'center', lineHeight: '1.3' }}>{label}</div>
           </button>
         ))}
       </div>
 
-      {/* Bot count row */}
-      <div style={sectionLabel}>{t('bot_opponents')}</div>
+      {/* Player count row (second, constrained by bots) */}
+      <div style={sectionLabel}>{t('select_mode')}</div>
       <div style={cardsRow}>
-        {botOptions.map(({ count, label }) => {
-          const isDisabled = count > maxBots;
+        {playerOptions.map(({ count, label }) => {
+          const isDisabled = count > maxPlayers;
           return (
             <button
-              key={`bot-${count}`}
-              style={makeBotCardStyle(count)}
+              key={count}
+              style={makePlayerCardStyle(count)}
               disabled={isDisabled}
               onClick={() => {
                 if (!isDisabled) {
                   audioManager.play('sfx_menu_move');
-                  setBotCount(count);
-                  setFocusRow('bots');
+                  setPlayerCount(count);
+                  setFocusRow('players');
                 }
               }}
               onMouseEnter={() => {
                 if (!isDisabled) {
                   audioManager.play('sfx_menu_move');
-                  setBotCount(count);
-                  setFocusRow('bots');
+                  setPlayerCount(count);
+                  setFocusRow('players');
                 }
               }}
             >
-              <div style={{ fontSize: 20, color: isDisabled ? '#3a3a4a' : '#4080ff', textShadow: isDisabled ? 'none' : '0 0 10px #2060e0', lineHeight: '1' }}>
+              {carIcon(count)}
+              <div style={{
+                fontSize: 32,
+                color: isDisabled ? '#3a3a4a' : '#ff8020',
+                textShadow: isDisabled ? 'none' : '0 0 20px #e06010',
+                lineHeight: '1',
+              }}>
                 {count}
               </div>
-              <div style={{ fontSize: 7, textAlign: 'center', lineHeight: '1.3' }}>{label}</div>
+              <div style={{ fontSize: 8, textAlign: 'center', lineHeight: '1.5' }}>{label}</div>
             </button>
           );
         })}
       </div>
 
-      <div style={hint}>{t('press_number')}</div>
+      {/* Total racers indicator */}
+      <div style={{
+        fontSize: 10,
+        color: '#666680',
+        textAlign: 'center',
+      }}>
+        {totalRacers} {totalRacers === 1 ? 'racer' : 'racers'}
+      </div>
 
-      {/* Confirm button */}
+      {/* Confirm */}
       <button
         onClick={() => {
-          const effectiveBots = Math.min(botCount, 4 - hovered) as 0 | 1 | 2 | 3;
-          onSelect(hovered, effectiveBots);
+          const effectiveBots = Math.min(botCount, 4 - playerCount) as 0 | 1 | 2 | 3;
+          onSelect(playerCount, effectiveBots);
           audioManager.play('sfx_menu_confirm');
         }}
         style={{
@@ -329,6 +333,10 @@ export default function PlayerCountSelect({ onSelect }: Props) {
       >
         {t('confirm')}
       </button>
+
+      <div style={{ fontSize: 9, color: '#666680', textAlign: 'center' }}>
+        {t('press_number')}
+      </div>
     </div>
   );
 }

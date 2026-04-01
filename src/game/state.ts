@@ -16,13 +16,28 @@ export function createGameState(
   const totalPlayers = config.playerCount + botCount;
   const palettes: Array<'primary' | 'rival'> = ['primary', 'rival', 'primary', 'rival'];
 
-  // Compute start positions: 2x2 grid
+  // Compute start positions: all side by side on the start line
   const p1Pos = track.startPositions.p1;
   const p2Pos = track.startPositions.p2;
-  const backOffset = 40;
-  const p3Pos = track.startPositions.p3 ?? { x: p1Pos.x, y: p1Pos.y + backOffset, angle: p1Pos.angle };
-  const p4Pos = track.startPositions.p4 ?? { x: p2Pos.x, y: p2Pos.y + backOffset, angle: p2Pos.angle };
-  const allPositions = [p1Pos, p2Pos, p3Pos, p4Pos];
+  const midX = (p1Pos.x + p2Pos.x) / 2;
+  const spacing = Math.abs(p2Pos.x - p1Pos.x) || 50;
+  const startY = p1Pos.y;
+  const startAngle = p1Pos.angle;
+
+  // Spread racers evenly across the road at the start line
+  const positions4 = [
+    { x: midX - spacing * 1.5, y: startY, angle: startAngle },
+    { x: midX - spacing * 0.5, y: startY, angle: startAngle },
+    { x: midX + spacing * 0.5, y: startY, angle: startAngle },
+    { x: midX + spacing * 1.5, y: startY, angle: startAngle },
+  ];
+  // Use track-defined positions if available, otherwise computed side-by-side
+  const allPositions = [
+    track.startPositions.p1,
+    track.startPositions.p2,
+    track.startPositions.p3 ?? positions4[2],
+    track.startPositions.p4 ?? positions4[3],
+  ];
   const charIds = [config.p1Character, config.p2Character, config.p3Character, config.p4Character];
 
   const players = [
