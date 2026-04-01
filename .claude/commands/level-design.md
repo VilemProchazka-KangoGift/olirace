@@ -12,6 +12,37 @@ Each track is a TypeScript file in `src/data/tracks/` exporting a `TrackData` ob
 
 Helper functions `straight()`, `curve()`, `joinSegments()` build the road polyline. `indexAtY()` and `roadAt()` look up road geometry at a given Y position.
 
+## Adding a New Track — Wiring Checklist
+
+1. Create `src/data/tracks/{id}.ts` exporting a `TrackData` object
+2. Add import + entry in `src/screens/GameScreen.tsx` → `trackMap`
+3. Add import + entry in `src/screens/TrackSelect.tsx` → `tracks` array (sorted by difficulty)
+4. Add i18n key `track_{id}` in both `src/i18n/en.ts` and `src/i18n/cs.ts`
+5. Run `npm run lint && npm run test && npm run build`
+6. Commit and push
+
+## Track Design Principles
+
+### Track Length & Segments
+| Difficulty | Y range | Length | Segments | Road `step` |
+|---|---|---|---|---|
+| Easy | ~4000px | 4000-4500 | 5-8 | 40 (default) |
+| Medium | ~5000px | 4500-5500 | 8-12 | 30-40 |
+| Hard | ~5500px | 5000-5800 | 10-15 | 30 (more road points for tight curves) |
+
+The `step` parameter in `straight()` and `curve()` controls point density. Use 30 on hard tracks for smoother tight curves.
+
+### Track Theming
+Each track should have a **signature obstacle type** that appears 4-6 times and defines the track's personality. Other obstacle types appear 1-3 times for variety.
+
+Examples from existing tracks:
+- **Mud Runner** — signature: mud_zone (6) + destructible (5). No death hazards at all.
+- **Pinball Alley** — signature: bouncy_wall (6). Chaotic ricochets everywhere.
+- **Sky Bridge** — signature: ramp (5). Ramps placed before deadly obstacles as the "intended" route.
+
+### Death-Free Easy Tracks
+Easy tracks CAN have zero death hazards (no spikes, no rotating_spikes). Mud Runner proves this works — the challenge comes from mud slowdowns, barrel impacts, and the road itself. This is a valid and fun design for the youngest players.
+
 ## Road Geometry Rules
 
 ### Width Ranges by Difficulty
@@ -109,7 +140,8 @@ If this is negative, the ball is impassable at its extremes. Fix by **increasing
 - Good for light variety, non-threatening
 
 **mud_zone** (50% speed for 0.5s after leaving)
-- Size: 60x60
+- Default size: 60x60, custom size via `width` property
+- On narrow roads (≤150px), use `width: 40` to avoid filling the entire road
 - Non-lethal, strategic placement to slow down leaders
 - Place on racing line through curves for risk/reward
 
@@ -130,6 +162,8 @@ If this is negative, the ball is impassable at its extremes. Fix by **increasing
 **Curve apex obstacle:** Place a log or slow-moving rotating spike at the apex (tightest point) of a curve. Road is already challenging there.
 
 **Boost recovery:** After a difficult section, place an arrow pad. Rewards survival and resets pacing.
+
+**Ramp-before-danger:** Place a ramp 150-200px before a spike strip or rotating spike. Skilled players can launch off the ramp and fly over the danger (0.6s airborne = ~150-200px at speed). This is the core mechanic of Sky Bridge and makes hard tracks feel fair — there's always a skillful way through.
 
 ## Difficulty Design Philosophy
 
