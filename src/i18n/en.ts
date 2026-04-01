@@ -63,4 +63,11 @@ export default {
   award_speed_demon: "Speed Demon",
   // Progress
   progress: "Progress",
+  // Bots
+  bot_opponents: "Bots",
+  bot_count_0: "No Bots",
+  bot_count_1: "1 Bot",
+  bot_count_2: "2 Bots",
+  bot_count_3: "3 Bots",
+  bot_label: "BOT",
 } as const;

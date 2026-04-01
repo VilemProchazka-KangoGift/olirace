@@ -63,4 +63,11 @@ export default {
   award_speed_demon: "Rychlý jako blesk",
   // Progress
   progress: "Postup",
+  // Bots
+  bot_opponents: "Boti",
+  bot_count_0: "Bez botu",
+  bot_count_1: "1 bot",
+  bot_count_2: "2 boti",
+  bot_count_3: "3 boti",
+  bot_label: "BOT",
 } as const;
