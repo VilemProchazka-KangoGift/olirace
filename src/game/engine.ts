@@ -939,9 +939,11 @@ export function startGame(
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Interpolated camera for lava parallax
-    const camX = state.camera.position.x + (state.camera.target.x - state.camera.position.x) * 0.5 * alpha;
-    const camY = state.camera.position.y + (state.camera.target.y - state.camera.position.y) * 0.5 * alpha;
+    // Use camera position directly — the camera already lerps smoothly at 0.08/tick.
+    // Alpha-based interpolation between position and target caused visible jitter
+    // (especially at race start when the gap is ~150px from look-ahead).
+    const camX = state.camera.position.x;
+    const camY = state.camera.position.y;
 
     // Phase 1: Draw lava at raw canvas resolution
     renderLavaFullscreen(ctx, canvas.width, canvas.height, state.time, camX, camY);

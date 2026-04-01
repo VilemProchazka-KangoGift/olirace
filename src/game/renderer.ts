@@ -408,8 +408,10 @@ export function render(
 ): void {
   ctx.save();
 
-  const camX = lerp(state.camera.position.x, state.camera.target.x, alpha * 0.5);
-  const camY = lerp(state.camera.position.y, state.camera.target.y, alpha * 0.5);
+  // Camera position directly — smooth lerp already applied in updateCamera.
+  // Alpha-based interpolation caused jitter when position/target diverged.
+  const camX = state.camera.position.x;
+  const camY = state.camera.position.y;
 
   // 1. Lava background — drawn fullscreen in engine.ts (parallax).
   //    No need to redraw here; the fullscreen pass already covers everything.
