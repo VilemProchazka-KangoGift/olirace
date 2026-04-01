@@ -284,10 +284,10 @@ const lavaGauntlet: TrackData = {
   startLine: startLineIdx,
   finishLine: finishLineIdx,
   startPositions: {
-    p1: { x: startRoad.x - 30, y: 4960, angle: Math.PI / 2 },
-    p2: { x: startRoad.x + 30, y: 4960, angle: Math.PI / 2 },
-    p3: { x: startRoad.x - 30, y: 5000, angle: Math.PI / 2 },
-    p4: { x: startRoad.x + 30, y: 5000, angle: Math.PI / 2 },
+    p1: { x: startRoad.x - 45, y: 4960, angle: Math.PI / 2 },
+    p2: { x: startRoad.x - 15, y: 4960, angle: Math.PI / 2 },
+    p3: { x: startRoad.x + 15, y: 4960, angle: Math.PI / 2 },
+    p4: { x: startRoad.x + 45, y: 4960, angle: Math.PI / 2 },
   },
 };
 

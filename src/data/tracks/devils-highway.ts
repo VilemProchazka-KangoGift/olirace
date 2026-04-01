@@ -352,10 +352,10 @@ const devilsHighway: TrackData = {
   startLine: startLineIdx,
   finishLine: finishLineIdx,
   startPositions: {
-    p1: { x: startRoad.x - 25, y: 5760, angle: Math.PI / 2 },
-    p2: { x: startRoad.x + 25, y: 5760, angle: Math.PI / 2 },
-    p3: { x: startRoad.x - 25, y: 5800, angle: Math.PI / 2 },
-    p4: { x: startRoad.x + 25, y: 5800, angle: Math.PI / 2 },
+    p1: { x: startRoad.x - 38, y: 5760, angle: Math.PI / 2 },
+    p2: { x: startRoad.x - 13, y: 5760, angle: Math.PI / 2 },
+    p3: { x: startRoad.x + 13, y: 5760, angle: Math.PI / 2 },
+    p4: { x: startRoad.x + 38, y: 5760, angle: Math.PI / 2 },
   },
 };
 

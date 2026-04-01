@@ -259,10 +259,10 @@ const sundayDrive: TrackData = {
   startLine: startLineIdx,
   finishLine: finishLineIdx,
   startPositions: {
-    p1: { x: startRoad.x - 35, y: 4760, angle: Math.PI / 2 },
-    p2: { x: startRoad.x + 35, y: 4760, angle: Math.PI / 2 },
-    p3: { x: startRoad.x - 35, y: 4800, angle: Math.PI / 2 },
-    p4: { x: startRoad.x + 35, y: 4800, angle: Math.PI / 2 },
+    p1: { x: startRoad.x - 52, y: 4760, angle: Math.PI / 2 },
+    p2: { x: startRoad.x - 18, y: 4760, angle: Math.PI / 2 },
+    p3: { x: startRoad.x + 18, y: 4760, angle: Math.PI / 2 },
+    p4: { x: startRoad.x + 52, y: 4760, angle: Math.PI / 2 },
   },
 };
 

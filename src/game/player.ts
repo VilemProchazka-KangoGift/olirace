@@ -292,16 +292,14 @@ export function updatePlayer(
     }
   }
 
-  // 6. Steering
+  // 6. Steering — always responsive, even at low speed or standstill
   if (input.steerX !== 0) {
-    if (player.speed !== 0) {
-      const steerSpeedRatio = player.speed / player.maxSpeed;
-      const driftBoost = player.drifting ? DRIFT_HANDLING_BOOST : 1;
-      player.angle -= player.handling * input.steerX * steerSpeedRatio * dt * driftBoost;
-    } else {
-      // Slow turning while stationary
-      player.angle -= player.handling * input.steerX * 0.15 * dt;
-    }
+    const speedSign = player.speed >= 0 ? 1 : -1;
+    const absSpeedRatio = Math.abs(player.speed) / player.maxSpeed;
+    // Minimum 70% steering so cars always turn well, ramps up to 100% at full speed
+    const steerFactor = Math.max(0.7, absSpeedRatio) * speedSign;
+    const driftBoost = player.drifting ? DRIFT_HANDLING_BOOST : 1;
+    player.angle -= player.handling * input.steerX * steerFactor * dt * driftBoost;
   }
 
   // 7. Update velocity and position
