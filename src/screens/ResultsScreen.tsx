@@ -132,7 +132,8 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  const isMulti = results.playerCount >= 2;
+  const totalPlayers = results.playerCount + (results.botCount ?? 0);
+  const isMulti = totalPlayers >= 2;
   const hasWinner = results.winner !== null;
 
   let winnerText = '';
@@ -228,9 +229,18 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     return (
       <div key={playerIndex} style={cardStyle}>
         {isMulti && (
-          <div style={{ fontSize: 6, color: '#a0a0b0' }}>
-            {`P${playerIndex + 1}`}
-            {isWinner && <span style={{ marginLeft: 6, color: '#e0c000' }}>&#128081;</span>}
+          <div style={{ fontSize: 6, color: '#a0a0b0', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span>{`P${playerIndex + 1}`}</span>
+            {p.isBot && (
+              <span style={{
+                fontSize: 5,
+                color: '#4080ff',
+                padding: '1px 4px',
+                border: '1px solid #4080ff',
+                background: '#4080ff15',
+              }}>BOT</span>
+            )}
+            {isWinner && <span style={{ marginLeft: 4, color: '#e0c000' }}>&#128081;</span>}
           </div>
         )}
         <svg width="36" height="36" viewBox="0 0 48 48">
@@ -311,9 +321,9 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
         zIndex: 2,
       }}>
         {playerCard(0, 0.3)}
-        {results.playerCount >= 2 && playerCard(1, 0.45)}
-        {results.playerCount >= 3 && playerCard(2, 0.6)}
-        {results.playerCount >= 4 && playerCard(3, 0.75)}
+        {totalPlayers >= 2 && playerCard(1, 0.45)}
+        {totalPlayers >= 3 && playerCard(2, 0.6)}
+        {totalPlayers >= 4 && playerCard(3, 0.75)}
       </div>
 
       {/* Awards section */}
