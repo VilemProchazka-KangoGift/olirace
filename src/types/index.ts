@@ -238,6 +238,10 @@ export interface GameState {
   randomEvents: RandomEvent[];
   flashTimer: number;      // white flash on spike death
   countdownParticles: Particle[]; // countdown number explosion particles
+
+  // ── AI ────────────────────────────────────────────────────────────
+  botCount: number;
+  aiStates: AIState[];
 }
 
 export interface CharacterDef {
@@ -261,8 +265,16 @@ export type ScreenId =
   | 'game'
   | 'results';
 
+export interface AIState {
+  stuckTimer: number;
+  stuckReverseTimer: number;
+  driftIntentTimer: number;
+  noisePhase: number;
+}
+
 export interface GameConfig {
   playerCount: 1 | 2 | 3 | 4;
+  botCount: 0 | 1 | 2 | 3;
   trackId: string;
   p1Character: string;
   p2Character: string;
@@ -272,12 +284,14 @@ export interface GameConfig {
 
 export interface GameResults {
   playerCount: 1 | 2 | 3 | 4;
+  botCount: number;
   winner: number | null;
   players: Array<{
     characterId: string;
     finishTime: number | null;
     deaths: number;
     collisionCount: number;
+    isBot: boolean;
   }>;
   awards: RaceAward[];
 }
