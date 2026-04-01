@@ -49,7 +49,7 @@ import {
   randomRange,
   randomAngle,
 } from '../utils/math';
-import { initInput, destroyInput, readPlayerInput } from './input';
+import { initInput, destroyInput, readPlayerInput, setAIContext } from './input';
 import { createGameState } from './state';
 import { updatePlayer, computeTrackProgress } from './player';
 import { updateCamera } from './camera';
@@ -96,6 +96,7 @@ export function startGame(
   audioManager.playLoop('sfx_engine');
 
   const state = createGameState(config, track);
+  setAIContext(state, config.playerCount);
   let accumulator = 0;
   let lastTime = performance.now();
   let running = true;
@@ -466,8 +467,8 @@ export function startGame(
     // 8. Update obstacles
     updateObstacles(state.obstacles, state.time, dt);
 
-    // 9. Update camera
-    updateCamera(state.camera, state.players, state.playerCount, dt);
+    // 9. Update camera (follow all players including bots)
+    updateCamera(state.camera, state.players, state.players.length as 1 | 2 | 3 | 4, dt);
 
     // 10. Update particles
     updateParticles(state.particles, dt);
@@ -584,7 +585,7 @@ export function startGame(
     }
 
     // 15. Check tether in multi-player mode
-    if (state.playerCount >= 2 && state.phase === 'racing') {
+    if (state.players.length >= 2 && state.phase === 'racing') {
       checkTether(state);
     }
   }
@@ -786,13 +787,13 @@ export function startGame(
     }
 
     const allFinished = gs.players.every((p) => p.finishTime !== null);
-    if (allFinished || (gs.winner !== null && gs.playerCount === 1)) {
+    if (allFinished || (gs.winner !== null && gs.players.length === 1)) {
       gs.phase = 'finished';
       onFinish(buildResults(gs));
     }
 
     if (
-      gs.playerCount >= 2 &&
+      gs.players.length >= 2 &&
       gs.winner !== null &&
       gs.players.some((p) => p.finishTime === null)
     ) {
@@ -860,7 +861,7 @@ export function startGame(
     }
 
     // Slowpoke (last place, only in multiplayer)
-    if (gs.playerCount >= 2) {
+    if (gs.players.length >= 2) {
       const unfinished = gs.players.filter(p => p.finishTime === null);
       const slowest = gs.players
         .filter(p => p.finishTime !== null)
@@ -881,7 +882,7 @@ export function startGame(
     });
 
     // Speed Demon (finished first by big margin)
-    if (gs.playerCount >= 2 && gs.winner !== null) {
+    if (gs.players.length >= 2 && gs.winner !== null) {
       const winnerTime = gs.players[gs.winner].finishTime!;
       const others = gs.players.filter((p, i) => i !== gs.winner && p.finishTime !== null);
       if (others.length > 0) {
@@ -898,12 +899,14 @@ export function startGame(
   function buildResults(gs: GameState): GameResults {
     return {
       playerCount: gs.playerCount,
+      botCount: gs.botCount,
       winner: gs.winner,
-      players: gs.players.map((p) => ({
+      players: gs.players.map((p, i) => ({
         characterId: p.characterId,
         finishTime: p.finishTime,
         deaths: p.deaths,
         collisionCount: p.collisionCount,
+        isBot: i >= gs.playerCount,
       })),
       awards: calculateAwards(gs),
     };
@@ -981,6 +984,7 @@ export function startGame(
     stop(): void {
       running = false;
       cancelAnimationFrame(rafId);
+      setAIContext(null, 0);
       destroyInput();
       window.removeEventListener('resize', onResize);
     },
