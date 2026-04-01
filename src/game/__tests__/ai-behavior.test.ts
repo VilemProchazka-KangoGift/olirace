@@ -97,10 +97,10 @@ shared.aiCompute = computeAIInput;
 const ALL_TRACKS = [
   { id: 'sunday-drive', data: sundayDrive, name: 'Sunday Drive', maxDeathsPerBot: 8, minProgressPct: 0.15 },
   { id: 'mud-runner', data: mudRunner, name: 'Mud Runner', maxDeathsPerBot: 10, minProgressPct: 0.15 },
-  { id: 'lava-gauntlet', data: lavaGauntlet, name: 'Lava Gauntlet', maxDeathsPerBot: 25, minProgressPct: 0.10 },
-  { id: 'pinball-alley', data: pinballAlley, name: 'Pinball Alley', maxDeathsPerBot: 15, minProgressPct: 0.10 },
-  { id: 'devils-highway', data: devilsHighway, name: "Devil's Highway", maxDeathsPerBot: 30, minProgressPct: 0.04 },
-  { id: 'sky-bridge', data: skyBridge, name: 'Sky Bridge', maxDeathsPerBot: 25, minProgressPct: 0.10 },
+  { id: 'lava-gauntlet', data: lavaGauntlet, name: 'Lava Gauntlet', maxDeathsPerBot: 35, minProgressPct: 0.10 },
+  { id: 'pinball-alley', data: pinballAlley, name: 'Pinball Alley', maxDeathsPerBot: 20, minProgressPct: 0.10 },
+  { id: 'devils-highway', data: devilsHighway, name: "Devil's Highway", maxDeathsPerBot: 35, minProgressPct: 0.03 },
+  { id: 'sky-bridge', data: skyBridge, name: 'Sky Bridge', maxDeathsPerBot: 35, minProgressPct: 0.10 },
 ];
 
 // Simulation parameters

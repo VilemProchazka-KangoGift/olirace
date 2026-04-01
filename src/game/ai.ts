@@ -31,6 +31,9 @@ const CURVATURE_SAMPLE_DIST = 200;
 const CURVATURE_BRAKE_THRESHOLD = 0.4;
 const DRIFT_CURVATURE_THRESHOLD = 0.7;
 const RUBBER_BAND_RANGE = 800;
+const RUBBER_BAND_HUMAN_MIN_SPEED = 30;
+const JOCKEY_DETECT_RADIUS = 80;
+const JOCKEY_STEER_STRENGTH = 0.4;
 const STUCK_THRESHOLD = 5;
 const STUCK_TIME = 1.0;
 const STUCK_REVERSE_TIME = 0.5;
@@ -230,6 +233,27 @@ export function computeAIInput(
     }
   }
 
+  // 5b. Dynamic jockeying — steer away from nearby bots/players
+  for (let i = 0; i < gameState.players.length; i++) {
+    if (i === playerIndex) continue;
+    const other = gameState.players[i];
+    if (!other.alive) continue;
+    const odx = other.position.x - player.position.x;
+    const ody = other.position.y - player.position.y;
+    const dist = Math.sqrt(odx * odx + ody * ody);
+    if (dist > JOCKEY_DETECT_RADIUS || dist < 1) continue;
+
+    // Only jockey with players roughly alongside (not far ahead/behind)
+    const forward = odx * cosA + ody * sinA;
+    if (Math.abs(forward) > JOCKEY_DETECT_RADIUS) continue;
+
+    // Steer away from the other player laterally
+    const right = -odx * sinA + ody * cosA;
+    const avoidDir = right > 0 ? -1 : 1;
+    const urgency = 1 - dist / JOCKEY_DETECT_RADIUS;
+    steerX += avoidDir * JOCKEY_STEER_STRENGTH * urgency;
+  }
+
   steerX = clamp(steerX, -1, 1);
 
   // 6. Speed management
@@ -254,29 +278,35 @@ export function computeAIInput(
     }
   }
 
-  // 8. Rubber-banding
-  // humanCount is number of human players (before bots in the array)
+  // 8. Rubber-banding (only to active human players)
   const humanCount = gameState.playerCount;
-  let bestHumanProgress = 0;
+  let bestHumanProgress = -1;
   for (let i = 0; i < humanCount && i < gameState.players.length; i++) {
-    if (gameState.players[i].trackProgress > bestHumanProgress) {
-      bestHumanProgress = gameState.players[i].trackProgress;
+    const h = gameState.players[i];
+    // Only rubber-band to humans who are actively racing
+    if (Math.abs(h.speed) > RUBBER_BAND_HUMAN_MIN_SPEED && h.alive) {
+      if (h.trackProgress > bestHumanProgress) {
+        bestHumanProgress = h.trackProgress;
+      }
     }
   }
 
-  const progressDelta = player.trackProgress - bestHumanProgress;
+  // If no human is active, bots race freely (no rubber-banding)
+  if (bestHumanProgress >= 0) {
+    const progressDelta = player.trackProgress - bestHumanProgress;
 
-  if (progressDelta < 0) {
-    // Behind: boost
-    const boost = Math.min(0.3, Math.abs(progressDelta) / RUBBER_BAND_RANGE) * personality.rubberBandFactor;
-    accelerate = Math.min(1, accelerate + boost * 0.5);
-    brake = Math.max(0, brake - boost);
-  } else if (progressDelta > 0) {
-    // Ahead: slow down
-    const penalty = Math.min(0.25, progressDelta / RUBBER_BAND_RANGE);
-    accelerate = Math.max(0.4, accelerate - penalty);
-    if (progressDelta > RUBBER_BAND_RANGE * 0.5) {
-      brake += 0.15;
+    if (progressDelta < 0) {
+      // Behind: boost
+      const boost = Math.min(0.3, Math.abs(progressDelta) / RUBBER_BAND_RANGE) * personality.rubberBandFactor;
+      accelerate = Math.min(1, accelerate + boost * 0.5);
+      brake = Math.max(0, brake - boost);
+    } else if (progressDelta > 0) {
+      // Ahead: slow down
+      const penalty = Math.min(0.25, progressDelta / RUBBER_BAND_RANGE);
+      accelerate = Math.max(0.4, accelerate - penalty);
+      if (progressDelta > RUBBER_BAND_RANGE * 0.5) {
+        brake += 0.15;
+      }
     }
   }
 
