@@ -1,7 +1,8 @@
-import type { GameState, GameConfig, TrackData } from '../types';
+import type { GameState, GameConfig, TrackData, AIState } from '../types';
 import { createPlayer } from './player';
 import { createObstacleStates } from './obstacles';
 import { createCamera } from './camera';
+import { createInitialAIState } from './ai';
 import { COUNTDOWN_STEP_DURATION, GO_DISPLAY_DURATION } from '../utils/constants';
 
 export function createGameState(
@@ -11,6 +12,8 @@ export function createGameState(
   const countdownTotal =
     3 * COUNTDOWN_STEP_DURATION + GO_DISPLAY_DURATION; // 2.9s
 
+  const botCount = config.botCount ?? 0;
+  const totalPlayers = config.playerCount + botCount;
   const palettes: Array<'primary' | 'rival'> = ['primary', 'rival', 'primary', 'rival'];
 
   // Compute start positions: 2x2 grid
@@ -32,7 +35,7 @@ export function createGameState(
     ),
   ];
 
-  for (let i = 1; i < config.playerCount; i++) {
+  for (let i = 1; i < totalPlayers; i++) {
     players.push(
       createPlayer(
         charIds[i],
@@ -44,16 +47,24 @@ export function createGameState(
     );
   }
 
+  // Initialize AI states for bot players
+  const aiStates: AIState[] = [];
+  for (let i = 0; i < totalPlayers; i++) {
+    if (i >= config.playerCount) {
+      aiStates[i] = createInitialAIState();
+    }
+  }
+
   const obstacles = createObstacleStates(track.obstacles);
 
   let camX = 0;
   let camY = 0;
-  for (let i = 0; i < config.playerCount; i++) {
+  for (let i = 0; i < totalPlayers; i++) {
     camX += allPositions[i].x;
     camY += allPositions[i].y;
   }
-  camX /= config.playerCount;
-  camY /= config.playerCount;
+  camX /= totalPlayers;
+  camY /= totalPlayers;
 
   return {
     phase: 'countdown',
@@ -76,5 +87,9 @@ export function createGameState(
     randomEvents: [],
     flashTimer: 0,
     countdownParticles: [],
+
+    // AI
+    botCount,
+    aiStates,
   };
 }
