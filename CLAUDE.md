@@ -50,7 +50,7 @@ Visual systems: skid marks (persistent on road), comic text popups ("POW!", "SPL
 ### AI Opponents (`src/game/ai.ts`)
 `computeAIInput(player, playerIndex, gameState): PlayerInput` — generates the same 4-value input that human players produce. Injected at `readPlayerInput()` in `input.ts` — if `playerIndex >= humanPlayerCount`, routes to AI instead of keyboard/gamepad. All physics, collision, and rendering code is unchanged.
 
-AI features: road-following with look-ahead, obstacle avoidance (deadly vs beneficial), curvature braking, drift initiation, rubber-banding (speeds up when behind human, slows when ahead), stuck recovery. Per-character personalities defined in `PERSONALITIES` map (cornerSkill, seekBoosts, driftSkill, steeringNoise, rubberBandFactor).
+AI features: road-following with look-ahead, obstacle avoidance (deadly vs beneficial), curvature braking, drift initiation, rubber-banding (only to active humans — idle humans are ignored so bots race freely), dynamic jockeying (bots steer away from nearby players to spread laterally), stuck recovery. Per-character personalities defined in `PERSONALITIES` map (cornerSkill, seekBoosts, driftSkill, steeringNoise, rubberBandFactor).
 
 `GameConfig.botCount: 0|1|2|3` controls how many AI players. Human indices `0..playerCount-1`, bot indices `playerCount..playerCount+botCount-1`.
 
