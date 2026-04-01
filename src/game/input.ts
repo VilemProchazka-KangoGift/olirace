@@ -1,4 +1,13 @@
-import type { PlayerInput } from '../types';
+import type { PlayerInput, GameState } from '../types';
+import { computeAIInput } from './ai';
+
+let activeGameState: GameState | null = null;
+let humanPlayerCount = 0;
+
+export function setAIContext(gameState: GameState | null, humanCount: number): void {
+  activeGameState = gameState;
+  humanPlayerCount = humanCount;
+}
 
 const keyState: Record<string, boolean> = {};
 
@@ -83,6 +92,14 @@ function applyDeadzone(value: number): number {
 }
 
 export function readPlayerInput(playerIndex: number): PlayerInput {
+  // AI bots: generate input from AI brain instead of keyboard/gamepad
+  if (activeGameState && playerIndex >= humanPlayerCount) {
+    const player = activeGameState.players[playerIndex];
+    if (player) {
+      return computeAIInput(player, playerIndex, activeGameState);
+    }
+  }
+
   const input = readKeyboard(playerIndex);
 
   // Override with gamepad if connected
