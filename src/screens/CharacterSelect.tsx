@@ -6,6 +6,7 @@ import type { CharacterDef } from '../types';
 
 interface Props {
   playerCount: 1 | 2 | 3 | 4;
+  botCount: 0 | 1 | 2 | 3;
   onConfirm: (p1: string, p2: string, p3: string, p4: string) => void;
   onBack: () => void;
 }
@@ -303,7 +304,7 @@ const PLAYER_HINTS = [
   'Num 8456 + Num0',
 ];
 
-export default function CharacterSelect({ playerCount, onConfirm, onBack }: Props) {
+export default function CharacterSelect({ playerCount, botCount, onConfirm, onBack }: Props) {
   const { t } = useTranslation();
   const [indices, setIndices] = useState([0, 2, 1, 3]);
   const setPlayerIndex = (pIdx: number, fn: (i: number) => number) => {
@@ -334,12 +335,36 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
 
   // Submit when countdown hits 0 or Enter is pressed
   const submitAll = useCallback(() => {
-    const chars = indices.map((idx, pIdx) => {
-      if (pIdx < playerCount) return characters[idx].id;
-      return characters[(indices[0] + pIdx * 2) % characters.length].id;
-    });
+    // Human picks
+    const humanPicks = new Set<string>();
+    const chars: string[] = [];
+    for (let i = 0; i < playerCount; i++) {
+      const id = characters[indices[i]].id;
+      chars.push(id);
+      humanPicks.add(id);
+    }
+
+    // Bot picks: random characters avoiding duplicates with humans
+    const available = characters.filter(c => !humanPicks.has(c.id));
+    const shuffled = [...available].sort(() => Math.random() - 0.5);
+    let botIdx = 0;
+    for (let i = playerCount; i < playerCount + botCount && i < 4; i++) {
+      if (botIdx < shuffled.length) {
+        chars.push(shuffled[botIdx].id);
+        botIdx++;
+      } else {
+        // Fallback: reuse characters if more bots than unique chars
+        chars.push(characters[(i * 2 + 1) % characters.length].id);
+      }
+    }
+
+    // Fill remaining slots
+    while (chars.length < 4) {
+      chars.push(characters[(chars.length * 2) % characters.length].id);
+    }
+
     onConfirm(chars[0], chars[1], chars[2], chars[3]);
-  }, [indices, playerCount, onConfirm]);
+  }, [indices, playerCount, botCount, onConfirm]);
 
   useEffect(() => {
     if (countdown === 0) {
@@ -654,6 +679,49 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
         <>
           <div style={divider} />
           {renderPlayerSection(4)}
+        </>
+      )}
+
+      {/* Bot sections */}
+      {botCount > 0 && (
+        <>
+          <div style={divider} />
+          <div style={{
+            display: 'flex',
+            gap: 12,
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}>
+            {Array.from({ length: botCount }, (_, i) => {
+              const botSlot = playerCount + i;
+              return (
+                <div key={`bot-${i}`} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '8px 16px',
+                  background: '#1a1a2e',
+                  boxShadow: 'inset 0 0 0 2px #2060e0',
+                  opacity: 0.7,
+                }}>
+                  <div style={{ fontSize: 7, color: '#4080ff' }}>
+                    {t('bot_label')} {i + 1}
+                  </div>
+                  <div style={{
+                    fontSize: 16,
+                    color: '#4080ff',
+                    textShadow: '0 0 8px #2060e0',
+                  }}>
+                    P{botSlot + 1}
+                  </div>
+                  <div style={{ fontSize: 6, color: '#666680' }}>
+                    {t('bot_count_1').split(' ').pop()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </>
       )}
 
