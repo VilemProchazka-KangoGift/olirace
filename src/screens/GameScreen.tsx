@@ -37,6 +37,14 @@ const keyframesStyle = `
 @keyframes speed-needle {
   0%   { stroke-dashoffset: 157; }
 }
+@keyframes slide-in-left {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slide-in-right {
+  0%   { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
 `;
 
 function formatTime(seconds: number): string {
@@ -49,10 +57,9 @@ function formatTime(seconds: number): string {
 
 function SpeedGauge({ speed, maxSpeed, side }: { speed: number; maxSpeed: number; side: 'left' | 'right' }) {
   const ratio = Math.min(1, speed / maxSpeed);
-  const arcLength = 157; // half circumference of r=50
+  const arcLength = 157;
   const dashOffset = arcLength * (1 - ratio);
 
-  // Color transitions: white -> cyan -> orange -> red
   let strokeColor = '#e8e8f0';
   if (ratio > 0.3) strokeColor = '#00e0e0';
   if (ratio > 0.6) strokeColor = '#e07020';
@@ -64,22 +71,14 @@ function SpeedGauge({ speed, maxSpeed, side }: { speed: number; maxSpeed: number
     [side]: 8,
     width: 64,
     height: 36,
-    animation: 'hud-fade-in 0.5s ease-out both',
+    animation: `hud-fade-in 0.5s ease-out both`,
     animationDelay: '1s',
   };
 
   return (
     <div style={style}>
       <svg width="64" height="36" viewBox="0 0 108 58">
-        {/* Background arc */}
-        <path
-          d="M 4 54 A 50 50 0 0 1 104 54"
-          fill="none"
-          stroke="#2a2a3a"
-          strokeWidth="6"
-          strokeLinecap="round"
-        />
-        {/* Active arc */}
+        <path d="M 4 54 A 50 50 0 0 1 104 54" fill="none" stroke="#2a2a3a" strokeWidth="6" strokeLinecap="round" />
         <path
           d="M 4 54 A 50 50 0 0 1 104 54"
           fill="none"
@@ -90,19 +89,48 @@ function SpeedGauge({ speed, maxSpeed, side }: { speed: number; maxSpeed: number
           strokeDashoffset={dashOffset}
           style={{ transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s' }}
         />
-        {/* Speed text */}
-        <text
-          x="54"
-          y="50"
-          textAnchor="middle"
-          fill={strokeColor}
-          fontSize="14"
+        <text x="54" y="50" textAnchor="middle" fill={strokeColor} fontSize="14"
           fontFamily="'Press Start 2P', monospace"
-          style={{ transition: 'fill 0.3s' }}
-        >
+          style={{ transition: 'fill 0.3s' }}>
           {Math.round(speed)}
         </text>
       </svg>
+    </div>
+  );
+}
+
+// Progress bar at top of screen showing race completion
+function ProgressBar({ progress, playerCount }: { progress: number[]; playerCount: number }) {
+  const barWidth = 200;
+  const colors = ['#e02020', '#2060e0', '#40c040', '#e0c000'];
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 26,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: barWidth,
+      height: 4,
+      background: '#2a2a3a',
+      borderRadius: 2,
+      animation: 'hud-fade-in 0.5s ease-out 1.5s both',
+      overflow: 'visible',
+    }}>
+      {progress.slice(0, playerCount).map((p, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${Math.min(100, p * 100)}%`,
+          top: -3,
+          width: 8,
+          height: 10,
+          background: colors[i],
+          borderRadius: 2,
+          transform: 'translateX(-50%)',
+          transition: 'left 0.2s linear',
+          boxShadow: `0 0 4px ${colors[i]}`,
+        }} />
+      ))}
     </div>
   );
 }
@@ -119,6 +147,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     speeds: [0, 0, 0, 0],
     maxSpeeds: [200, 200, 200, 200],
     phase: 'countdown' as GameState['phase'],
+    trackProgress: [0, 0, 0, 0],
   });
 
   const pauseItems = [
@@ -127,12 +156,10 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     { key: 'quit', label: t('quit_to_title'), action: onQuit },
   ];
 
-  // Expose game state to HUD via polling from rAF in engine
   const gameStateRef = useRef<GameState | null>(null);
 
   const handleFinish = useCallback(
     (results: GameResults) => {
-      // Delay a bit so player sees the finish
       setTimeout(() => {
         onFinish(results);
       }, 2500);
@@ -151,12 +178,16 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     const handle = startGame(canvas, config, track, handleFinish);
     gameRef.current = handle;
 
-    // Poll game state for HUD updates
+    // Compute total track length for progress normalization
+    let totalTrackLen = 0;
+    for (let i = 0; i < track.road.length - 1; i++) {
+      const dx = track.road[i + 1].x - track.road[i].x;
+      const dy = track.road[i + 1].y - track.road[i].y;
+      totalTrackLen += Math.sqrt(dx * dx + dy * dy);
+    }
+
     let hudRaf = 0;
     const pollHud = () => {
-      // We access the game state through the canvas's internal data
-      // For now we parse it from the rendered canvas context (the engine draws timer text)
-      // Actually, let's patch in a state accessor via a custom property
       const gs = (canvas as unknown as { __gameState?: GameState }).__gameState;
       if (gs) {
         gameStateRef.current = gs;
@@ -181,6 +212,12 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
             gs.players[3]?.maxSpeed ?? 200,
           ],
           phase: gs.phase,
+          trackProgress: [
+            (gs.players[0]?.trackProgress ?? 0) / (totalTrackLen || 1),
+            (gs.players[1]?.trackProgress ?? 0) / (totalTrackLen || 1),
+            (gs.players[2]?.trackProgress ?? 0) / (totalTrackLen || 1),
+            (gs.players[3]?.trackProgress ?? 0) / (totalTrackLen || 1),
+          ],
         });
       }
       hudRaf = requestAnimationFrame(pollHud);
@@ -195,7 +232,6 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     };
   }, [config, handleFinish]);
 
-  // Pause handling
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -233,7 +269,6 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     display: 'block',
   };
 
-  // HUD overlay
   const hudOverlay: React.CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -246,7 +281,6 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     zIndex: 2,
   };
 
-  // Timer (top center)
   const timerStyle: React.CSSProperties = {
     position: 'absolute',
     top: 10,
@@ -260,7 +294,6 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     transition: 'opacity 0.3s',
   };
 
-  // Death counter
   function deathCounter(deaths: number, side: 'left' | 'right', label: string) {
     const style: React.CSSProperties = {
       position: 'absolute',
@@ -271,7 +304,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
       alignItems: 'center',
       gap: 4,
       textShadow: '0 0 4px #000, 1px 1px 0 #000',
-      animation: 'hud-fade-in 0.5s ease-out both',
+      animation: `hud-fade-in 0.5s ease-out both`,
       animationDelay: '0.7s',
     };
     return (
@@ -283,7 +316,6 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
     );
   }
 
-  // Pause overlay
   const pauseOverlay: React.CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -332,9 +364,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
           pointerEvents: 'auto',
         }}
       >
-        {isActive && (
-          <span style={{ marginRight: 8, color: '#e06010' }}>▶</span>
-        )}
+        {isActive && <span style={{ marginRight: 8, color: '#e06010' }}>▶</span>}
         {item.label}
       </button>
     );
@@ -351,19 +381,24 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
         {/* Timer */}
         <div style={timerStyle}>{formatTime(hudState.raceTimer)}</div>
 
-        {/* P1 deaths - top left */}
+        {/* Progress bar */}
+        {hudState.phase !== 'countdown' && (
+          <ProgressBar progress={hudState.trackProgress} playerCount={config.playerCount} />
+        )}
+
+        {/* P1 deaths */}
         {deathCounter(hudState.deaths[0], 'left', config.playerCount >= 2 ? 'P1' : '')}
 
-        {/* P2 deaths - top right */}
+        {/* P2 deaths */}
         {config.playerCount >= 2 && deathCounter(hudState.deaths[1], 'right', 'P2')}
 
-        {/* Speed gauges - P1 bottom-left, P2 bottom-right */}
+        {/* Speed gauges */}
         <SpeedGauge speed={hudState.speeds[0]} maxSpeed={hudState.maxSpeeds[0]} side="left" />
         {config.playerCount >= 2 && (
           <SpeedGauge speed={hudState.speeds[1]} maxSpeed={hudState.maxSpeeds[1]} side="right" />
         )}
 
-        {/* P3 deaths + gauge - stacked below P1 (bottom-left area) */}
+        {/* P3 */}
         {config.playerCount >= 3 && (
           <>
             <div style={{
@@ -396,7 +431,7 @@ export default function GameScreen({ config, onFinish, onQuit, onRestart }: Prop
           </>
         )}
 
-        {/* P4 deaths + gauge - stacked below P2 (bottom-right area) */}
+        {/* P4 */}
         {config.playerCount >= 4 && (
           <>
             <div style={{

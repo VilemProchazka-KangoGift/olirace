@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { audioManager } from '../game/audio';
 import { characters } from '../data/characters';
 import type { CharacterDef } from '../types';
 
@@ -48,7 +49,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
   switch (char.id) {
     case 'formula':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Rear wing */}
           <rect x="12" y="44" width="32" height="4" rx="1" fill="#2a2a3a" />
           <rect x="14" y="42" width="28" height="3" rx="1" fill="#3a3a4a" />
@@ -77,7 +78,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     case 'yeti':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Body - tall boxy SUV */}
           <rect x="10" y="14" width="36" height="32" rx="3" fill={color} />
           {/* Roof rack */}
@@ -111,7 +112,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     case 'cat':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Tail curling up */}
           <path d="M 40 38 Q 48 32 46 22 Q 45 18 42 20" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
           {/* Body - round */}
@@ -148,7 +149,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     case 'pig':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Curly tail */}
           <path d="M 40 38 Q 50 36 48 28 Q 46 24 44 28" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
           {/* Body - round/oval */}
@@ -180,7 +181,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     case 'frog':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Body - wide oval */}
           <ellipse cx="28" cy="34" rx="20" ry="14" fill={color} />
           {/* Lighter belly */}
@@ -214,7 +215,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     case 'toilet':
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           {/* Tank/cistern */}
           <rect x="18" y="36" width="20" height="14" rx="3" fill={color} opacity="0.85" />
           <rect x="20" y="38" width="8" height="10" rx="2" fill="white" opacity="0.15" />
@@ -251,7 +252,7 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
 
     default:
       return (
-        <svg width="48" height="48" viewBox="0 0 56 56">
+        <svg width="60" height="60" viewBox="0 0 56 56">
           <rect x="12" y="18" width="32" height="20" rx="4" fill={color} />
           <rect x="18" y="10" width="20" height="14" rx="3" fill={color} opacity="0.85" />
           <circle cx="18" cy="42" r="4" fill="#2a2a3a" />
@@ -265,7 +266,7 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
   const pct = statPercent(value, max);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
-      <div style={{ fontSize: 5, width: 52, textAlign: 'right', color: '#a0a0b0', flexShrink: 0 }}>
+      <div style={{ fontSize: 7, width: 52, textAlign: 'right', color: '#a0a0b0', flexShrink: 0 }}>
         {label}
       </div>
       <div
@@ -351,6 +352,7 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
       // Enter or Space from any player starts immediately
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        audioManager.play('sfx_menu_confirm');
         submitAll();
         return;
       }
@@ -358,16 +360,20 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
       // P1 controls: Arrow Left/Right
       if (e.key === 'ArrowLeft') {
         setPlayerIndex(0, (i) => (i - 1 + characters.length) % characters.length);
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'ArrowRight') {
         setPlayerIndex(0, (i) => (i + 1) % characters.length);
+        audioManager.play('sfx_menu_move');
       }
 
       // P2 controls: A/D
       if (playerCount >= 2) {
         if (e.key === 'a' || e.key === 'A') {
           setPlayerIndex(1, (i) => (i - 1 + characters.length) % characters.length);
+          audioManager.play('sfx_menu_move');
         } else if (e.key === 'd' || e.key === 'D') {
           setPlayerIndex(1, (i) => (i + 1) % characters.length);
+          audioManager.play('sfx_menu_move');
         }
       }
 
@@ -375,8 +381,10 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
       if (playerCount >= 3) {
         if (e.key === 'j' || e.key === 'J') {
           setPlayerIndex(2, (i) => (i - 1 + characters.length) % characters.length);
+          audioManager.play('sfx_menu_move');
         } else if (e.key === 'l' || e.key === 'L') {
           setPlayerIndex(2, (i) => (i + 1) % characters.length);
+          audioManager.play('sfx_menu_move');
         }
       }
 
@@ -384,8 +392,10 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
       if (playerCount >= 4) {
         if (e.code === 'Numpad4') {
           setPlayerIndex(3, (i) => (i - 1 + characters.length) % characters.length);
+          audioManager.play('sfx_menu_move');
         } else if (e.code === 'Numpad6') {
           setPlayerIndex(3, (i) => (i + 1) % characters.length);
+          audioManager.play('sfx_menu_move');
         }
       }
 
@@ -436,7 +446,7 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
   };
 
   const header: React.CSSProperties = {
-    fontSize: 11,
+    fontSize: 14,
     color: '#ff8020',
     textShadow: '0 0 10px #e06010',
     animation: 'header-in 0.5s ease-out both',
@@ -491,9 +501,9 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
             return (
               <button
                 key={char.id}
-                onClick={() => setPlayerIndex(pIdx, () => i)}
+                onClick={() => { audioManager.play('sfx_menu_move'); setPlayerIndex(pIdx, () => i); }}
                 style={{
-                  width: compact ? 64 : (playerCount === 2 ? 78 : 84),
+                  width: compact ? 76 : (playerCount === 2 ? 92 : 100),
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -518,7 +528,7 @@ export default function CharacterSelect({ playerCount, onConfirm, onBack }: Prop
                 }}
               >
                 <CarIcon char={char} isRival={isRival && isSelected} />
-                <div style={{ fontSize: 5, textAlign: 'center', lineHeight: '1.5', minHeight: compact ? 10 : 16 }}>
+                <div style={{ fontSize: 7, textAlign: 'center', lineHeight: '1.5', minHeight: compact ? 10 : 16 }}>
                   {t(char.name)}
                 </div>
               </button>

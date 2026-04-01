@@ -13,10 +13,10 @@ export function createGameState(
 
   const palettes: Array<'primary' | 'rival'> = ['primary', 'rival', 'primary', 'rival'];
 
-  // Compute start positions: 2x2 grid. P1=left-front, P2=right-front, P3=left-back, P4=right-back
+  // Compute start positions: 2x2 grid
   const p1Pos = track.startPositions.p1;
   const p2Pos = track.startPositions.p2;
-  const backOffset = 40; // px behind front positions
+  const backOffset = 40;
   const p3Pos = track.startPositions.p3 ?? { x: p1Pos.x, y: p1Pos.y + backOffset, angle: p1Pos.angle };
   const p4Pos = track.startPositions.p4 ?? { x: p2Pos.x, y: p2Pos.y + backOffset, angle: p2Pos.angle };
   const allPositions = [p1Pos, p2Pos, p3Pos, p4Pos];
@@ -46,7 +46,6 @@ export function createGameState(
 
   const obstacles = createObstacleStates(track.obstacles);
 
-  // Camera starts at midpoint of all player positions
   let camX = 0;
   let camY = 0;
   for (let i = 0; i < config.playerCount; i++) {
@@ -69,5 +68,13 @@ export function createGameState(
     winner: null,
     playerCount: config.playerCount,
     time: 0,
+
+    // New visual systems
+    skidMarks: [],
+    screenShake: { intensity: 0, duration: 0, timer: 0, offsetX: 0, offsetY: 0 },
+    comicTexts: [],
+    randomEvents: [],
+    flashTimer: 0,
+    countdownParticles: [],
   };
 }

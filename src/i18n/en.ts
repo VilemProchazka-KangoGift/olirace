@@ -51,4 +51,13 @@ export default {
   tether_warning: "Catch up!",
   finished: "Finished!",
   dnf: "DNF",
+  // Awards
+  awards_title: "Awards",
+  award_most_deaths: "Most Deaths",
+  award_biggest_bully: "Biggest Bully",
+  award_slowpoke: "Slowpoke",
+  award_clean_racer: "Clean Racer",
+  award_speed_demon: "Speed Demon",
+  // Progress
+  progress: "Progress",
 } as const;

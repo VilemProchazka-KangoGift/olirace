@@ -26,6 +26,12 @@ const keyframesStyle = `
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
 }
+@keyframes trophy-drop {
+  0%   { transform: translateY(-80px) scale(1.5); opacity: 0; }
+  60%  { transform: translateY(5px) scale(0.95); opacity: 1; }
+  80%  { transform: translateY(-3px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
 @keyframes stat-slide {
   0%   { transform: translateX(-20px); opacity: 0; }
   100% { transform: translateX(0); opacity: 1; }
@@ -38,6 +44,14 @@ const keyframesStyle = `
   0%   { transform: translateY(10px); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
+@keyframes award-pop {
+  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+  50%  { transform: scale(1.15) rotate(3deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes stat-bar-fill {
+  0%   { width: 0%; }
+}
 `;
 
 function formatTime(seconds: number | null): string {
@@ -49,7 +63,6 @@ function formatTime(seconds: number | null): string {
   return `${mm}:${ss}`;
 }
 
-// Generate random confetti particles
 function ConfettiBackground() {
   const particles = Array.from({ length: 35 }, (_, i) => {
     const left = Math.random() * 100;
@@ -100,9 +113,12 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         setMenuIndex((i) => (i - 1 + menuItems.length) % menuItems.length);
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         setMenuIndex((i) => (i + 1) % menuItems.length);
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'Enter' || e.key === ' ') {
+        audioManager.play('sfx_menu_confirm');
         menuItems[menuIndex].action();
       } else if (e.key === 'Escape') {
         onQuit();
@@ -121,9 +137,7 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
 
   let winnerText = '';
   if (isMulti && hasWinner) {
-    const winnerLabels = ['P1', 'P2', 'P3', 'P4'];
-    const winnerIdx = results.winner!;
-    const winKey = `p${winnerIdx + 1}_wins` as any;
+    const winKey = `p${results.winner! + 1}_wins` as any;
     winnerText = t(winKey);
   } else if (!isMulti) {
     winnerText = results.players[0].finishTime !== null ? t('finished') : t('dnf');
@@ -139,8 +153,8 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     fontFamily: "'Press Start 2P', monospace",
     color: '#e8e8f0',
     background: 'linear-gradient(180deg, #1a1a2e 0%, #2a1010 50%, #1a1a2e 100%)',
-    gap: 20,
-    padding: 20,
+    gap: 16,
+    padding: 16,
     position: 'relative',
     overflow: 'hidden',
     userSelect: 'none',
@@ -157,7 +171,7 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
 
   const trophyStyle: React.CSSProperties = {
     fontSize: 40,
-    animation: 'trophy-bounce 1s ease-in-out infinite',
+    animation: 'trophy-drop 0.8s ease-out both, trophy-bounce 1s ease-in-out 0.8s infinite',
     zIndex: 2,
   };
 
@@ -173,7 +187,6 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     if (!p) return null;
     const char = getCharacter(p.characterId);
     const isWinner = results.winner === playerIndex;
-    // Determine if this player shares a character with another, use rival palette
     const charIds = [config.p1Character, config.p2Character, config.p3Character, config.p4Character];
     const hasDupe = charIds.slice(0, playerIndex).includes(p.characterId);
     const palette = hasDupe ? 'rival' : 'primary';
@@ -220,7 +233,6 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
             {isWinner && <span style={{ marginLeft: 6, color: '#e0c000' }}>&#128081;</span>}
           </div>
         )}
-        {/* Car icon */}
         <svg width="36" height="36" viewBox="0 0 48 48">
           <rect x="10" y="18" width="28" height="16" rx="3" fill={color} />
           <rect x="16" y="10" width="16" height="12" rx="2" fill={color} opacity="0.85" />
@@ -249,13 +261,16 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
     );
   };
 
+  // Awards section
+  const awards = results.awards ?? [];
+
   function menuButton(item: typeof menuItems[number], index: number) {
     const isActive = index === menuIndex;
     return (
       <button
         key={item.key}
-        onClick={item.action}
-        onMouseEnter={() => setMenuIndex(index)}
+        onClick={() => { audioManager.play('sfx_menu_confirm'); item.action(); }}
+        onMouseEnter={() => { audioManager.play('sfx_menu_move'); setMenuIndex(index); }}
         style={{
           fontSize: 9,
           padding: '10px 24px',
@@ -288,30 +303,61 @@ export default function ResultsScreen({ results, config, onRematch, onTrackSelec
       <div style={winnerStyle}>{winnerText}</div>
       <div style={resultsHeader}>{t('results')}</div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          zIndex: 2,
-        }}
-      >
+      <div style={{
+        display: 'flex',
+        gap: 16,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        zIndex: 2,
+      }}>
         {playerCard(0, 0.3)}
         {results.playerCount >= 2 && playerCard(1, 0.45)}
         {results.playerCount >= 3 && playerCard(2, 0.6)}
         {results.playerCount >= 4 && playerCard(3, 0.75)}
       </div>
 
-      <div
-        style={{
+      {/* Awards section */}
+      {awards.length > 0 && (
+        <div style={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          marginTop: 12,
+          gap: 10,
+          flexWrap: 'wrap',
+          justifyContent: 'center',
           zIndex: 2,
-        }}
-      >
+          marginTop: 4,
+        }}>
+          {awards.map((award, i) => (
+            <div key={award.key + i} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 12px',
+              background: '#1a1a2ecc',
+              boxShadow: 'inset 0 0 0 1px #3a3a4a',
+              fontSize: 7,
+              animation: `award-pop 0.4s ease-out ${1.0 + i * 0.15}s both`,
+              zIndex: 2,
+            }}>
+              <span style={{ fontSize: 14 }}>{award.icon}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ color: '#e0c000' }}>{t(award.key as any)}</span>
+                <span style={{ color: '#666680', fontSize: 6 }}>
+                  P{award.playerIndex + 1}
+                  {award.value !== '' && ` · ${award.value}`}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        marginTop: 8,
+        zIndex: 2,
+      }}>
         {menuItems.map((item, i) => menuButton(item, i))}
       </div>
     </div>

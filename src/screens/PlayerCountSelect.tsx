@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { audioManager } from '../game/audio';
 
 interface Props {
   onSelect: (count: 1 | 2 | 3 | 4) => void;
@@ -26,21 +27,23 @@ export default function PlayerCountSelect({ onSelect }: Props) {
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === '1') onSelect(1);
-      else if (e.key === '2') onSelect(2);
-      else if (e.key === '3') onSelect(3);
-      else if (e.key === '4') onSelect(4);
+      if (e.key === '1') { onSelect(1); audioManager.play('sfx_menu_confirm'); }
+      else if (e.key === '2') { onSelect(2); audioManager.play('sfx_menu_confirm'); }
+      else if (e.key === '3') { onSelect(3); audioManager.play('sfx_menu_confirm'); }
+      else if (e.key === '4') { onSelect(4); audioManager.play('sfx_menu_confirm'); }
       else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         setHovered((h) => {
           if (h === null || h === 1) return 1;
           return (h - 1) as 1 | 2 | 3 | 4;
         });
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         setHovered((h) => {
           if (h === null || h === 4) return 4;
           return (h + 1) as 1 | 2 | 3 | 4;
         });
-      } else if (e.key === 'Enter' || e.key === ' ') onSelect(hovered);
+        audioManager.play('sfx_menu_move');
+      } else if (e.key === 'Enter' || e.key === ' ') { onSelect(hovered); audioManager.play('sfx_menu_confirm'); }
     },
     [onSelect, hovered],
   );
@@ -66,7 +69,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
   };
 
   const header: React.CSSProperties = {
-    fontSize: 14,
+    fontSize: 18,
     color: '#ff8020',
     textShadow: '0 0 10px #e06010',
     animation: 'header-slide 0.5s ease-out both',
@@ -83,8 +86,8 @@ export default function PlayerCountSelect({ onSelect }: Props) {
   function makeCardStyle(count: 1 | 2 | 3 | 4): React.CSSProperties {
     const isActive = hovered === count;
     return {
-      width: 100,
-      height: 160,
+      width: 140,
+      height: 200,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -107,14 +110,14 @@ export default function PlayerCountSelect({ onSelect }: Props) {
   }
 
   const numberStyle: React.CSSProperties = {
-    fontSize: 36,
+    fontSize: 48,
     color: '#ff8020',
     textShadow: '0 0 20px #e06010',
     lineHeight: '1',
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 7,
+    fontSize: 10,
     textAlign: 'center',
     lineHeight: '1.5',
   };
@@ -152,7 +155,7 @@ export default function PlayerCountSelect({ onSelect }: Props) {
   };
 
   const hint: React.CSSProperties = {
-    fontSize: 7,
+    fontSize: 9,
     color: '#666680',
     textAlign: 'center',
     marginTop: 8,
@@ -174,8 +177,8 @@ export default function PlayerCountSelect({ onSelect }: Props) {
           <button
             key={count}
             style={makeCardStyle(count)}
-            onClick={() => onSelect(count)}
-            onMouseEnter={() => setHovered(count)}
+            onClick={() => { audioManager.play('sfx_menu_confirm'); onSelect(count); }}
+            onMouseEnter={() => { audioManager.play('sfx_menu_move'); setHovered(count); }}
             onMouseLeave={() => {}}
           >
             {carIcon(count)}

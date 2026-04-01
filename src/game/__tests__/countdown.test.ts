@@ -35,6 +35,12 @@ function createCountdownState(): GameState {
     winner: null,
     playerCount: 1,
     time: 0,
+    skidMarks: [],
+    screenShake: { intensity: 0, duration: 0, timer: 0, offsetX: 0, offsetY: 0 },
+    comicTexts: [],
+    randomEvents: [],
+    flashTimer: 0,
+    countdownParticles: [],
   };
 }
 

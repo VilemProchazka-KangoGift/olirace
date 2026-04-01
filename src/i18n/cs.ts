@@ -51,4 +51,13 @@ export default {
   tether_warning: "Dojíždíš!",
   finished: "Dokončeno!",
   dnf: "Nedokončeno",
+  // Awards
+  awards_title: "Ocenění",
+  award_most_deaths: "Nejvíc smrtí",
+  award_biggest_bully: "Největší rváč",
+  award_slowpoke: "Šnek",
+  award_clean_racer: "Čistý jezdec",
+  award_speed_demon: "Rychlý jako blesk",
+  // Progress
+  progress: "Postup",
 } as const;

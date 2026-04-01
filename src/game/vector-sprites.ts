@@ -133,6 +133,11 @@ function drawFormula(
   ctx.fillStyle = color;
   roundRect(ctx, 21, 8, 14, 38, 4);
   ctx.fill();
+  // Thick black outline around body
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  roundRect(ctx, 21, 8, 14, 38, 4);
+  ctx.stroke();
 
   // -- Nose cone (triangle) --
   ctx.fillStyle = color;
@@ -143,6 +148,10 @@ function drawFormula(
   ctx.lineTo(34, 14);
   ctx.closePath();
   ctx.fill();
+  // Outline nose cone
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
   ctx.globalAlpha = 1.0;
 
   // -- Front wing --
@@ -157,6 +166,13 @@ function drawFormula(
   ctx.fillStyle = '#3a3a5a';
   roundRect(ctx, 25, 22, 6, 6, 1);
   ctx.fill();
+  // Cockpit gleam (white highlight top-left)
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.arc(26, 23, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
   // -- Wheels --
   ctx.fillStyle = COLORS.darkGray;
@@ -187,10 +203,21 @@ function drawFormula(
   ctx.arc(30, 48, 1.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // -- Highlight stripe along body center --
+  // -- Highlight stripe along body center (more punchy) --
   ctx.fillStyle = highlight;
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.45;
   roundRect(ctx, 26, 10, 4, 32, 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Rosy accent circles on body sides --
+  ctx.fillStyle = '#ff6060';
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.arc(23, 28, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(33, 28, 3, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
@@ -214,6 +241,11 @@ function drawYeti(
   ctx.fillStyle = color;
   roundRect(ctx, 10, 14, 36, 32, 3);
   ctx.fill();
+  // Thick black outline around body
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  roundRect(ctx, 10, 14, 36, 32, 3);
+  ctx.stroke();
 
   // -- Roof rack bars --
   ctx.fillStyle = COLORS.metal;
@@ -251,13 +283,25 @@ function drawYeti(
   roundRect(ctx, 10, 44, 36, 3, 1);
   ctx.fill();
 
-  // -- Headlights (yellow circles) --
-  ctx.fillStyle = '#e0c000';
+  // -- Headlights (bigger, cartoon eyes ~50% larger) --
+  ctx.fillStyle = '#ffe840';
   ctx.beginPath();
-  ctx.arc(14, 13, 2.5, 0, Math.PI * 2);
+  ctx.arc(14, 13, 3.8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(42, 13, 3.8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  // Headlight gleam (white highlight top-left)
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(12.5, 11.5, 1.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(42, 13, 2.5, 0, Math.PI * 2);
+  ctx.arc(40.5, 11.5, 1.2, 0, Math.PI * 2);
   ctx.fill();
 
   // -- Taillights (red rects) --
@@ -284,10 +328,21 @@ function drawYeti(
   ctx.fillRect(10, 29, 36, 2);
   ctx.globalAlpha = 1.0;
 
-  // -- Body highlight --
+  // -- Body highlight (more punchy) --
   ctx.fillStyle = highlight;
-  ctx.globalAlpha = 0.15;
+  ctx.globalAlpha = 0.3;
   roundRect(ctx, 12, 14, 12, 14, 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Rosy cheek circles on body --
+  ctx.fillStyle = '#ff6060';
+  ctx.globalAlpha = 0.2;
+  ctx.beginPath();
+  ctx.arc(14, 24, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(42, 24, 3, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
@@ -322,10 +377,16 @@ function drawCat(
   ctx.beginPath();
   ctx.ellipse(28, 32, 16, 14, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Thick black outline around body
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 32, 16, 14, 0, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // -- Belly highlight --
+  // -- Belly highlight (more punchy) --
   ctx.fillStyle = highlight;
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.4;
   ctx.beginPath();
   ctx.ellipse(28, 34, 10, 8, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -369,25 +430,56 @@ function drawCat(
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Eyes (white + dark pupil) --
+  // -- Eyes (~50% bigger + outline + gleam) --
   // Left eye
   ctx.fillStyle = '#c8e0c8';
   ctx.beginPath();
-  ctx.ellipse(22, 26, 3.5, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(22, 26, 5.2, 6, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(22, 26, 5.2, 6, 0, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.fillStyle = COLORS.black;
   ctx.beginPath();
-  ctx.ellipse(23, 26, 1.8, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(23, 26, 2.7, 4.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Left eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(20.5, 23.5, 1.5, 0, Math.PI * 2);
   ctx.fill();
   // Right eye
   ctx.fillStyle = '#c8e0c8';
   ctx.beginPath();
-  ctx.ellipse(34, 26, 3.5, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(34, 26, 5.2, 6, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(34, 26, 5.2, 6, 0, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.fillStyle = COLORS.black;
   ctx.beginPath();
-  ctx.ellipse(35, 26, 1.8, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(35, 26, 2.7, 4.5, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Right eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(32.5, 23.5, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // -- Rosy cheeks --
+  ctx.fillStyle = '#ff6080';
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.ellipse(16, 32, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(40, 32, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
   // -- Nose (pink) --
   ctx.fillStyle = '#ff8090';
@@ -471,10 +563,16 @@ function drawPig(
   ctx.beginPath();
   ctx.ellipse(28, 32, 18, 15, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Thick black outline around body
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 32, 18, 15, 0, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // -- Body highlight --
+  // -- Body highlight (more punchy) --
   ctx.fillStyle = '#ffffff';
-  ctx.globalAlpha = 0.15;
+  ctx.globalAlpha = 0.25;
   ctx.beginPath();
   ctx.ellipse(24, 28, 8, 6, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -512,21 +610,44 @@ function drawPig(
   ctx.globalAlpha = 1.0;
   ctx.restore();
 
-  // -- Eyes (white + dark pupil) --
+  // -- Eyes (~50% bigger + outline + gleam) --
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.arc(22, 26, 3, 0, Math.PI * 2);
+  ctx.arc(22, 26, 4.5, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
   ctx.beginPath();
-  ctx.arc(34, 26, 3, 0, Math.PI * 2);
+  ctx.arc(34, 26, 4.5, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
   ctx.fillStyle = COLORS.black;
   ctx.beginPath();
-  ctx.arc(22.5, 26, 1.8, 0, Math.PI * 2);
+  ctx.arc(22.5, 26, 2.7, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(34.5, 26, 1.8, 0, Math.PI * 2);
+  ctx.arc(34.5, 26, 2.7, 0, Math.PI * 2);
   ctx.fill();
+  // Eye gleam (white highlight top-left)
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(20.5, 24, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(32.5, 24, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // -- Rosy cheeks --
+  ctx.fillStyle = '#ff6080';
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.ellipse(16, 30, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(40, 30, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
   // -- Snout (oval) --
   ctx.fillStyle = '#d0607a';
@@ -584,46 +705,85 @@ function drawFrog(
   ctx.beginPath();
   ctx.ellipse(28, 34, 20, 14, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Thick black outline around body
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 34, 20, 14, 0, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // -- Lighter belly --
+  // -- Lighter belly (more punchy) --
   ctx.fillStyle = highlight;
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.4;
   ctx.beginPath();
   ctx.ellipse(28, 36, 12, 8, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Left eye bulge --
+  // -- Left eye bulge (~50% bigger eyes) --
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(16, 18, 9, 0, Math.PI * 2);
+  ctx.arc(16, 18, 10, 0, Math.PI * 2);
   ctx.fill();
-  // Eye white
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  // Eye white (bigger)
   ctx.fillStyle = '#dde8dd';
   ctx.beginPath();
-  ctx.arc(16, 17, 6, 0, Math.PI * 2);
+  ctx.arc(16, 17, 9, 0, Math.PI * 2);
   ctx.fill();
-  // Pupil
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Pupil (bigger)
   ctx.fillStyle = COLORS.black;
   ctx.beginPath();
-  ctx.arc(16.5, 17, 3, 0, Math.PI * 2);
+  ctx.arc(16.5, 17, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Left eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(14, 14, 2, 0, Math.PI * 2);
   ctx.fill();
 
-  // -- Right eye bulge --
+  // -- Right eye bulge (~50% bigger eyes) --
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(40, 18, 9, 0, Math.PI * 2);
+  ctx.arc(40, 18, 10, 0, Math.PI * 2);
   ctx.fill();
-  // Eye white
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  // Eye white (bigger)
   ctx.fillStyle = '#dde8dd';
   ctx.beginPath();
-  ctx.arc(40, 17, 6, 0, Math.PI * 2);
+  ctx.arc(40, 17, 9, 0, Math.PI * 2);
   ctx.fill();
-  // Pupil
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Pupil (bigger)
   ctx.fillStyle = COLORS.black;
   ctx.beginPath();
-  ctx.arc(40.5, 17, 3, 0, Math.PI * 2);
+  ctx.arc(40.5, 17, 4.5, 0, Math.PI * 2);
   ctx.fill();
+  // Right eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(38, 14, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // -- Rosy cheeks --
+  ctx.fillStyle = '#ff6080';
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.ellipse(10, 34, 4, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(46, 34, 4, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
   // -- Wide mouth arc --
   ctx.strokeStyle = '#1a4a1a';
@@ -713,6 +873,11 @@ function drawToilet(
   ctx.fillStyle = colorShade(color, -20);
   roundRect(ctx, 18, 36, 20, 14, 3);
   ctx.fill();
+  // Thick black outline around tank
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 18, 36, 20, 14, 3);
+  ctx.stroke();
   // Tank highlight
   ctx.fillStyle = highlight;
   ctx.globalAlpha = 0.2;
@@ -740,6 +905,12 @@ function drawToilet(
   ctx.beginPath();
   ctx.ellipse(28, 24, 14, 16, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Thick black outline around bowl
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(28, 24, 14, 16, 0, 0, Math.PI * 2);
+  ctx.stroke();
 
   // -- Bowl shadow (darker bottom edge) --
   ctx.fillStyle = shadow;
@@ -775,23 +946,64 @@ function drawToilet(
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
+  // -- Cartoon eyes on the bowl (~50% bigger) --
+  // Left eye
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(23, 19, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = COLORS.black;
+  ctx.beginPath();
+  ctx.arc(23.5, 19, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Left eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(21.5, 17, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+  // Right eye
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(33, 19, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = COLORS.black;
+  ctx.beginPath();
+  ctx.arc(33.5, 19, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Right eye gleam
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(31.5, 17, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+
   // -- Water splash effect (blue highlights) --
   ctx.fillStyle = '#80d0ff';
   ctx.globalAlpha = 0.6;
-  ctx.beginPath();
-  ctx.arc(25, 18, 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(32, 20, 1.5, 0, Math.PI * 2);
-  ctx.fill();
   ctx.beginPath();
   ctx.arc(28, 15, 1, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1.0;
 
-  // -- Porcelain highlight --
+  // -- Rosy cheeks --
+  ctx.fillStyle = '#ff6080';
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.ellipse(18, 26, 3, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(38, 26, 3, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+  // -- Porcelain highlight (more punchy) --
   ctx.fillStyle = highlight;
-  ctx.globalAlpha = 0.3;
+  ctx.globalAlpha = 0.45;
   ctx.beginPath();
   ctx.ellipse(22, 18, 4, 6, -0.3, 0, Math.PI * 2);
   ctx.fill();
@@ -1148,156 +1360,98 @@ function drawRotatingSpikesVector(
 
 // ── 3. drawLavaTile ─────────────────────────────────────────────────
 
-const lavaTileCache = new Map<number, HTMLCanvasElement>();
+let lavaTileCanvas: HTMLCanvasElement | null = null;
 const LAVA_TILE_SIZE = 128;
 
 /**
- * Helper: draw a single radial gradient, wrapping around tile edges so the
- * pattern tiles seamlessly. For a cell near an edge, we also draw it at the
- * mirrored position on the opposite side (and corners).
+ * Returns a cached 128x128 seamlessly-tiling lava tile.
+ * Static — dark crust with glowing molten cracks.
+ *
+ * Tiling is guaranteed by computing each pixel's color using
+ * wrapping-distance to feature points. Every distance calculation
+ * wraps around [0, S), so left==right and top==bottom by definition.
  */
-function drawWrappedGradient(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  S: number,
-  createGrad: (gx: number, gy: number) => CanvasGradient,
-): void {
-  // Collect all wrapped positions for this cell
-  const offsets: [number, number][] = [[0, 0]];
-  if (cx - radius < 0) offsets.push([S, 0]);
-  if (cx + radius > S) offsets.push([-S, 0]);
-  if (cy - radius < 0) offsets.push([0, S]);
-  if (cy + radius > S) offsets.push([0, -S]);
-  // Corners
-  if (cx - radius < 0 && cy - radius < 0) offsets.push([S, S]);
-  if (cx + radius > S && cy - radius < 0) offsets.push([-S, S]);
-  if (cx - radius < 0 && cy + radius > S) offsets.push([S, -S]);
-  if (cx + radius > S && cy + radius > S) offsets.push([-S, -S]);
+export function drawLavaTile(_frame: number): HTMLCanvasElement {
+  if (lavaTileCanvas) return lavaTileCanvas;
 
-  for (const [ox, oy] of offsets) {
-    ctx.fillStyle = createGrad(cx + ox, cy + oy);
-    ctx.fillRect(0, 0, S, S);
-  }
-}
-
-/**
- * Helper: draw a wrapped circle (for bright spot highlights).
- */
-function drawWrappedCircle(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  S: number,
-  createGrad: (gx: number, gy: number) => CanvasGradient,
-): void {
-  const offsets: [number, number][] = [[0, 0]];
-  if (cx - radius < 0) offsets.push([S, 0]);
-  if (cx + radius > S) offsets.push([-S, 0]);
-  if (cy - radius < 0) offsets.push([0, S]);
-  if (cy + radius > S) offsets.push([0, -S]);
-  if (cx - radius < 0 && cy - radius < 0) offsets.push([S, S]);
-  if (cx + radius > S && cy - radius < 0) offsets.push([-S, S]);
-  if (cx - radius < 0 && cy + radius > S) offsets.push([S, -S]);
-  if (cx + radius > S && cy + radius > S) offsets.push([-S, -S]);
-
-  for (const [ox, oy] of offsets) {
-    const gx = cx + ox;
-    const gy = cy + oy;
-    ctx.fillStyle = createGrad(gx, gy);
-    ctx.beginPath();
-    ctx.arc(gx, gy, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-/**
- * Returns a cached 128x128 canvas with a seamlessly-tiling lava tile drawn
- * using vector operations (radial gradients, no ImageData pixel manipulation).
- * Cells near edges are wrapped so left matches right and top matches bottom.
- * Caches 3 frames (frame 0, 1, 2).
- */
-export function drawLavaTile(frame: number): HTMLCanvasElement {
-  if (lavaTileCache.has(frame)) return lavaTileCache.get(frame)!;
-
-  const c = createCanvas(LAVA_TILE_SIZE, LAVA_TILE_SIZE);
-  const ctx = c.getContext('2d')!;
   const S = LAVA_TILE_SIZE;
+  const c = createCanvas(S, S);
+  const ctx = c.getContext('2d')!;
+  const imgData = ctx.createImageData(S, S);
+  const pixels = imgData.data;
+  const rng = seeded(42);
 
-  // -- Base color fill --
-  ctx.fillStyle = COLORS.lavaMid;
-  ctx.fillRect(0, 0, S, S);
-
-  // -- Lava cells: overlapping radial gradients with edge wrapping --
-  const rng = seeded(42 + frame * 1337);
-  const cellCount = 14;
-
+  // Generate Voronoi cell centers (these define the crust plates)
+  const cellCount = 18;
+  const cells: [number, number][] = [];
   for (let i = 0; i < cellCount; i++) {
-    // Deterministic positions with frame-dependent shift, wrapped to [0, S)
-    const cx = ((rng() * S + frame * 5 * (i % 2 === 0 ? 1 : -1)) % S + S) % S;
-    const cy = ((rng() * S + frame * 3 * (i % 2 === 0 ? -1 : 1)) % S + S) % S;
-    const radius = 16 + rng() * 28;
-    const alpha = 0.5 + rng() * 0.3;
-
-    ctx.globalAlpha = alpha;
-    drawWrappedGradient(ctx, cx, cy, radius, S, (gx, gy) => {
-      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
-      grad.addColorStop(0, COLORS.lavaGlow);
-      grad.addColorStop(0.4, COLORS.lavaBright);
-      grad.addColorStop(1, 'rgba(192, 64, 10, 0)');
-      return grad;
-    });
+    cells.push([rng() * S, rng() * S]);
   }
 
-  ctx.globalAlpha = 1.0;
-
-  // -- Dark crust patches with edge wrapping --
-  const crustCount = 8;
-  for (let i = 0; i < crustCount; i++) {
-    const cx = rng() * S;
-    const cy = rng() * S;
-    const radius = 8 + rng() * 16;
-    const alpha = 0.3 + rng() * 0.25;
-
-    ctx.globalAlpha = alpha;
-    drawWrappedGradient(ctx, cx, cy, radius, S, (gx, gy) => {
-      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
-      grad.addColorStop(0, COLORS.lavaDark);
-      grad.addColorStop(1, 'rgba(138, 32, 0, 0)');
-      return grad;
-    });
+  // Wrapping distance helper
+  function wrapDist(ax: number, ay: number, bx: number, by: number): number {
+    let dx = Math.abs(ax - bx);
+    let dy = Math.abs(ay - by);
+    if (dx > S / 2) dx = S - dx;
+    if (dy > S / 2) dy = S - dy;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
-  ctx.globalAlpha = 1.0;
+  // For each pixel, find distance to nearest and 2nd-nearest cell center
+  for (let py = 0; py < S; py++) {
+    for (let px = 0; px < S; px++) {
+      let d1 = Infinity;
+      let d2 = Infinity;
 
-  // -- Bright spot highlights with edge wrapping --
-  const spotCount = 6;
-  for (let i = 0; i < spotCount; i++) {
-    const cx = rng() * S;
-    const cy = rng() * S;
-    const radius = 4 + rng() * 7;
-    const alpha = 0.3 + rng() * 0.2;
+      for (let i = 0; i < cellCount; i++) {
+        const d = wrapDist(px, py, cells[i][0], cells[i][1]);
+        if (d < d1) {
+          d2 = d1;
+          d1 = d;
+        } else if (d < d2) {
+          d2 = d;
+        }
+      }
 
-    ctx.globalAlpha = alpha;
-    drawWrappedCircle(ctx, cx, cy, radius, S, (gx, gy) => {
-      const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
-      grad.addColorStop(0, '#ffe060');
-      grad.addColorStop(0.5, COLORS.lavaGlow);
-      grad.addColorStop(1, 'rgba(255, 128, 32, 0)');
-      return grad;
-    });
+      // Crack intensity: where d2 - d1 is small, we're on a cell boundary (crack)
+      const crackWidth = d2 - d1;
+      const crackT = Math.max(0, 1 - crackWidth / 8); // 0 = solid plate, 1 = crack center
+
+      // Distance from plate center for surface shading
+      const plateT = Math.min(1, d1 / 30); // 0 = center of plate, 1 = far from center
+
+      // Base colors
+      // Plate: dark charcoal, slightly varies by distance from center
+      const plateR = 20 + plateT * 8;
+      const plateG = 12 + plateT * 5;
+      const plateB = 6 + plateT * 3;
+
+      // Crack glow: orange-yellow
+      const glowR = 255;
+      const glowG = 120 + crackT * 80; // more yellow at center
+      const glowB = 10 + crackT * 30;
+
+      // Blend: plate vs crack
+      const r = plateR + (glowR - plateR) * crackT;
+      const g = plateG + (glowG - plateG) * crackT;
+      const b = plateB + (glowB - plateB) * crackT;
+
+      const idx = (py * S + px) * 4;
+      pixels[idx] = Math.min(255, r);
+      pixels[idx + 1] = Math.min(255, g);
+      pixels[idx + 2] = Math.min(255, b);
+      pixels[idx + 3] = 255;
+    }
   }
 
-  ctx.globalAlpha = 1.0;
+  ctx.putImageData(imgData, 0, 0);
 
-  lavaTileCache.set(frame, c);
+  lavaTileCanvas = c;
   return c;
 }
 
 // ── Cache management ────────────────────────────────────────────────
 
 export function clearVectorSpriteCache(): void {
-  lavaTileCache.clear();
+  lavaTileCanvas = null;
 }

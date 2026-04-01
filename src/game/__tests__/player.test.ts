@@ -63,6 +63,12 @@ function createMinimalGameState(players?: PlayerState[]): GameState {
     winner: null,
     playerCount: 1,
     time: 0,
+    skidMarks: [],
+    screenShake: { intensity: 0, duration: 0, timer: 0, offsetX: 0, offsetY: 0 },
+    comicTexts: [],
+    randomEvents: [],
+    flashTimer: 0,
+    countdownParticles: [],
   };
 }
 
@@ -300,17 +306,19 @@ describe('updatePlayer - steering', () => {
     expect(player.angle).not.toBe(0);
   });
 
-  it('angle does not change when speed is zero and not accelerating', () => {
+  it('angle changes slowly when speed is zero (stationary turn)', () => {
     const player = createPlayer('formula', 0, 0, 0, 'primary');
     player.speed = 0;
     const state = createMinimalGameState([player]);
     const dt = 1 / 60;
 
-    // Steer without accelerating so speed stays at 0
+    // Steer without accelerating — should turn slowly in place
     mockReadPlayerInput.mockReturnValue({ accelerate: 0, brake: 0, steerX: 1, honk: false });
     updatePlayer(player, dt, state);
 
-    expect(player.angle).toBe(0);
+    expect(player.angle).not.toBe(0);
+    // Should be a small change (slow turn)
+    expect(Math.abs(player.angle)).toBeLessThan(0.1);
   });
 
   it('steering is proportional to speed ratio', () => {

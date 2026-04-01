@@ -17,11 +17,11 @@ export interface RoadPoint {
 }
 
 export interface ObstaclePlacement {
-  type: 'arrow_pad' | 'spikes' | 'log' | 'rotating_spikes';
+  type: 'arrow_pad' | 'spikes' | 'log' | 'rotating_spikes' | 'ramp' | 'destructible' | 'mud_zone' | 'bouncy_wall';
   x: number;
   y: number;
   angle: number;
-  width?: number; // For spikes
+  width?: number;
   patrolAxis?: 'x' | 'y';
   patrolDistance?: number;
   patrolSpeed?: number;
@@ -40,6 +40,58 @@ export interface TrackData {
     p3?: { x: number; y: number; angle: number };
     p4?: { x: number; y: number; angle: number };
   };
+}
+
+// ── Skid marks ──────────────────────────────────────────────────────
+export interface SkidMark {
+  x: number;
+  y: number;
+  angle: number;
+  width: number;    // tire width
+  opacity: number;  // fades over time
+  color: string;    // darker when braking
+  life: number;
+}
+
+// ── Screen shake ────────────────────────────────────────────────────
+export interface ScreenShake {
+  intensity: number;
+  duration: number;
+  timer: number;
+  offsetX: number;
+  offsetY: number;
+}
+
+// ── Comic text popup ────────────────────────────────────────────────
+export interface ComicText {
+  text: string;
+  x: number;
+  y: number;
+  timer: number;
+  maxLife: number;
+  color: string;
+  scale: number;
+}
+
+// ── Random event ────────────────────────────────────────────────────
+export interface RandomEvent {
+  type: 'bird' | 'ufo';
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  timer: number;
+  maxLife: number;
+  frame: number;
+  targetObstacle?: number; // index for UFO abduction
+}
+
+// ── Post-race awards ────────────────────────────────────────────────
+export interface RaceAward {
+  key: string;       // translation key
+  playerIndex: number;
+  icon: string;
+  value: number | string;
 }
 
 export interface PlayerState {
@@ -72,6 +124,55 @@ export interface PlayerState {
   honkTimer: number;
   jumpTimer: number;
   jumpHeight: number;
+
+  // ── Drift ─────────────────────────────────────────────────────────
+  drifting: boolean;
+  driftTimer: number;
+  driftAngle: number;        // visual drift angle offset
+  driftBoostCharge: number;  // builds up during drift, bonus speed on exit
+
+  // ── Turbo start ───────────────────────────────────────────────────
+  turboStartBonus: number;   // speed boost from timing GO
+
+  // ── Visual juice ──────────────────────────────────────────────────
+  squashX: number;           // 1.0 = normal, < 1 = squashed
+  squashY: number;           // 1.0 = normal, > 1 = stretched
+  wobblePhase: number;       // phase for idle wobble animation
+  expression: 'neutral' | 'happy' | 'angry' | 'scared';
+  expressionTimer: number;   // how long to show expression
+
+  // ── Damage visual ─────────────────────────────────────────────────
+  damageCount: number;       // cosmetic damage level (0-3)
+
+  // ── Collision tracking ────────────────────────────────────────────
+  collisionCount: number;    // for "biggest bully" award
+  bumpsReceived: number;     // for various awards
+
+  // ── Ramp jump ─────────────────────────────────────────────────────
+  airborne: boolean;
+  airborneTimer: number;
+  airborneHeight: number;
+
+  // ── Ragdoll death ─────────────────────────────────────────────────
+  ragdollSpin: number;       // angular velocity on death
+  ragdollVx: number;         // death tumble velocity
+  ragdollVy: number;
+
+  // ── Mud ───────────────────────────────────────────────────────────
+  mudTimer: number;          // slow effect remaining
+
+  // ── Road edge distance ────────────────────────────────────────────
+  distFromRoadCenter: number;
+  roadHalfWidth: number;
+
+  // ── Position in race ──────────────────────────────────────────────
+  racePosition: number;      // 1st, 2nd, 3rd, 4th
+
+  // ── Exhaust trail timer ───────────────────────────────────────────
+  exhaustTimer: number;
+
+  // ── Skid mark timer ───────────────────────────────────────────────
+  skidTimer: number;
 }
 
 export interface CameraState {
@@ -88,16 +189,19 @@ export interface Particle {
   maxLife: number;
   color: string;
   size: number;
+  type?: 'default' | 'smoke' | 'spark' | 'flame' | 'mud' | 'debris';
+  rotation?: number;
+  rotationSpeed?: number;
 }
 
 export interface ObstacleState {
-  type: 'arrow_pad' | 'spikes' | 'log' | 'rotating_spikes';
+  type: 'arrow_pad' | 'spikes' | 'log' | 'rotating_spikes' | 'ramp' | 'destructible' | 'mud_zone' | 'bouncy_wall';
   baseX: number;
   baseY: number;
   x: number;
   y: number;
   angle: number;
-  boostAngle: number; // original angle from placement, never modified
+  boostAngle: number;
   width: number;
   height: number;
   patrolAxis?: 'x' | 'y';
@@ -105,7 +209,13 @@ export interface ObstacleState {
   patrolSpeed: number;
   animFrame: number;
   animTimer: number;
-  triggeredBy: Set<number>; // player indices that triggered this pad
+  triggeredBy: Set<number>;
+  // Destructible state
+  destroyed: boolean;
+  destroyTimer: number;
+  respawnTimer: number;
+  // Bouncy wall
+  bounceTimer: number;
 }
 
 export interface GameState {
@@ -120,7 +230,15 @@ export interface GameState {
   particles: Particle[];
   winner: number | null;
   playerCount: 1 | 2 | 3 | 4;
-  time: number; // total elapsed time for animations
+  time: number;
+
+  // ── New visual systems ────────────────────────────────────────────
+  skidMarks: SkidMark[];
+  screenShake: ScreenShake;
+  comicTexts: ComicText[];
+  randomEvents: RandomEvent[];
+  flashTimer: number;      // white flash on spike death
+  countdownParticles: Particle[]; // countdown number explosion particles
 }
 
 export interface CharacterDef {
@@ -160,7 +278,9 @@ export interface GameResults {
     characterId: string;
     finishTime: number | null;
     deaths: number;
+    collisionCount: number;
   }>;
+  awards: RaceAward[];
 }
 
 // Road geometry helpers

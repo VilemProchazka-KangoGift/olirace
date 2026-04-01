@@ -63,6 +63,12 @@ function makeState(players?: PlayerState[]): GameState {
     winner: null,
     playerCount: 1,
     time: 0,
+    skidMarks: [],
+    screenShake: { intensity: 0, duration: 0, timer: 0, offsetX: 0, offsetY: 0 },
+    comicTexts: [],
+    randomEvents: [],
+    flashTimer: 0,
+    countdownParticles: [],
   };
 }
 
@@ -564,14 +570,15 @@ describe('Edge cases', () => {
     expect(player.speed).toBeGreaterThan(95);
   });
 
-  it('turning at zero speed does nothing', () => {
+  it('turning at zero speed rotates slowly in place', () => {
     const player = createPlayer('formula', 240, 5000, Math.PI / 2, 'primary');
     player.speed = 0;
     const state = makeState([player]);
 
     runFrames(player, state, 30, input({ steerX: 1 }));
 
-    expect(player.angle).toBe(Math.PI / 2);
+    // Angle should change (slow turn), but position stays the same
+    expect(player.angle).not.toBe(Math.PI / 2);
     expect(player.position.x).toBe(240);
     expect(player.position.y).toBe(5000);
   });

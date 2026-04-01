@@ -23,19 +23,29 @@ Two-phase rendering: lava background at raw canvas resolution (fills window), th
 
 ### Rendering (`src/game/renderer.ts` + `src/game/vector-sprites.ts`)
 All sprites are vector (canvas paths) — no bitmaps. `vector-sprites.ts` exports:
-- `drawPlayerVector(ctx, characterId, palette, size)` — 6 character designs
-- `drawObstacleVector(ctx, type, frame, width, height)` — 4 obstacle types
-- `drawLavaTile(frame)` — cached 128x128 seamless lava tiles (3 frames)
+- `drawPlayerVector(ctx, characterId, palette, size)` — 6 cartoony character designs (thick outlines, googly eyes, rosy cheeks)
+- `drawObstacleVector(ctx, type, frame, width, height)` — obstacle types
+- `drawLavaTile(frame)` — cached 128x128 seamless lava tile (pixel-based Voronoi, static, wrapping-distance math)
 
 Canvas: 480x854 virtual viewport, dynamically scaled to window via `ctx.scale()`.
+
+Rendering pipeline (in order): lava (parallax 30%) → road shadow → orange underglow → road surface + asphalt texture → rumble strips → edge markings + guard rail posts → center line → skid marks → start/finish → obstacle shadows + danger glow + obstacles (1.25x) → player shadows + players (64px) + googly eyes + expressions → particles → position indicators → comic text → random events → countdown spotlight → vignette.
+
+Visual systems: skid marks (persistent on road), comic text popups ("POW!", "SPLAT!"), position indicators with crown, tire smoke, exhaust trails (character-colored), boost flame jets, spark showers near edges, lava splatter particles, random events (bird, UFO), lava burst explosions.
 
 ### Player Physics (`src/game/player.ts`)
 - Acceleration: `speed += acceleration * input * dt`, capped at `maxSpeed`
 - Braking: `speed -= brakeForce * dt`, reverse cap at `-maxSpeed * 0.4`
 - Friction: `speed *= 0.97` when no input
-- Steering: `angle -= handling * steerX * (speed/maxSpeed) * dt` (right = clockwise)
+- Steering: `angle -= handling * steerX * (speed/maxSpeed) * dt` (right = clockwise). Slow turning (15% handling) when stationary.
+- Drift: hold brake + steer at >40% speed. Builds boost charge (max 1.5s), exit gives speed bonus.
+- Turbo start: press accelerate within 0.3s of "GO!" for speed bonus.
 - Boost: arrow pads set speed to 1.5x maxSpeed for 2s
-- Death: respawn 200px back, 1.5s invincibility
+- Death: ragdoll tumble, respawn 200px back, 1.5s invincibility, damage counter increments
+- Squash/stretch: compresses on collision, stretches on boost. Recovers at rate 5/s.
+- Expressions: happy (boost), angry (collision), scared (near lava edge)
+- Mud: 50% speed multiplier, lingers 0.5s after leaving zone
+- Airborne: from ramps, 0.6s flight, no collisions while airborne
 
 ### Input (`src/game/input.ts`)
 P1: Arrows + Enter | P2: WASD + Space | P3: IJKL + H | P4: Numpad 8456 + Num0. Gamepad API support (index → player).
@@ -44,7 +54,7 @@ P1: Arrows + Enter | P2: WASD + Space | P3: IJKL + H | P4: Numpad 8456 + Num0. G
 Factory: `createGameState(config, track)`. Types in `src/types/index.ts`. Key interfaces: `GameState`, `PlayerState`, `TrackData`, `ObstacleState`.
 
 ### Audio (`src/game/audio.ts`)
-Web Audio API synthesis. 12 SFX (engine with 4-gear transmission, boost, death, log, spike, honk, countdown, go, finish, respawn, tether, sad trombone). 3 music loops (menu, race, results).
+Web Audio API synthesis. SFX: engine (4-gear transmission), boost, death (generic + per-character), log, spike, honk, countdown, go (with bass drop), finish, respawn, tether, sad trombone, boing, drift, drift_exit, crowd, whoosh, per-character victory fanfares. 3 music loops (menu, race, results).
 
 ## Data
 
@@ -65,11 +75,15 @@ Web Audio API synthesis. 12 SFX (engine with 4-gear transmission, boost, death, 
 
 Track format: `RoadPoint[]` polyline with `{x, y, width}`, obstacles as `ObstaclePlacement[]`.
 
-### Obstacles — 4 types
+### Obstacles — 8 types
 - `arrow_pad` — boost forward 1.5x for 2s
 - `spikes` — instant death
 - `log` — knockback + 0.3s stun
-- `rotating_spikes` — patrolling death, `boostAngle` preserves original direction
+- `rotating_spikes` — patrolling death (very slow rotation), `boostAngle` preserves original direction
+- `ramp` — launches player airborne briefly (0.6s)
+- `destructible` — breakable barrels/crates, respawn after 8s
+- `mud_zone` — 50% speed slowdown zone
+- `bouncy_wall` — pinball-style bouncer, exaggerated restitution
 
 ## Conventions
 
@@ -86,6 +100,15 @@ Track format: `RoadPoint[]` polyline with `{x, y, width}`, obstacles as `Obstacl
 **Track:** Create `src/data/tracks/id.ts` exporting `TrackData` → import in `src/screens/GameScreen.tsx` trackMap → add i18n keys
 
 **Obstacle type:** `src/types/index.ts` → `src/game/obstacles.ts` (creation + collision) → `src/game/vector-sprites.ts` (drawing) → `src/game/renderer.ts` (render dispatch)
+
+## Visual Polish Notes
+- Screen shake is disabled (function exists but is a no-op — user found it distracting)
+- Speed lines / chromatic aberration removed (user found them annoying)
+- Lava tile is static (no animation — user found animation dizzying)
+- Lava parallax at 30% camera speed (bridge-over-lava feel)
+- Devil's Highway obstacle spacing was widened and patrol speeds halved (was too dense)
+- GameResults includes `awards` array (Most Deaths, Biggest Bully, Slowpoke, Clean Racer, Speed Demon)
+- Haptic feedback attempted on gamepad collisions/boosts (graceful fallback if unavailable)
 
 ## Key Files
 

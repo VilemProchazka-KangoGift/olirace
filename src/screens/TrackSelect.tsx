@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { audioManager } from '../game/audio';
 import sundayDrive from '../data/tracks/sunday-drive';
 import lavaGauntlet from '../data/tracks/lava-gauntlet';
 import devilsHighway from '../data/tracks/devils-highway';
@@ -65,8 +66,8 @@ function MiniTrackPreview({ road, color }: { road: TrackData['road']; color: str
   const rangeX = maxX - minX || 1;
   const rangeY = maxY - minY || 1;
   const padding = 8;
-  const svgW = 100;
-  const svgH = 60;
+  const svgW = 130;
+  const svgH = 80;
   const scaleX = (svgW - padding * 2) / rangeX;
   const scaleY = (svgH - padding * 2) / rangeY;
   const s = Math.min(scaleX, scaleY);
@@ -118,10 +119,13 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
     (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         setSelected((s) => (s - 1 + tracks.length) % tracks.length);
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         setSelected((s) => (s + 1) % tracks.length);
+        audioManager.play('sfx_menu_move');
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        audioManager.play('sfx_menu_confirm');
         onSelect(tracks[selected].id);
       } else if (e.key === 'Escape') {
         onBack();
@@ -151,7 +155,7 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
   };
 
   const header: React.CSSProperties = {
-    fontSize: 14,
+    fontSize: 18,
     color: '#ff8020',
     textShadow: '0 0 10px #e06010',
     animation: 'header-slide 0.5s ease-out both',
@@ -171,8 +175,8 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
     const diff = tracks[index].difficulty;
     const glowColor = diffColors[diff];
     return {
-      width: 135,
-      minHeight: 200,
+      width: 170,
+      minHeight: 240,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -196,7 +200,7 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
   }
 
   const nameStyle: React.CSSProperties = {
-    fontSize: 8,
+    fontSize: 10,
     textAlign: 'center',
     lineHeight: '1.6',
     minHeight: 32,
@@ -204,7 +208,7 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
 
   function badgeStyle(diff: string): React.CSSProperties {
     return {
-      fontSize: 6,
+      fontSize: 8,
       padding: '3px 8px',
       background: diffColors[diff] + '30',
       color: diffColors[diff],
@@ -215,7 +219,7 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
   }
 
   const hint: React.CSSProperties = {
-    fontSize: 7,
+    fontSize: 9,
     color: '#666680',
     textAlign: 'center',
   };
@@ -242,14 +246,15 @@ export default function TrackSelect({ onSelect, onBack }: Props) {
             key={track.id}
             style={makeCardStyle(i)}
             onClick={() => {
+              audioManager.play('sfx_menu_confirm');
               setSelected(i);
               onSelect(track.id);
             }}
-            onMouseEnter={() => setSelected(i)}
+            onMouseEnter={() => { audioManager.play('sfx_menu_move'); setSelected(i); }}
           >
             <div style={{
-              width: 105,
-              height: 65,
+              width: 140,
+              height: 85,
               background: '#0a0a18',
               display: 'flex',
               alignItems: 'center',
