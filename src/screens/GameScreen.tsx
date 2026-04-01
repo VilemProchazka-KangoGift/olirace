@@ -6,6 +6,9 @@ import { audioManager } from '../game/audio';
 import sundayDrive from '../data/tracks/sunday-drive';
 import lavaGauntlet from '../data/tracks/lava-gauntlet';
 import devilsHighway from '../data/tracks/devils-highway';
+import mudRunner from '../data/tracks/mud-runner';
+import pinballAlley from '../data/tracks/pinball-alley';
+import skyBridge from '../data/tracks/sky-bridge';
 import type { TrackData } from '../types';
 
 interface Props {
@@ -19,6 +22,9 @@ const trackMap: Record<string, TrackData> = {
   'sunday-drive': sundayDrive,
   'lava-gauntlet': lavaGauntlet,
   'devils-highway': devilsHighway,
+  'mud-runner': mudRunner,
+  'pinball-alley': pinballAlley,
+  'sky-bridge': skyBridge,
 };
 
 const keyframesStyle = `

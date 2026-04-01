@@ -119,6 +119,17 @@ const obstacles: ObstaclePlacement[] = [
   // --- Segment 1: Arrow pad at Y=4800, centered (forward) ---
   { type: 'arrow_pad', x: roadAt(4800).x, y: 4800, angle: 0 },
 
+  // --- Mud zone on racing line through seg 2 curve ---
+  { type: 'mud_zone', x: roadAt(4600).x, y: 4600, angle: 0 },
+
+  // --- Destructible barrel before log section ---
+  {
+    type: 'destructible',
+    x: roadAt(4400).x + roadAt(4400).width * 0.2,
+    y: 4400,
+    angle: 0,
+  },
+
   // --- Segment 3: Logs ---
   // Y=4100, offset left 0.3
   {
@@ -160,6 +171,25 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(3500).width * 0.5,
   },
 
+  // --- Ramp to fly over rotating spikes section ---
+  { type: 'ramp', x: roadAt(3300).x, y: 3300, angle: 0 },
+
+  // --- Destructible barrel in the gap ---
+  {
+    type: 'destructible',
+    x: roadAt(3100).x - roadAt(3100).width * 0.15,
+    y: 3100,
+    angle: 0,
+  },
+
+  // --- Bouncy wall at S-curve exit ---
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2900).x + roadAt(2900).width * 0.3,
+    y: 2900,
+    angle: 0.3,
+  },
+
   // --- Segment 6: Arrow pad (sideways right!) and rotating spikes ---
   { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: 0 },
   {
@@ -181,6 +211,15 @@ const obstacles: ObstaclePlacement[] = [
     patrolDistance: 30,
     patrolSpeed: 4.5,
   },
+
+  // --- Mud zone on racing line through straight ---
+  { type: 'mud_zone', x: roadAt(2300).x, y: 2300, angle: 0 },
+
+  // --- Mid-track ramp for variety ---
+  { type: 'ramp', x: roadAt(2100).x, y: 2100, angle: 0 },
+
+  // --- Mud zone in S-curve ---
+  { type: 'mud_zone', x: roadAt(1900).x, y: 1900, angle: 0 },
 
   // --- Segment 8: Rotating spike pair + logs ---
   // Y=1700, patrols left half (slower)
@@ -221,6 +260,14 @@ const obstacles: ObstaclePlacement[] = [
     x: roadAt(1300).x + roadAt(1300).width * 0.3,
     y: 1300,
     angle: -0.4,
+  },
+
+  // --- Bouncy wall before final stretch ---
+  {
+    type: 'bouncy_wall',
+    x: roadAt(1150).x - roadAt(1150).width * 0.25,
+    y: 1150,
+    angle: -0.3,
   },
 
   // --- Segment 9: Arrow pad at Y=1000, backward boost (surprise!) ---

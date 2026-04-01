@@ -239,7 +239,7 @@ describe('Track data integrity', () => {
       });
 
       it('all obstacles have valid types', () => {
-        const validTypes = ['arrow_pad', 'spikes', 'log', 'rotating_spikes'];
+        const validTypes = ['arrow_pad', 'spikes', 'log', 'rotating_spikes', 'ramp', 'destructible', 'mud_zone', 'bouncy_wall'];
         for (const obs of track.obstacles) {
           expect(validTypes).toContain(obs.type);
         }

@@ -610,33 +610,7 @@ function drawPig(
   ctx.globalAlpha = 1.0;
   ctx.restore();
 
-  // -- Eyes (~50% bigger + outline + gleam) --
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(22, 26, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(34, 26, 4.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = COLORS.black;
-  ctx.beginPath();
-  ctx.arc(22.5, 26, 2.7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(34.5, 26, 2.7, 0, Math.PI * 2);
-  ctx.fill();
-  // Eye gleam (white highlight top-left)
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(20.5, 24, 1.3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(32.5, 24, 1.3, 0, Math.PI * 2);
-  ctx.fill();
+  // (Eyes drawn by googly eyes overlay in renderer)
 
   // -- Rosy cheeks --
   ctx.fillStyle = '#ff6080';

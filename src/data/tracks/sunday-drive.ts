@@ -119,6 +119,17 @@ const obstacles: ObstaclePlacement[] = [
   // --- Early boost to get players going (forward) ---
   { type: 'arrow_pad', x: roadAt(4600).x, y: 4600, angle: 0 },
 
+  // --- Fun ramp jump on opening straight ---
+  { type: 'ramp', x: roadAt(4350).x, y: 4350, angle: 0 },
+
+  // --- Smashable barrel before logs ---
+  {
+    type: 'destructible',
+    x: roadAt(4100).x + roadAt(4100).width * 0.2,
+    y: 4100,
+    angle: 0,
+  },
+
   // --- A few friendly logs in Seg 3, well spaced ---
   {
     type: 'log',
@@ -155,6 +166,9 @@ const obstacles: ObstaclePlacement[] = [
 
   // --- Arrow pad as encouragement (forward) ---
   { type: 'arrow_pad', x: roadAt(2600).x, y: 2600, angle: 0 },
+
+  // --- Fun ramp before the log pair ---
+  { type: 'ramp', x: roadAt(2400).x, y: 2400, angle: 0 },
 
   // --- Pair of logs, staggered ---
   {
@@ -221,6 +235,14 @@ const obstacles: ObstaclePlacement[] = [
     y: 900,
     angle: 0,
     width: 50,
+  },
+
+  // --- Bouncy wall at curve exit for pinball fun ---
+  {
+    type: 'bouncy_wall',
+    x: roadAt(750).x + roadAt(750).width * 0.3,
+    y: 750,
+    angle: 0.3,
   },
 
   // --- Final boost before finish (forward) ---

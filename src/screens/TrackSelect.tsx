@@ -2,8 +2,11 @@ import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { audioManager } from '../game/audio';
 import sundayDrive from '../data/tracks/sunday-drive';
+import mudRunner from '../data/tracks/mud-runner';
 import lavaGauntlet from '../data/tracks/lava-gauntlet';
+import pinballAlley from '../data/tracks/pinball-alley';
 import devilsHighway from '../data/tracks/devils-highway';
+import skyBridge from '../data/tracks/sky-bridge';
 import type { TrackData } from '../types';
 
 interface Props {
@@ -20,8 +23,11 @@ interface TrackMeta {
 
 const tracks: TrackMeta[] = [
   { id: 'sunday-drive', nameKey: 'track_sunday_drive', difficulty: 'easy', data: sundayDrive },
+  { id: 'mud-runner', nameKey: 'track_mud_runner', difficulty: 'easy', data: mudRunner },
   { id: 'lava-gauntlet', nameKey: 'track_lava_gauntlet', difficulty: 'medium', data: lavaGauntlet },
+  { id: 'pinball-alley', nameKey: 'track_pinball_alley', difficulty: 'medium', data: pinballAlley },
   { id: 'devils-highway', nameKey: 'track_devils_highway', difficulty: 'hard', data: devilsHighway },
+  { id: 'sky-bridge', nameKey: 'track_sky_bridge', difficulty: 'hard', data: skyBridge },
 ];
 
 const diffColors: Record<string, string> = {

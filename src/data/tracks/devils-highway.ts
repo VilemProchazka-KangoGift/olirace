@@ -132,147 +132,133 @@ const startLineIdx = indexAtY(5800);
 const finishLineIdx = indexAtY(400);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Seg 1: Arrow pad to start (forward), then immediate danger ---
+  // --- Seg 1: Arrow pad to start ---
   { type: 'arrow_pad', x: roadAt(5650).x, y: 5650, angle: 0 },
 
-  // --- Seg 2: Spike strip on the outside of the curve ---
+  // --- Destructible barrel blocking part of narrow curve ---
+  {
+    type: 'destructible',
+    x: roadAt(5475).x + roadAt(5475).width * 0.15,
+    y: 5475,
+    angle: 0,
+  },
+
+  // --- Seg 2: Spike strip on outside of curve ---
   {
     type: 'spikes',
     x: roadAt(5300).x + roadAt(5300).width * 0.2,
     y: 5300,
     angle: 0,
-    width: roadAt(5300).width * 0.4,
+    width: roadAt(5300).width * 0.35,
   },
 
-  // --- Seg 3: Log + rotating spike combo in the hairpin ---
+  // --- Mud zone at hairpin apex — punishes bad lines ---
+  { type: 'mud_zone', x: roadAt(5150).x, y: 5150, angle: 0, width: 40 },
+
+  // --- Seg 3: Log then rotating spike in the hairpin ---
   {
     type: 'log',
     x: roadAt(5000).x - roadAt(5000).width * 0.2,
     y: 5000,
     angle: 0.4,
   },
+  // Spike ball swings wide (65px patrol = partially off-road, creates clear window)
   {
     type: 'rotating_spikes',
-    x: roadAt(4850).x,
-    y: 4850,
+    x: roadAt(4800).x,
+    y: 4800,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 40,
-    patrolSpeed: 5,
+    patrolDistance: 65,
+    patrolSpeed: 3.5,
   },
 
-  // --- Seg 4: Spike strip (narrower, more room to dodge) ---
+  // --- Seg 4: Spike strip ---
   {
     type: 'spikes',
     x: roadAt(4550).x - roadAt(4550).width * 0.15,
     y: 4550,
     angle: 0,
-    width: roadAt(4550).width * 0.35,
-  },
-  {
-    type: 'log',
-    x: roadAt(4350).x + roadAt(4350).width * 0.2,
-    y: 4350,
-    angle: -0.3,
+    width: roadAt(4550).width * 0.3,
   },
 
-  // --- Seg 5: S-curve gauntlet (more spaced out) ---
-  {
-    type: 'rotating_spikes',
-    x: roadAt(4200).x,
-    y: 4200,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 35,
-    patrolSpeed: 5,
-  },
+  // --- Mud zone at S-curve apex ---
+  { type: 'mud_zone', x: roadAt(4375).x, y: 4375, angle: 0, width: 40 },
+
+  // --- Seg 5: S-curve with log ---
   {
     type: 'log',
+    x: roadAt(4200).x + roadAt(4200).width * 0.15,
+    y: 4200,
+    angle: -0.3,
+  },
+  // Spike ball with wide swing on narrow S-curve
+  {
+    type: 'rotating_spikes',
     x: roadAt(3950).x,
     y: 3950,
-    angle: 0.6,
+    angle: 0,
+    patrolAxis: 'x',
+    patrolDistance: 60,
+    patrolSpeed: 3,
   },
 
   // --- Seg 6: The gauntlet (narrowest section) ---
   { type: 'arrow_pad', x: roadAt(3750).x, y: 3750, angle: 0 },
-  // Alternating spike walls (narrower, more spaced)
+  // Alternating spike walls — narrow, well spaced
   {
     type: 'spikes',
     x: roadAt(3600).x - roadAt(3600).width * 0.2,
     y: 3600,
     angle: 0,
-    width: roadAt(3600).width * 0.35,
+    width: roadAt(3600).width * 0.3,
   },
   {
     type: 'spikes',
-    x: roadAt(3450).x + roadAt(3450).width * 0.2,
-    y: 3450,
+    x: roadAt(3400).x + roadAt(3400).width * 0.2,
+    y: 3400,
     angle: 0,
-    width: roadAt(3450).width * 0.35,
+    width: roadAt(3400).width * 0.3,
   },
 
-  // --- Seg 7-8: Hairpin pair with obstacles at apexes ---
+  // --- Seg 7-8: Hairpin pair — fewer obstacles, more spaced ---
   {
     type: 'log',
-    x: roadAt(3300).x,
-    y: 3300,
+    x: roadAt(3250).x,
+    y: 3250,
     angle: -0.5,
   },
+  // Wide-swinging spike ball at hairpin apex
   {
     type: 'rotating_spikes',
-    x: roadAt(3200).x,
-    y: 3200,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 45,
-    patrolSpeed: 4.5,
-  },
-  {
-    type: 'spikes',
     x: roadAt(3000).x,
     y: 3000,
     angle: 0,
-    width: roadAt(3000).width * 0.45,
+    patrolAxis: 'x',
+    patrolDistance: 70,
+    patrolSpeed: 3,
   },
   {
     type: 'log',
-    x: roadAt(2900).x + roadAt(2900).width * 0.15,
-    y: 2900,
+    x: roadAt(2800).x + roadAt(2800).width * 0.15,
+    y: 2800,
     angle: 0.3,
   },
-  {
-    type: 'rotating_spikes',
-    x: roadAt(2800).x,
-    y: 2800,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 40,
-    patrolSpeed: 5,
-  },
 
-  // --- Seg 9: Straight of death (spaced out more) ---
+  // --- Seg 9: Straight of death ---
   { type: 'arrow_pad', x: roadAt(2650).x, y: 2650, angle: 0 },
-  // Two rotating spikes (was three, too dense)
+  // Single rotating spike — wide patrol, slow
   {
     type: 'rotating_spikes',
-    x: roadAt(2500).x - roadAt(2500).width * 0.15,
-    y: 2500,
+    x: roadAt(2450).x,
+    y: 2450,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 30,
-    patrolSpeed: 4.5,
-  },
-  {
-    type: 'rotating_spikes',
-    x: roadAt(2300).x + roadAt(2300).width * 0.15,
-    y: 2300,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 30,
-    patrolSpeed: 5,
+    patrolDistance: 60,
+    patrolSpeed: 3.5,
   },
 
-  // --- Seg 10: Triple S-curve, log-spike combos ---
+  // --- Seg 10: Triple S-curve ---
   {
     type: 'log',
     x: roadAt(2200).x,
@@ -281,61 +267,36 @@ const obstacles: ObstaclePlacement[] = [
   },
   {
     type: 'spikes',
-    x: roadAt(2100).x + roadAt(2100).width * 0.15,
-    y: 2100,
-    angle: 0,
-    width: roadAt(2100).width * 0.4,
-  },
-  {
-    type: 'log',
-    x: roadAt(2000).x - roadAt(2000).width * 0.2,
+    x: roadAt(2000).x + roadAt(2000).width * 0.15,
     y: 2000,
-    angle: -0.3,
+    angle: 0,
+    width: roadAt(2000).width * 0.35,
   },
+  // Wide-swinging spike ball
   {
     type: 'rotating_spikes',
-    x: roadAt(1900).x,
-    y: 1900,
+    x: roadAt(1850).x,
+    y: 1850,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 35,
-    patrolSpeed: 4.5,
-  },
-  {
-    type: 'log',
-    x: roadAt(1850).x + roadAt(1850).width * 0.15,
-    y: 1850,
-    angle: 0.5,
+    patrolDistance: 65,
+    patrolSpeed: 3,
   },
 
-  // --- Seg 11: Another straight gauntlet (sideways left arrow pad) ---
-  { type: 'arrow_pad', x: roadAt(1750).x, y: 1750, angle: 0 },
-  // Spike-log-spike sandwich
+  // --- Seg 11: Straight gauntlet ---
+  { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: 0 },
   {
     type: 'spikes',
-    x: roadAt(1650).x - roadAt(1650).width * 0.15,
-    y: 1650,
-    angle: 0,
-    width: roadAt(1650).width * 0.45,
-  },
-  {
-    type: 'log',
-    x: roadAt(1600).x + roadAt(1600).width * 0.2,
-    y: 1600,
-    angle: -0.4,
-  },
-  {
-    type: 'log',
     x: roadAt(1550).x - roadAt(1550).width * 0.15,
     y: 1550,
-    angle: 0.2,
+    angle: 0,
+    width: roadAt(1550).width * 0.35,
   },
   {
-    type: 'spikes',
-    x: roadAt(1500).x + roadAt(1500).width * 0.15,
-    y: 1500,
-    angle: 0,
-    width: roadAt(1500).width * 0.45,
+    type: 'log',
+    x: roadAt(1400).x + roadAt(1400).width * 0.2,
+    y: 1400,
+    angle: -0.4,
   },
 
   // --- Seg 12: Tight curve with rotating spike at apex ---
@@ -345,32 +306,28 @@ const obstacles: ObstaclePlacement[] = [
     y: 1200,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 40,
-    patrolSpeed: 5,
+    patrolDistance: 65,
+    patrolSpeed: 3.5,
   },
-  {
-    type: 'log',
-    x: roadAt(1050).x + roadAt(1050).width * 0.2,
-    y: 1050,
-    angle: 0.3,
-  },
+
+  // --- Ramp as escape route — fly over the spike strip at Y=900! ---
+  { type: 'ramp', x: roadAt(1050).x, y: 1050, angle: 0 },
 
   // --- Seg 13: Approach to finish ---
   {
-    type: 'rotating_spikes',
-    x: roadAt(850).x,
-    y: 850,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 40,
-    patrolSpeed: 5,
-  },
-  {
     type: 'spikes',
-    x: roadAt(700).x - roadAt(700).width * 0.1,
-    y: 700,
+    x: roadAt(900).x - roadAt(900).width * 0.1,
+    y: 900,
     angle: 0,
-    width: roadAt(700).width * 0.35,
+    width: roadAt(900).width * 0.3,
+  },
+
+  // --- Bouncy wall at hairpin exit before final gauntlet ---
+  {
+    type: 'bouncy_wall',
+    x: roadAt(700).x + roadAt(700).width * 0.25,
+    y: 700,
+    angle: 0.4,
   },
 
   // --- Seg 14: Final straight ---
@@ -380,8 +337,8 @@ const obstacles: ObstaclePlacement[] = [
     y: 500,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 35,
-    patrolSpeed: 5,
+    patrolDistance: 60,
+    patrolSpeed: 3.5,
   },
 ];
 
