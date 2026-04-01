@@ -832,4 +832,238 @@ describe('AI Bot Behavior', () => {
       });
     }
   });
+
+  // ---------------------------------------------------------------------------
+  // DIAGNOSTIC: Devil's Highway death heatmap and choke point analysis
+  // ---------------------------------------------------------------------------
+  describe("Devil's Highway diagnostics", () => {
+    const charIds = ['formula', 'cat', 'pig', 'yeti', 'frog', 'toilet'];
+
+    for (const charId of charIds) {
+      it(`${charId}: death locations and choke points`, { timeout: 120_000 }, () => {
+        const config: GameConfig = {
+          playerCount: 1,
+          botCount: 1,
+          trackId: 'devils-highway',
+          p1Character: charId === 'formula' ? 'cat' : 'formula',
+          p2Character: charId,
+          p3Character: 'pig',
+          p4Character: 'frog',
+        };
+        const state = createGameState(config, devilsHighway);
+        const trackLength = computeTotalTrackLength(devilsHighway.road);
+        shared.gameState = state;
+
+        const countdownTicks = Math.ceil(
+          (3 * COUNTDOWN_STEP_DURATION + GO_DISPLAY_DURATION) / DT,
+        ) + 10;
+        const raceTicks = RACE_SECONDS * TICKS_PER_SECOND;
+        const totalTicks = countdownTicks + raceTicks;
+
+        // Track death locations and time-at-position
+        const deathLocations: Array<{ x: number; y: number; segIdx: number; cause: string }> = [];
+        const segmentTimeSpent: number[] = new Array(devilsHighway.road.length).fill(0);
+        let prevAlive = true;
+        let raceTickCount = 0;
+
+        // Track peak progress over time for rubber-band analysis
+        let peakProgress = 0;
+        const progressOverTime: Array<{ t: number; progress: number; speed: number }> = [];
+
+        for (let tick = 0; tick < totalTicks; tick++) {
+          const bot = state.players[1];
+          const wasAlive = bot.alive;
+
+          simulateTick(state, DT);
+          if (state.phase === 'finished') break;
+
+          if (state.phase === 'racing') {
+            raceTickCount++;
+
+            // Track where the bot spends time
+            if (bot.alive) {
+              const nearest = findNearestRoadPoint(bot.position, devilsHighway.road);
+              if (nearest.segIdx < segmentTimeSpent.length) {
+                segmentTimeSpent[nearest.segIdx]++;
+              }
+            }
+
+            // Detect death events
+            if (wasAlive && !bot.alive) {
+              const nearest = findNearestRoadPoint(bot.position, devilsHighway.road);
+              const onRoad = nearest.distance <= nearest.roadWidth / 2 + LAVA_GRACE_ZONE;
+              deathLocations.push({
+                x: Math.round(bot.position.x),
+                y: Math.round(bot.position.y),
+                segIdx: nearest.segIdx,
+                cause: onRoad ? 'obstacle' : 'lava',
+              });
+            }
+
+            // Progress tracking every 2 seconds
+            if (bot.alive && bot.trackProgress > peakProgress) {
+              peakProgress = bot.trackProgress;
+            }
+            if (raceTickCount % (2 * TICKS_PER_SECOND) === 0) {
+              progressOverTime.push({
+                t: raceTickCount / TICKS_PER_SECOND,
+                progress: Math.round(bot.trackProgress),
+                speed: Math.round(Math.abs(bot.speed)),
+              });
+            }
+          }
+        }
+
+        const bot = state.players[1];
+
+        // Log death locations
+        console.log(`\n=== DEVIL'S HIGHWAY: ${charId} (${bot.deaths} deaths) ===`);
+        console.log(`Peak progress: ${Math.round(peakProgress)} / ${Math.round(trackLength)} (${((peakProgress / trackLength) * 100).toFixed(1)}%)`);
+
+        if (deathLocations.length > 0) {
+          console.log(`\nDeath locations:`);
+          for (const d of deathLocations) {
+            // Map segIdx to Y coordinate for easier identification
+            const roadY = devilsHighway.road[d.segIdx]?.y ?? 0;
+            console.log(
+              `  died at (${d.x}, ${d.y}) seg=${d.segIdx} roadY=${Math.round(roadY)} cause=${d.cause}`,
+            );
+          }
+
+          // Aggregate deaths by Y range (road section)
+          const deathsBySection: Record<string, { count: number; causes: string[] }> = {};
+          const sections = [
+            { name: 'Seg1 Start (5800-5500)', minY: 5500, maxY: 5800 },
+            { name: 'Seg2 Right curve (5500-5100)', minY: 5100, maxY: 5500 },
+            { name: 'Seg3 Left hairpin (5100-4700)', minY: 4700, maxY: 5100 },
+            { name: 'Seg4 Short straight (4700-4400)', minY: 4400, maxY: 4700 },
+            { name: 'Seg5 S-curve 120px (4400-3900)', minY: 3900, maxY: 4400 },
+            { name: 'Seg6 Gauntlet 120px (3900-3500)', minY: 3500, maxY: 3900 },
+            { name: 'Seg7-8 Hairpin pair (3500-2700)', minY: 2700, maxY: 3500 },
+            { name: 'Seg9 Straight (2700-2300)', minY: 2300, maxY: 2700 },
+            { name: 'Seg10 Triple-S (2300-1800)', minY: 1800, maxY: 2300 },
+            { name: 'Seg11 Straight (1800-1400)', minY: 1400, maxY: 1800 },
+            { name: 'Seg12-14 Finish (1400-300)', minY: 300, maxY: 1400 },
+          ];
+
+          for (const sec of sections) {
+            const secDeaths = deathLocations.filter(d => d.y >= sec.minY && d.y <= sec.maxY);
+            if (secDeaths.length > 0) {
+              deathsBySection[sec.name] = {
+                count: secDeaths.length,
+                causes: secDeaths.map(d => d.cause),
+              };
+            }
+          }
+
+          console.log(`\nDeaths by road section:`);
+          for (const [section, data] of Object.entries(deathsBySection)) {
+            const lavaPct = Math.round(
+              (data.causes.filter(c => c === 'lava').length / data.count) * 100,
+            );
+            console.log(
+              `  ${section}: ${data.count} deaths (${lavaPct}% lava, ${100 - lavaPct}% obstacle)`,
+            );
+          }
+        }
+
+        // Log time-at-position hotspots (where the bot spends the most time)
+        const hotspots: Array<{ segIdx: number; y: number; width: number; ticks: number }> = [];
+        for (let i = 0; i < segmentTimeSpent.length; i++) {
+          if (segmentTimeSpent[i] > 60) { // more than 1 second at this segment
+            hotspots.push({
+              segIdx: i,
+              y: Math.round(devilsHighway.road[i].y),
+              width: Math.round(devilsHighway.road[i].width),
+              ticks: segmentTimeSpent[i],
+            });
+          }
+        }
+        if (hotspots.length > 0) {
+          // Sort by time spent descending
+          hotspots.sort((a, b) => b.ticks - a.ticks);
+          console.log(`\nTime hotspots (>1s at segment):`);
+          for (const h of hotspots.slice(0, 15)) {
+            const seconds = (h.ticks / TICKS_PER_SECOND).toFixed(1);
+            console.log(
+              `  seg=${h.segIdx} y=${h.y} width=${h.width}px: ${seconds}s`,
+            );
+          }
+        }
+
+        // Log progress over time
+        console.log(`\nProgress over time:`);
+        for (const p of progressOverTime) {
+          console.log(`  t=${p.t}s progress=${p.progress} speed=${p.speed}`);
+        }
+
+        // Assertions: this is primarily diagnostic, but ensure something was captured
+        expect(bot.deaths + Math.round(peakProgress)).toBeGreaterThan(0);
+
+        shared.gameState = null;
+      });
+    }
+
+    it('track geometry analysis: width at curves', () => {
+      console.log(`\n=== DEVIL'S HIGHWAY TRACK GEOMETRY ===`);
+      console.log(`Total road points: ${devilsHighway.road.length}`);
+      console.log(`Finish line segment: ${devilsHighway.finishLine}`);
+
+      // Find minimum width and where it occurs
+      let minWidth = Infinity;
+      let minWidthIdx = 0;
+      for (let i = 0; i < devilsHighway.road.length; i++) {
+        if (devilsHighway.road[i].width < minWidth) {
+          minWidth = devilsHighway.road[i].width;
+          minWidthIdx = i;
+        }
+      }
+      console.log(`Minimum width: ${minWidth}px at seg=${minWidthIdx} y=${devilsHighway.road[minWidthIdx].y}`);
+
+      // Analyze curvature + width at each section
+      console.log(`\nSection analysis (curvature = angle change over 5 segments):`);
+      for (let i = 5; i < devilsHighway.road.length - 5; i += 10) {
+        const p = devilsHighway.road[i];
+        // Compute local curvature
+        let curvature = 0;
+        for (let j = i - 2; j < i + 2 && j < devilsHighway.road.length - 1; j++) {
+          const dx1 = devilsHighway.road[j + 1].x - devilsHighway.road[j].x;
+          const dy1 = devilsHighway.road[j + 1].y - devilsHighway.road[j].y;
+          if (j + 2 < devilsHighway.road.length) {
+            const dx2 = devilsHighway.road[j + 2].x - devilsHighway.road[j + 1].x;
+            const dy2 = devilsHighway.road[j + 2].y - devilsHighway.road[j + 1].y;
+            const a1 = Math.atan2(dy1, dx1);
+            const a2 = Math.atan2(dy2, dx2);
+            let delta = a2 - a1;
+            while (delta > Math.PI) delta -= 2 * Math.PI;
+            while (delta < -Math.PI) delta += 2 * Math.PI;
+            curvature += Math.abs(delta);
+          }
+        }
+
+        // Flag problematic combinations
+        const flag = (p.width <= 130 && curvature > 0.1) ? ' ⚠️ TIGHT' : '';
+        if (curvature > 0.05 || p.width <= 140) {
+          console.log(
+            `  seg=${i} y=${Math.round(p.y)} width=${Math.round(p.width)}px curvature=${curvature.toFixed(3)}${flag}`,
+          );
+        }
+      }
+
+      // Count obstacles per section
+      console.log(`\nObstacle density:`);
+      const obsByY: Record<string, number> = {};
+      for (const obs of devilsHighway.obstacles) {
+        const bucket = Math.floor(obs.y / 500) * 500;
+        const key = `Y ${bucket}-${bucket + 500}`;
+        obsByY[key] = (obsByY[key] ?? 0) + 1;
+      }
+      for (const [range, count] of Object.entries(obsByY).sort()) {
+        console.log(`  ${range}: ${count} obstacles`);
+      }
+
+      // Width should never be below PLAYER_HITBOX_RADIUS * 4 (minimum for dodging)
+      expect(minWidth).toBeGreaterThanOrEqual(64);
+    });
+  });
 });
