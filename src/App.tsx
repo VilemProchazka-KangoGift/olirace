@@ -13,6 +13,7 @@ export default function App() {
   const [screen, setScreen] = useState<ScreenId>('title');
   const [config, setConfig] = useState<GameConfig>({
     playerCount: 1,
+    botCount: 0,
     trackId: 'sunday-drive',
     p1Character: 'formula',
     p2Character: 'cat',
@@ -47,8 +48,8 @@ export default function App() {
   const goResults = useCallback(() => navigateTo('results'), [navigateTo]);
 
   const handlePlayerCount = useCallback(
-    (count: 1 | 2 | 3 | 4) => {
-      setConfig((c) => ({ ...c, playerCount: count }));
+    (count: 1 | 2 | 3 | 4, bots: 0 | 1 | 2 | 3) => {
+      setConfig((c) => ({ ...c, playerCount: count, botCount: bots }));
       navigateTo('trackSelect');
     },
     [navigateTo],
@@ -118,6 +119,7 @@ export default function App() {
         return (
           <CharacterSelect
             playerCount={config.playerCount}
+            botCount={config.botCount}
             onConfirm={handleCharacterConfirm}
             onBack={goTrackSelect}
           />
