@@ -12,30 +12,56 @@ interface Props {
 }
 
 const keyframesStyle = `
-@keyframes card-pop {
-  0%   { transform: scale(0.85); opacity: 0; }
-  60%  { transform: scale(1.04); }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes pop-in {
+  0%   { transform: scale(0) rotate(-12deg); opacity: 0; }
+  50%  { transform: scale(1.15) rotate(3deg); }
+  70%  { transform: scale(0.92) rotate(-2deg); }
+  85%  { transform: scale(1.04) rotate(0.5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
-@keyframes glow-selected {
-  0%, 100% { box-shadow: 0 0 12px var(--glow), inset 0 0 0 3px var(--glow); }
-  50%      { box-shadow: 0 0 28px var(--glow), 0 0 50px rgba(224, 96, 16, 0.2), inset 0 0 0 3px var(--glow); }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg) scale(1.06); }
+  25%  { transform: rotate(2.5deg) scale(1.08); }
+  50%  { transform: rotate(-1.5deg) scale(1.06); }
+  75%  { transform: rotate(1.5deg) scale(1.07); }
 }
-@keyframes header-in {
-  0%   { transform: translateY(-16px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+@keyframes title-drop {
+  0%   { transform: translateY(-50px) rotate(-5deg) scale(0.3); opacity: 0; }
+  40%  { transform: translateY(6px) rotate(2deg) scale(1.08); }
+  60%  { transform: translateY(-3px) rotate(-1deg) scale(0.97); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
 }
-@keyframes bar-fill {
+@keyframes bar-grow {
   0%   { width: 0%; }
   100% { width: var(--bar-w); }
 }
-@keyframes rival-badge-pulse {
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%  { transform: translateY(-4px) rotate(1deg); }
+  60%  { transform: translateY(-2px) rotate(-1deg); }
+}
+@keyframes countdown-tick {
+  0%   { transform: scale(1.3); opacity: 0.6; }
+  30%  { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes countdown-urgent {
+  0%, 100% { transform: scale(1) rotate(0deg); color: #ff3030; }
+  25%  { transform: scale(1.15) rotate(-3deg); }
+  50%  { transform: scale(1) rotate(0deg); }
+  75%  { transform: scale(1.15) rotate(3deg); }
+}
+@keyframes rival-flash {
   0%, 100% { opacity: 0.8; }
   50%      { opacity: 1; }
 }
+@keyframes badge-pop {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
 `;
 
-// Normalize stat to 0-1 range for bar display
 const SPEED_MAX = 300;
 const HANDLING_MAX = 5;
 const WEIGHT_MAX = 1;
@@ -50,210 +76,240 @@ function CarIcon({ char, isRival }: { char: CharacterDef; isRival: boolean }) {
   switch (char.id) {
     case 'formula':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
+        <svg width="68" height="68" viewBox="0 0 56 56">
           {/* Rear wing */}
-          <rect x="12" y="44" width="32" height="4" rx="1" fill="#2a2a3a" />
-          <rect x="14" y="42" width="28" height="3" rx="1" fill="#3a3a4a" />
-          {/* Body - sleek elongated */}
-          <rect x="21" y="8" width="14" height="38" rx="4" fill={color} />
-          {/* Nose cone */}
-          <polygon points="28,2 22,14 34,14" fill={color} opacity="0.9" />
+          <rect x="10" y="44" width="36" height="5" rx="2" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <rect x="8" y="42" width="4" height="8" rx="1" fill={color} />
+          <rect x="44" y="42" width="4" height="8" rx="1" fill={color} />
+          {/* Fat wheels */}
+          <rect x="8" y="12" width="8" height="14" rx="3" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <rect x="40" y="12" width="8" height="14" rx="3" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <rect x="8" y="34" width="8" height="14" rx="3" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <rect x="40" y="34" width="8" height="14" rx="3" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          {/* Body */}
+          <rect x="17" y="8" width="22" height="40" rx="5" fill={color} stroke="#000" strokeWidth="2.5" />
+          {/* Nose */}
+          <polygon points="28,1 19,14 37,14" fill={color} stroke="#000" strokeWidth="2.5" />
           {/* Front wing */}
-          <rect x="12" y="12" width="32" height="3" rx="1" fill="#3a3a4a" />
-          {/* Cockpit */}
-          <rect x="24" y="20" width="8" height="10" rx="2" fill="#1a1a2e" />
-          <rect x="25" y="22" width="6" height="6" rx="1" fill="#3a3a5a" />
-          {/* Wheels */}
-          <rect x="12" y="14" width="6" height="10" rx="2" fill="#2a2a3a" />
-          <rect x="38" y="14" width="6" height="10" rx="2" fill="#2a2a3a" />
-          <rect x="12" y="34" width="6" height="10" rx="2" fill="#2a2a3a" />
-          <rect x="38" y="34" width="6" height="10" rx="2" fill="#2a2a3a" />
-          {/* Side air intakes */}
-          <rect x="19" y="30" width="3" height="5" rx="1" fill={color} opacity="0.7" />
-          <rect x="34" y="30" width="3" height="5" rx="1" fill={color} opacity="0.7" />
+          <rect x="10" y="10" width="36" height="3" rx="1" fill="#808898" />
+          {/* Side pods */}
+          <ellipse cx="18" cy="32" rx="4" ry="8" fill={color} opacity="0.7" />
+          <ellipse cx="38" cy="32" rx="4" ry="8" fill={color} opacity="0.7" />
+          {/* Helmet */}
+          <ellipse cx="28" cy="22" rx="7" ry="8" fill="#1a1a3a" stroke="#000" strokeWidth="1.5" />
+          <ellipse cx="28" cy="20" rx="5" ry="4" fill="#4060a0" />
+          <circle cx="25" cy="18" r="1.5" fill="#fff" opacity="0.5" />
+          {/* Number */}
+          <circle cx="28" cy="34" r="4" fill="#fff" />
           {/* Exhaust */}
-          <circle cx="26" cy="48" r="1.5" fill="#666680" />
-          <circle cx="30" cy="48" r="1.5" fill="#666680" />
+          <circle cx="25" cy="49" r="2" fill="#808898" />
+          <circle cx="31" cy="49" r="2" fill="#808898" />
         </svg>
       );
-
     case 'yeti':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
-          {/* Body - tall boxy SUV */}
-          <rect x="10" y="14" width="36" height="32" rx="3" fill={color} />
-          {/* Roof rack */}
-          <rect x="14" y="10" width="28" height="3" rx="1" fill="#808898" />
-          <rect x="18" y="8" width="2" height="4" fill="#808898" />
-          <rect x="36" y="8" width="2" height="4" fill="#808898" />
-          {/* Roof */}
-          <rect x="14" y="12" width="28" height="16" rx="2" fill={color} opacity="0.85" />
-          {/* Windshield */}
-          <rect x="16" y="14" width="24" height="10" rx="2" fill="#88aace" opacity="0.6" />
-          {/* Rear window */}
-          <rect x="18" y="32" width="20" height="6" rx="1" fill="#6688aa" opacity="0.5" />
-          {/* Bumpers */}
-          <rect x="10" y="12" width="36" height="3" rx="1" fill="#808898" />
-          <rect x="10" y="44" width="36" height="3" rx="1" fill="#808898" />
-          {/* Headlights */}
-          <circle cx="14" cy="13" r="2.5" fill="#e0c000" />
-          <circle cx="42" cy="13" r="2.5" fill="#e0c000" />
-          {/* Taillights */}
-          <rect x="11" y="44" width="5" height="2" rx="1" fill="#e02020" />
-          <rect x="40" y="44" width="5" height="2" rx="1" fill="#e02020" />
-          {/* Wheels - big chunky */}
-          <rect x="6" y="18" width="6" height="10" rx="3" fill="#2a2a3a" />
-          <rect x="44" y="18" width="6" height="10" rx="3" fill="#2a2a3a" />
-          <rect x="6" y="34" width="6" height="10" rx="3" fill="#2a2a3a" />
-          <rect x="44" y="34" width="6" height="10" rx="3" fill="#2a2a3a" />
-          {/* Side trim */}
-          <rect x="10" y="29" width="36" height="2" fill={color} opacity="0.6" />
+        <svg width="68" height="68" viewBox="0 0 56 56">
+          {/* Monster truck wheels */}
+          <circle cx="8" cy="18" r="7" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <circle cx="48" cy="18" r="7" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <circle cx="8" cy="40" r="7" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <circle cx="48" cy="40" r="7" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+          <circle cx="8" cy="18" r="3" fill="#3a3a4a" />
+          <circle cx="48" cy="18" r="3" fill="#3a3a4a" />
+          <circle cx="8" cy="40" r="3" fill="#3a3a4a" />
+          <circle cx="48" cy="40" r="3" fill="#3a3a4a" />
+          {/* Round body */}
+          <rect x="12" y="10" width="32" height="38" rx="8" fill={color} stroke="#000" strokeWidth="2.5" />
+          {/* Fur tufts */}
+          {[14,42,20,36].map((x, i) => <circle key={i} cx={x} cy={i < 2 ? 10 : 50} r="3" fill="#fff" opacity="0.3" />)}
+          {/* Belly */}
+          <ellipse cx="28" cy="34" rx="10" ry="12" fill="#fff" opacity="0.25" />
+          {/* Horns */}
+          <path d="M 18 14 L 10 4 L 14 10" fill="none" stroke="#c0a060" strokeWidth="3" strokeLinecap="round" />
+          <path d="M 38 14 L 46 4 L 42 10" fill="none" stroke="#c0a060" strokeWidth="3" strokeLinecap="round" />
+          {/* Snout */}
+          <ellipse cx="28" cy="26" rx="6" ry="4" fill="#e0d0c0" />
+          <ellipse cx="28" cy="24" rx="3" ry="2" fill="#404060" />
+          {/* Tooth */}
+          <polygon points="26,28 28,32 30,28" fill="#fff" />
+          {/* Eyes */}
+          <circle cx="22" cy="20" r="4" fill="#fff" />
+          <circle cx="34" cy="20" r="4" fill="#fff" />
+          <circle cx="22.5" cy="20" r="2" fill="#1a1a2e" />
+          <circle cx="34.5" cy="20" r="2" fill="#1a1a2e" />
+          {/* Rosy cheeks */}
+          <ellipse cx="17" cy="24" rx="3.5" ry="2" fill="#ff6080" opacity="0.3" />
+          <ellipse cx="39" cy="24" rx="3.5" ry="2" fill="#ff6080" opacity="0.3" />
         </svg>
       );
-
     case 'cat':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
-          {/* Tail curling up */}
-          <path d="M 40 38 Q 48 32 46 22 Q 45 18 42 20" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
-          {/* Body - round */}
-          <ellipse cx="28" cy="32" rx="16" ry="14" fill={color} />
-          {/* Belly highlight */}
-          <ellipse cx="28" cy="34" rx="10" ry="8" fill={color} opacity="0.7" />
+        <svg width="68" height="68" viewBox="0 0 56 56">
+          {/* Tail */}
+          <path d="M 42 42 Q 52 34 50 22 Q 49 16 44 18" fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" />
+          <path d="M 42 42 Q 52 34 50 22 Q 49 16 44 18" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Paws */}
+          {[16, 24, 32, 40].map((x, i) => <circle key={i} cx={x} cy="48" r="4" fill={color} opacity="0.8" />)}
+          <circle cx="16" cy="49" r="1.5" fill="#ffaaaa" />
+          <circle cx="40" cy="49" r="1.5" fill="#ffaaaa" />
+          {/* Body */}
+          <ellipse cx="28" cy="34" rx="18" ry="16" fill={color} stroke="#000" strokeWidth="2.5" />
+          {/* Belly */}
+          <ellipse cx="28" cy="38" rx="10" ry="10" fill="#fff" opacity="0.3" />
+          {/* Tabby stripes */}
+          {[26, 31, 36].map((y, i) => <path key={i} d={`M 20 ${y} Q 28 ${y-2} 36 ${y}`} fill="none" stroke="#000" strokeWidth="1.5" opacity="0.15" />)}
           {/* Left ear */}
-          <polygon points="14,20 10,6 22,16" fill={color} />
-          <polygon points="15,18 12,9 20,16" fill="#e08060" opacity="0.6" />
+          <polygon points="13,22 8,2 24,18" fill={color} stroke="#000" strokeWidth="2" />
+          <polygon points="14,20 11,6 22,18" fill="#ff9999" />
           {/* Right ear */}
-          <polygon points="42,20 46,6 34,16" fill={color} />
-          <polygon points="41,18 44,9 36,16" fill="#e08060" opacity="0.6" />
+          <polygon points="43,22 48,2 32,18" fill={color} stroke="#000" strokeWidth="2" />
+          <polygon points="42,20 45,6 34,18" fill="#ff9999" />
           {/* Eyes */}
-          <ellipse cx="22" cy="26" rx="3.5" ry="4" fill="#c8e0c8" />
-          <ellipse cx="34" cy="26" rx="3.5" ry="4" fill="#c8e0c8" />
-          <ellipse cx="23" cy="26" rx="1.8" ry="3" fill="#1a1a2e" />
-          <ellipse cx="35" cy="26" rx="1.8" ry="3" fill="#1a1a2e" />
+          <circle cx="22" cy="24" r="4" fill="#fff" />
+          <circle cx="34" cy="24" r="4" fill="#fff" />
+          <circle cx="22.5" cy="24" r="2" fill="#1a1a2e" />
+          <circle cx="34.5" cy="24" r="2" fill="#1a1a2e" />
           {/* Nose */}
-          <ellipse cx="28" cy="31" rx="2.5" ry="1.8" fill="#ff8090" />
+          <polygon points="28,27 25,30 31,30" fill="#ff8090" />
           {/* Whiskers */}
-          <line x1="8" y1="28" x2="20" y2="30" stroke="#a0a0b0" strokeWidth="1" />
-          <line x1="8" y1="32" x2="20" y2="32" stroke="#a0a0b0" strokeWidth="1" />
-          <line x1="36" y1="30" x2="48" y2="28" stroke="#a0a0b0" strokeWidth="1" />
-          <line x1="36" y1="32" x2="48" y2="32" stroke="#a0a0b0" strokeWidth="1" />
-          {/* Mouth */}
-          <path d="M 25 33 Q 28 36 31 33" fill="none" stroke="#1a1a2e" strokeWidth="1" />
-          {/* Wheels */}
-          <circle cx="18" cy="46" r="4" fill="#2a2a3a" />
-          <circle cx="38" cy="46" r="4" fill="#2a2a3a" />
-          <circle cx="18" cy="46" r="2" fill="#666680" />
-          <circle cx="38" cy="46" r="2" fill="#666680" />
+          <line x1="5" y1="26" x2="20" y2="29" stroke="#808090" strokeWidth="1.5" />
+          <line x1="4" y1="30" x2="20" y2="31" stroke="#808090" strokeWidth="1.5" />
+          <line x1="5" y1="34" x2="20" y2="33" stroke="#808090" strokeWidth="1.5" />
+          <line x1="36" y1="29" x2="51" y2="26" stroke="#808090" strokeWidth="1.5" />
+          <line x1="36" y1="31" x2="52" y2="30" stroke="#808090" strokeWidth="1.5" />
+          <line x1="36" y1="33" x2="51" y2="34" stroke="#808090" strokeWidth="1.5" />
+          {/* W-mouth */}
+          <path d="M 23 32 Q 25.5 35 28 32 Q 30.5 35 33 32" fill="none" stroke="#303040" strokeWidth="1.5" />
+          {/* Rosy cheeks */}
+          <ellipse cx="15" cy="28" rx="4" ry="2.5" fill="#ff6080" opacity="0.3" />
+          <ellipse cx="41" cy="28" rx="4" ry="2.5" fill="#ff6080" opacity="0.3" />
         </svg>
       );
-
     case 'pig':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
+        <svg width="68" height="68" viewBox="0 0 56 56">
           {/* Curly tail */}
-          <path d="M 40 38 Q 50 36 48 28 Q 46 24 44 28" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
-          {/* Body - round/oval */}
-          <ellipse cx="28" cy="32" rx="18" ry="15" fill={color} />
-          {/* Highlight */}
-          <ellipse cx="24" cy="28" rx="8" ry="6" fill="white" opacity="0.15" />
-          {/* Ears - floppy */}
-          <ellipse cx="16" cy="18" rx="6" ry="8" fill={color} transform="rotate(-20 16 18)" />
-          <ellipse cx="16" cy="18" rx="4" ry="6" fill="#d0607a" opacity="0.5" transform="rotate(-20 16 18)" />
-          <ellipse cx="40" cy="18" rx="6" ry="8" fill={color} transform="rotate(20 40 18)" />
-          <ellipse cx="40" cy="18" rx="4" ry="6" fill="#d0607a" opacity="0.5" transform="rotate(20 40 18)" />
+          <path d="M 42 40 C 54 38 52 28 46 32 C 52 24 48 20 44 24" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" />
+          <path d="M 42 40 C 54 38 52 28 46 32 C 52 24 48 20 44 24" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Hooves */}
+          <ellipse cx="18" cy="50" rx="4" ry="3" fill="#8a5030" />
+          <ellipse cx="38" cy="50" rx="4" ry="3" fill="#8a5030" />
+          {/* BIG round body */}
+          <ellipse cx="28" cy="32" rx="20" ry="18" fill={color} stroke="#000" strokeWidth="2.5" />
+          {/* Belly */}
+          <ellipse cx="28" cy="36" rx="12" ry="10" fill="#fff" opacity="0.15" />
+          {/* Left ear */}
+          <ellipse cx="14" cy="16" rx="8" ry="10" fill={color} stroke="#000" strokeWidth="2" transform="rotate(-30 14 16)" />
+          <ellipse cx="14" cy="16" rx="5" ry="7" fill="#e0607a" transform="rotate(-30 14 16)" />
+          {/* Right ear */}
+          <ellipse cx="42" cy="16" rx="8" ry="10" fill={color} stroke="#000" strokeWidth="2" transform="rotate(30 42 16)" />
+          <ellipse cx="42" cy="16" rx="5" ry="7" fill="#e0607a" transform="rotate(30 42 16)" />
           {/* Eyes */}
-          <circle cx="22" cy="26" r="3" fill="white" />
-          <circle cx="34" cy="26" r="3" fill="white" />
-          <circle cx="22.5" cy="26" r="1.8" fill="#1a1a2e" />
-          <circle cx="34.5" cy="26" r="1.8" fill="#1a1a2e" />
-          {/* Snout */}
-          <ellipse cx="28" cy="34" rx="8" ry="5" fill="#d0607a" />
-          {/* Nostrils */}
-          <ellipse cx="25" cy="34" rx="2" ry="1.5" fill="#1a1a2e" opacity="0.5" />
-          <ellipse cx="31" cy="34" rx="2" ry="1.5" fill="#1a1a2e" opacity="0.5" />
-          {/* Wheels */}
-          <circle cx="16" cy="46" r="4" fill="#2a2a3a" />
-          <circle cx="40" cy="46" r="4" fill="#2a2a3a" />
-          <circle cx="16" cy="46" r="2" fill="#666680" />
-          <circle cx="40" cy="46" r="2" fill="#666680" />
+          <circle cx="22" cy="24" r="4" fill="#fff" />
+          <circle cx="34" cy="24" r="4" fill="#fff" />
+          <circle cx="22.5" cy="24" r="2" fill="#1a1a2e" />
+          <circle cx="34.5" cy="24" r="2" fill="#1a1a2e" />
+          {/* Big snout */}
+          <ellipse cx="28" cy="32" rx="9" ry="6" fill="#e0607a" stroke="#000" strokeWidth="1.5" />
+          <ellipse cx="24" cy="32" rx="2.5" ry="2" fill="#903050" />
+          <ellipse cx="32" cy="32" rx="2.5" ry="2" fill="#903050" />
+          {/* Smile */}
+          <path d="M 22 37 Q 28 41 34 37" fill="none" stroke="#903050" strokeWidth="1.5" />
+          {/* Rosy cheeks */}
+          <ellipse cx="14" cy="28" rx="4.5" ry="2.5" fill="#ff6080" opacity="0.3" />
+          <ellipse cx="42" cy="28" rx="4.5" ry="2.5" fill="#ff6080" opacity="0.3" />
         </svg>
       );
-
     case 'frog':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
-          {/* Body - wide oval */}
-          <ellipse cx="28" cy="34" rx="20" ry="14" fill={color} />
+        <svg width="68" height="68" viewBox="0 0 56 56">
+          {/* Webbed feet */}
+          {[12, 44].map((x, i) => (
+            <g key={i} transform={`translate(${x}, 48) rotate(${i === 0 ? -15 : 15})`}>
+              <ellipse cx="-4" cy="0" rx="2.5" ry="4" fill={color} opacity="0.7" />
+              <ellipse cx="0" cy="0" rx="2.5" ry="4" fill={color} opacity="0.7" />
+              <ellipse cx="4" cy="0" rx="2.5" ry="4" fill={color} opacity="0.7" />
+            </g>
+          ))}
+          {/* Wide body */}
+          <ellipse cx="28" cy="36" rx="20" ry="14" fill={color} stroke="#000" strokeWidth="2.5" />
           {/* Lighter belly */}
-          <ellipse cx="28" cy="36" rx="12" ry="8" fill={color} opacity="0.6" />
-          {/* Left eye bulge */}
-          <circle cx="16" cy="18" r="9" fill={color} />
-          <circle cx="16" cy="17" r="6" fill="#dde8dd" />
-          <circle cx="16.5" cy="17" r="3" fill="#1a1a2e" />
-          {/* Right eye bulge */}
-          <circle cx="40" cy="18" r="9" fill={color} />
-          <circle cx="40" cy="17" r="6" fill="#dde8dd" />
-          <circle cx="40.5" cy="17" r="3" fill="#1a1a2e" />
-          {/* Wide mouth */}
-          <path d="M 12 38 Q 28 46 44 38" fill="none" stroke="#1a4a1a" strokeWidth="2" />
-          {/* Nostrils */}
-          <circle cx="24" cy="30" r="1.5" fill="#1a4a1a" />
-          <circle cx="32" cy="30" r="1.5" fill="#1a4a1a" />
+          <ellipse cx="28" cy="39" rx="14" ry="9" fill="#fff" opacity="0.3" />
           {/* Spots */}
-          <circle cx="20" cy="32" r="3" fill={color} opacity="0.5" />
-          <circle cx="36" cy="32" r="3" fill={color} opacity="0.5" />
+          <circle cx="18" cy="30" r="4" fill="#000" opacity="0.1" />
+          <circle cx="38" cy="30" r="3.5" fill="#000" opacity="0.1" />
+          <circle cx="28" cy="28" r="3" fill="#000" opacity="0.1" />
+          {/* Eye bumps (aligned with center) */}
+          <circle cx="22" cy="18" r="8" fill={color} stroke="#000" strokeWidth="2" />
+          <circle cx="34" cy="18" r="8" fill={color} stroke="#000" strokeWidth="2" />
+          {/* Eyes */}
+          <circle cx="22" cy="18" r="5" fill="#fff" />
+          <circle cx="34" cy="18" r="5" fill="#fff" />
+          <circle cx="22.5" cy="18" r="2.5" fill="#1a1a2e" />
+          <circle cx="34.5" cy="18" r="2.5" fill="#1a1a2e" />
+          {/* Nostrils */}
+          <circle cx="24" cy="32" r="1.5" fill="#1a4a1a" />
+          <circle cx="32" cy="32" r="1.5" fill="#1a4a1a" />
+          {/* Big smile */}
+          <path d="M 12 38 Q 28 50 44 38" fill="none" stroke="#1a4a1a" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Tongue */}
+          <ellipse cx="28" cy="44" rx="4" ry="3" fill="#ff6070" />
+          {/* Rosy cheeks */}
+          <ellipse cx="12" cy="36" rx="4" ry="2.5" fill="#ff6080" opacity="0.3" />
+          <ellipse cx="44" cy="36" rx="4" ry="2.5" fill="#ff6080" opacity="0.3" />
           {/* Front legs */}
-          <ellipse cx="12" cy="44" rx="4" ry="3" fill={color} opacity="0.8" />
-          <ellipse cx="44" cy="44" rx="4" ry="3" fill={color} opacity="0.8" />
-          {/* Wheels */}
-          <circle cx="16" cy="48" r="4" fill="#2a2a3a" />
-          <circle cx="40" cy="48" r="4" fill="#2a2a3a" />
-          <circle cx="16" cy="48" r="2" fill="#666680" />
-          <circle cx="40" cy="48" r="2" fill="#666680" />
+          <ellipse cx="10" cy="42" rx="4" ry="3" fill={color} />
+          <ellipse cx="46" cy="42" rx="4" ry="3" fill={color} />
         </svg>
       );
-
     case 'toilet':
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
-          {/* Tank/cistern */}
-          <rect x="18" y="36" width="20" height="14" rx="3" fill={color} opacity="0.85" />
-          <rect x="20" y="38" width="8" height="10" rx="2" fill="white" opacity="0.15" />
-          {/* Flush handle */}
-          <path d="M 34 40 L 40 38 L 42 40" fill="none" stroke="#b0b0c0" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="42" cy="40" r="2" fill="#c0c0d0" />
-          {/* Bowl body */}
-          <ellipse cx="28" cy="24" rx="14" ry="16" fill={color} />
-          {/* Bowl shadow */}
-          <ellipse cx="28" cy="28" rx="13" ry="10" fill="#000" opacity="0.1" />
-          {/* Seat ring */}
-          <ellipse cx="28" cy="22" rx="10" ry="12" fill="none" stroke="#c0c0d8" strokeWidth="3" />
-          {/* Water */}
-          <ellipse cx="28" cy="22" rx="7" ry="8" fill="#60a0e0" opacity="0.5" />
-          {/* Splash drops */}
-          <circle cx="25" cy="18" r="2" fill="#80d0ff" opacity="0.6" />
-          <circle cx="32" cy="20" r="1.5" fill="#80d0ff" opacity="0.6" />
-          <circle cx="28" cy="15" r="1" fill="#80d0ff" opacity="0.6" />
-          {/* Lid slightly open */}
-          <ellipse cx="28" cy="32" rx="10" ry="3" fill={color} opacity="0.9" />
-          {/* Porcelain highlight */}
-          <ellipse cx="22" cy="18" rx="4" ry="6" fill="white" opacity="0.2" transform="rotate(-15 22 18)" />
+        <svg width="68" height="68" viewBox="0 0 56 56">
           {/* Wheels */}
-          <circle cx="16" cy="12" r="3.5" fill="#2a2a3a" />
-          <circle cx="40" cy="12" r="3.5" fill="#2a2a3a" />
-          <circle cx="16" cy="46" r="3.5" fill="#2a2a3a" />
-          <circle cx="40" cy="46" r="3.5" fill="#2a2a3a" />
-          <circle cx="16" cy="12" r="1.5" fill="#666680" />
-          <circle cx="40" cy="12" r="1.5" fill="#666680" />
-          <circle cx="16" cy="46" r="1.5" fill="#666680" />
-          <circle cx="40" cy="46" r="1.5" fill="#666680" />
+          {[[14,10],[42,10],[14,48],[42,48]].map(([x, y], i) => (
+            <g key={i}>
+              <circle cx={x} cy={y} r="4.5" fill="#2a2a3a" stroke="#000" strokeWidth="1.5" />
+              <circle cx={x} cy={y} r="2" fill="#666680" />
+            </g>
+          ))}
+          {/* Tank */}
+          <rect x="16" y="36" width="24" height="16" rx="4" fill={color} opacity="0.85" stroke="#000" strokeWidth="2" />
+          <rect x="18" y="38" width="8" height="12" rx="2" fill="#fff" opacity="0.2" />
+          {/* Flush handle */}
+          <path d="M 36 40 L 44 36" fill="none" stroke="#808898" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="44" cy="36" r="2.5" fill="#a0a8b8" stroke="#000" strokeWidth="1" />
+          {/* Bowl */}
+          <ellipse cx="28" cy="22" rx="16" ry="18" fill={color} stroke="#000" strokeWidth="2.5" />
+          {/* Gleam */}
+          <ellipse cx="20" cy="14" rx="5" ry="8" fill="#fff" opacity="0.25" transform="rotate(-15 20 14)" />
+          {/* Seat ring */}
+          <ellipse cx="28" cy="20" rx="11" ry="13" fill="none" stroke={color} strokeWidth="3.5" opacity="0.7" />
+          {/* Water */}
+          <ellipse cx="28" cy="20" rx="8" ry="9" fill="#5090d0" opacity="0.5" />
+          {/* Bubbles */}
+          <circle cx="24" cy="17" r="1.5" fill="#a0d8ff" opacity="0.7" />
+          <circle cx="30" cy="15" r="1" fill="#a0d8ff" opacity="0.7" />
+          <circle cx="32" cy="20" r="1.2" fill="#a0d8ff" opacity="0.7" />
+          {/* Splash drops */}
+          <circle cx="22" cy="8" r="1.5" fill="#80d0ff" opacity="0.7" />
+          <circle cx="28" cy="5" r="2" fill="#80d0ff" opacity="0.7" />
+          <circle cx="34" cy="8" r="1.5" fill="#80d0ff" opacity="0.7" />
+          <circle cx="25" cy="3" r="1" fill="#80d0ff" opacity="0.7" />
+          {/* Lid edge */}
+          <ellipse cx="28" cy="34" rx="12" ry="3" fill={color} opacity="0.9" />
+          {/* Eyes */}
+          <circle cx="22" cy="20" r="3.5" fill="#fff" />
+          <circle cx="34" cy="20" r="3.5" fill="#fff" />
+          <circle cx="22.5" cy="20" r="1.8" fill="#1a1a2e" />
+          <circle cx="34.5" cy="20" r="1.8" fill="#1a1a2e" />
+          {/* Rosy cheeks */}
+          <ellipse cx="16" cy="24" rx="3" ry="2" fill="#ff6080" opacity="0.3" />
+          <ellipse cx="40" cy="24" rx="3" ry="2" fill="#ff6080" opacity="0.3" />
         </svg>
       );
-
     default:
       return (
-        <svg width="60" height="60" viewBox="0 0 56 56">
+        <svg width="68" height="68" viewBox="0 0 56 56">
           <rect x="12" y="18" width="32" height="20" rx="4" fill={color} />
           <rect x="18" y="10" width="20" height="14" rx="3" fill={color} opacity="0.85" />
           <circle cx="18" cy="42" r="4" fill="#2a2a3a" />
@@ -267,42 +323,34 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
   const pct = statPercent(value, max);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
-      <div style={{ fontSize: 7, width: 52, textAlign: 'right', color: '#a0a0b0', flexShrink: 0 }}>
+      <div style={{ fontSize: 7, width: 56, textAlign: 'right', color: '#8888a0', flexShrink: 0 }}>
         {label}
       </div>
-      <div
-        style={{
-          flex: 1,
-          height: 6,
-          background: '#1a1a2e',
-          border: '1px solid #3a3a4a',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            width: `${pct}%`,
-            height: '100%',
-            background: `linear-gradient(90deg, ${color}80 0%, ${color} 100%)`,
-            animation: `bar-fill 0.6s ease-out both`,
-            // @ts-expect-error CSS custom property
-            '--bar-w': `${pct}%`,
-          }}
-        />
+      <div style={{
+        flex: 1,
+        height: 10,
+        background: '#1a1228',
+        borderRadius: 5,
+        overflow: 'hidden',
+        boxShadow: 'inset 0 2px 4px #00000040',
+      }}>
+        <div style={{
+          width: `${pct}%`,
+          height: '100%',
+          borderRadius: 5,
+          background: `linear-gradient(180deg, ${color} 0%, ${color}a0 100%)`,
+          boxShadow: `inset 0 1px 0 ${color}60, 0 0 8px ${color}30`,
+          animation: 'bar-grow 0.6s ease-out both',
+          // @ts-expect-error CSS custom property
+          '--bar-w': `${pct}%`,
+        }} />
       </div>
     </div>
   );
 }
 
-const PLAYER_COLORS = ['#00e0e0', '#e0c000', '#00c040', '#e080a0'];
-const PLAYER_LABELS = ['P1', 'P2', 'P3', 'P4'];
-const PLAYER_HINTS = [
-  '\u2191\u2193\u2190\u2192 + Enter',
-  'WASD + Space',
-  'IJKL + H',
-  'Num 8456 + Num0',
-];
+const PLAYER_COLORS = ['#ff6060', '#50a0ff', '#50d060', '#f0c030'];
+const PLAYER_GLOWS = ['#e0302060', '#2070e060', '#20a03060', '#c0900060'];
 
 export default function CharacterSelect({ playerCount, botCount, onConfirm, onBack }: Props) {
   const { t } = useTranslation();
@@ -315,9 +363,6 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
     });
   };
 
-
-
-  // Countdown timer - 10 seconds to pick characters, then auto-start
   const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
@@ -333,9 +378,7 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
     return () => clearInterval(interval);
   }, []);
 
-  // Submit when countdown hits 0 or Enter is pressed
   const submitAll = useCallback(() => {
-    // Human picks
     const humanPicks = new Set<string>();
     const chars: string[] = [];
     for (let i = 0; i < playerCount; i++) {
@@ -343,8 +386,6 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
       chars.push(id);
       humanPicks.add(id);
     }
-
-    // Bot picks: random characters avoiding duplicates with humans
     const available = characters.filter(c => !humanPicks.has(c.id));
     const shuffled = [...available].sort(() => Math.random() - 0.5);
     let botIdx = 0;
@@ -353,80 +394,42 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
         chars.push(shuffled[botIdx].id);
         botIdx++;
       } else {
-        // Fallback: reuse characters if more bots than unique chars
         chars.push(characters[(i * 2 + 1) % characters.length].id);
       }
     }
-
-    // Fill remaining slots
     while (chars.length < 4) {
       chars.push(characters[(chars.length * 2) % characters.length].id);
     }
-
     onConfirm(chars[0], chars[1], chars[2], chars[3]);
   }, [indices, playerCount, botCount, onConfirm]);
 
   useEffect(() => {
-    if (countdown === 0) {
-      submitAll();
-    }
+    if (countdown === 0) submitAll();
   }, [countdown, submitAll]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      // Enter or Space from any player starts immediately
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         audioManager.play('sfx_menu_confirm');
         submitAll();
         return;
       }
-
-      // P1 controls: Arrow Left/Right
-      if (e.key === 'ArrowLeft') {
-        setPlayerIndex(0, (i) => (i - 1 + characters.length) % characters.length);
-        audioManager.play('sfx_menu_move');
-      } else if (e.key === 'ArrowRight') {
-        setPlayerIndex(0, (i) => (i + 1) % characters.length);
-        audioManager.play('sfx_menu_move');
-      }
-
-      // P2 controls: A/D
+      if (e.key === 'ArrowLeft') { setPlayerIndex(0, (i) => (i - 1 + characters.length) % characters.length); audioManager.play('sfx_menu_move'); }
+      else if (e.key === 'ArrowRight') { setPlayerIndex(0, (i) => (i + 1) % characters.length); audioManager.play('sfx_menu_move'); }
       if (playerCount >= 2) {
-        if (e.key === 'a' || e.key === 'A') {
-          setPlayerIndex(1, (i) => (i - 1 + characters.length) % characters.length);
-          audioManager.play('sfx_menu_move');
-        } else if (e.key === 'd' || e.key === 'D') {
-          setPlayerIndex(1, (i) => (i + 1) % characters.length);
-          audioManager.play('sfx_menu_move');
-        }
+        if (e.key === 'a' || e.key === 'A') { setPlayerIndex(1, (i) => (i - 1 + characters.length) % characters.length); audioManager.play('sfx_menu_move'); }
+        else if (e.key === 'd' || e.key === 'D') { setPlayerIndex(1, (i) => (i + 1) % characters.length); audioManager.play('sfx_menu_move'); }
       }
-
-      // P3 controls: J/L
       if (playerCount >= 3) {
-        if (e.key === 'j' || e.key === 'J') {
-          setPlayerIndex(2, (i) => (i - 1 + characters.length) % characters.length);
-          audioManager.play('sfx_menu_move');
-        } else if (e.key === 'l' || e.key === 'L') {
-          setPlayerIndex(2, (i) => (i + 1) % characters.length);
-          audioManager.play('sfx_menu_move');
-        }
+        if (e.key === 'j' || e.key === 'J') { setPlayerIndex(2, (i) => (i - 1 + characters.length) % characters.length); audioManager.play('sfx_menu_move'); }
+        else if (e.key === 'l' || e.key === 'L') { setPlayerIndex(2, (i) => (i + 1) % characters.length); audioManager.play('sfx_menu_move'); }
       }
-
-      // P4 controls: Numpad4/Numpad6
       if (playerCount >= 4) {
-        if (e.code === 'Numpad4') {
-          setPlayerIndex(3, (i) => (i - 1 + characters.length) % characters.length);
-          audioManager.play('sfx_menu_move');
-        } else if (e.code === 'Numpad6') {
-          setPlayerIndex(3, (i) => (i + 1) % characters.length);
-          audioManager.play('sfx_menu_move');
-        }
+        if (e.code === 'Numpad4') { setPlayerIndex(3, (i) => (i - 1 + characters.length) % characters.length); audioManager.play('sfx_menu_move'); }
+        else if (e.code === 'Numpad6') { setPlayerIndex(3, (i) => (i + 1) % characters.length); audioManager.play('sfx_menu_move'); }
       }
-
-      if (e.key === 'Escape') {
-        onBack();
-      }
+      if (e.key === 'Escape') onBack();
     },
     [playerCount, onBack, submitAll],
   );
@@ -436,7 +439,6 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  // Check for duplicate character selections among confirmed players
   const getDuplicateSet = () => {
     const seen = new Map<number, number[]>();
     for (let i = 0; i < playerCount; i++) {
@@ -446,114 +448,97 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
     }
     const dupes = new Set<number>();
     for (const [, pIdxs] of seen) {
-      if (pIdxs.length > 1) {
-        for (const p of pIdxs) dupes.add(p);
-      }
+      if (pIdxs.length > 1) for (const p of pIdxs) dupes.add(p);
     }
     return dupes;
   };
 
   const duplicateSet = getDuplicateSet();
-
-  const container: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    fontFamily: "'Press Start 2P', monospace",
-    color: '#e8e8f0',
-    background: 'linear-gradient(180deg, #1a1a2e 0%, #2a1515 100%)',
-    padding: '12px 8px',
-    gap: playerCount > 2 ? 6 : 12,
-    userSelect: 'none',
-    overflowY: 'auto',
-  };
-
-  const header: React.CSSProperties = {
-    fontSize: 14,
-    color: '#ff8020',
-    textShadow: '0 0 10px #e06010',
-    animation: 'header-in 0.5s ease-out both',
-    textAlign: 'center',
-    flexShrink: 0,
-  };
+  const compact = playerCount > 2;
 
   function renderPlayerSection(playerNum: number) {
     const pIdx = playerNum - 1;
     const selectedIndex = indices[pIdx];
     const isRival = duplicateSet.has(pIdx) && pIdx > 0;
-    const compact = playerCount > 2;
-
-    const sectionStyle: React.CSSProperties = {
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: compact ? 4 : 10,
-    };
-
-    const playerLabel: React.CSSProperties = {
-      fontSize: 7,
-      color: PLAYER_COLORS[pIdx],
-      textAlign: 'center',
-    };
-
-    const row: React.CSSProperties = {
-      display: 'flex',
-      gap: 6,
-      justifyContent: 'center',
-      flexWrap: 'nowrap',
-      overflowX: 'auto',
-      maxWidth: '100%',
-      padding: '4px 0',
-    };
+    const pColor = PLAYER_COLORS[pIdx];
+    const pGlow = PLAYER_GLOWS[pIdx];
 
     const labelText = playerCount === 1
       ? t('character_select')
       : t(`character_select_p${playerNum}` as any);
 
     return (
-      <div style={sectionStyle}>
-        <div style={playerLabel}>
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: compact ? 4 : 8,
+      }}>
+        {/* Player label */}
+        <div style={{
+          fontSize: compact ? 8 : 10,
+          color: pColor,
+          textAlign: 'center',
+          textShadow: `0 0 12px ${pGlow}`,
+          letterSpacing: 1,
+        }}>
           {labelText}
         </div>
 
-        <div style={row}>
+        {/* Character cards row */}
+        <div style={{
+          display: 'flex',
+          gap: compact ? 6 : 8,
+          justifyContent: 'center',
+          flexWrap: 'nowrap',
+          overflowX: 'hidden',
+          maxWidth: '100%',
+          padding: '4px 0',
+        }}>
           {characters.map((char, i) => {
             const isSelected = i === selectedIndex;
             const cardColor = isRival && isSelected ? char.rivalColor : char.primaryColor;
+            const cardW = compact ? 72 : (playerCount === 2 ? 76 : 74);
+            const cardH = compact ? 88 : 100;
             return (
               <button
                 key={char.id}
                 onClick={() => { audioManager.play('sfx_menu_move'); setPlayerIndex(pIdx, () => i); }}
                 style={{
-                  width: compact ? 76 : (playerCount === 2 ? 92 : 100),
+                  width: cardW,
+                  height: cardH,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: compact ? 2 : 4,
                   padding: compact ? 4 : 6,
                   background: isSelected
-                    ? `linear-gradient(180deg, ${cardColor}20 0%, #1a1a2e 100%)`
-                    : '#1a1a2e',
+                    ? `radial-gradient(ellipse at 50% 40%, ${cardColor}25 0%, #1a1228 100%)`
+                    : 'radial-gradient(ellipse at 50% 40%, #22203a 0%, #14121e 100%)',
                   border: 'none',
+                  borderRadius: 20,
                   fontFamily: "'Press Start 2P', monospace",
                   color: '#e8e8f0',
                   cursor: 'pointer',
-                  opacity: 1,
-                  animation: `card-pop 0.3s ease-out ${i * 0.06}s both${isSelected ? ', glow-selected 1.5s ease infinite' : ''}`,
+                  animation: `pop-in 0.4s ease-out ${i * 0.05}s both${isSelected ? ', wiggle 1.5s ease-in-out infinite' : ''}`,
                   boxShadow: isSelected
-                    ? `0 0 14px ${cardColor}, inset 0 0 0 2px ${cardColor}`
-                    : 'inset 0 0 0 2px #2a2a3a',
-                  transition: 'opacity 0.3s, background 0.2s',
-                  // @ts-expect-error CSS custom property
-                  '--glow': cardColor,
+                    ? `0 5px 20px ${cardColor}50, 0 0 0 3px ${cardColor}, inset 0 -3px 0 ${cardColor}30`
+                    : '0 3px 10px #00000050, 0 0 0 2px #2a283a, inset 0 -3px 0 #0e0c16',
                   flexShrink: 0,
                 }}
               >
-                <CarIcon char={char} isRival={isRival && isSelected} />
-                <div style={{ fontSize: 7, textAlign: 'center', lineHeight: '1.5', minHeight: compact ? 10 : 16 }}>
+                <div style={{ animation: isSelected ? 'bob 2s ease-in-out infinite' : undefined }}>
+                  <CarIcon char={char} isRival={isRival && isSelected} />
+                </div>
+                <div style={{
+                  fontSize: compact ? 6 : 7,
+                  textAlign: 'center',
+                  lineHeight: '1.4',
+                  color: isSelected ? '#e8e8f0' : '#6a6a80',
+                  minHeight: compact ? 8 : 12,
+                }}>
                   {t(char.name)}
                 </div>
               </button>
@@ -561,137 +546,97 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
           })}
         </div>
 
-        {/* Stats for selected character (hide in compact 4P view) */}
+        {/* Stats for selected character */}
         {!compact && (
-          <div
-            style={{
-              width: '100%',
-              maxWidth: 280,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4,
-              padding: '4px 8px',
-            }}
-          >
-            <StatBar label={t('stat_speed')} value={characters[selectedIndex].maxSpeed} max={SPEED_MAX} color="#00e0e0" />
-            <StatBar label={t('stat_handling')} value={characters[selectedIndex].handling} max={HANDLING_MAX} color="#00c040" />
-            <StatBar label={t('stat_weight')} value={characters[selectedIndex].weight} max={WEIGHT_MAX} color="#e07020" />
+          <div style={{
+            width: '100%',
+            maxWidth: 300,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            padding: '2px 8px',
+          }}>
+            <StatBar label={t('stat_speed')} value={characters[selectedIndex].maxSpeed} max={SPEED_MAX} color="#40d0e0" />
+            <StatBar label={t('stat_handling')} value={characters[selectedIndex].handling} max={HANDLING_MAX} color="#50d060" />
+            <StatBar label={t('stat_weight')} value={characters[selectedIndex].weight} max={WEIGHT_MAX} color="#e08030" />
           </div>
         )}
 
         {isRival && (
-          <div
-            style={{
-              fontSize: 5,
-              color: characters[selectedIndex].rivalColor,
-              animation: 'rival-badge-pulse 1.5s ease infinite',
-              padding: '3px 8px',
-              border: `1px solid ${characters[selectedIndex].rivalColor}60`,
-              background: `${characters[selectedIndex].rivalColor}15`,
-            }}
-          >
-            {PLAYER_LABELS[pIdx]}: {t('rival_palette')}
+          <div style={{
+            fontSize: 6,
+            color: characters[selectedIndex].rivalColor,
+            animation: 'rival-flash 1.5s ease infinite',
+            padding: '3px 12px',
+            borderRadius: 10,
+            border: `2px solid ${characters[selectedIndex].rivalColor}50`,
+            background: `${characters[selectedIndex].rivalColor}10`,
+          }}>
+            P{playerNum}: {t('rival_palette')}
           </div>
         )}
-
-        <div style={{
-          fontSize: 6,
-          color: '#666680',
-          display: 'flex',
-          gap: 3,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          opacity: 1,
-          transition: 'opacity 0.3s',
-        }}>
-          {PLAYER_HINTS[pIdx].split(/(\s*\+\s*|\s+)/).filter(Boolean).map((part, ki) => {
-            const trimmed = part.trim();
-            if (trimmed === '+') {
-              return <span key={ki} style={{ color: '#555568', fontSize: 5 }}>+</span>;
-            }
-            if (trimmed === '') return null;
-            return (
-              <span
-                key={ki}
-                style={{
-                  display: 'inline-block',
-                  padding: '2px 5px',
-                  background: '#1a1a2e',
-                  border: '1px solid #3a3a5a',
-                  borderBottom: '2px solid #3a3a5a',
-                  borderRadius: 3,
-                  color: '#a0a0c0',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: 5,
-                  letterSpacing: 1,
-                }}
-              >
-                {trimmed}
-              </span>
-            );
-          })}
-        </div>
       </div>
     );
   }
 
-  const divider: React.CSSProperties = {
-    width: '80%',
-    height: 1,
-    background: 'linear-gradient(90deg, transparent, #3a3a4a, transparent)',
-    flexShrink: 0,
-  };
-
-  const backBtn: React.CSSProperties = {
-    fontSize: 7,
-    padding: '6px 14px',
-    background: 'transparent',
-    color: '#666680',
-    border: '2px solid #3a3a4a',
-    fontFamily: "'Press Start 2P', monospace",
-    cursor: 'pointer',
-    flexShrink: 0,
-  };
-
   return (
-    <div style={container}>
+    <div style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: "'Press Start 2P', monospace",
+      color: '#e8e8f0',
+      background: 'radial-gradient(ellipse at 50% 30%, #2a1a3e 0%, #1a1228 40%, #0e0a18 100%)',
+      padding: '8px',
+      gap: compact ? 3 : 6,
+      userSelect: 'none',
+      overflow: 'hidden',
+    }}>
       <style>{keyframesStyle}</style>
-      <div style={header}>{t('character_select')}</div>
+
+      {/* Title */}
+      <div style={{
+        fontSize: compact ? 14 : 18,
+        color: '#ffb040',
+        textShadow: '0 3px 0 #8a3000, 0 0 16px #ff602060, -2px -2px 0 #c05010, 2px -2px 0 #c05010',
+        animation: 'title-drop 0.7s ease-out both',
+        textAlign: 'center',
+        flexShrink: 0,
+      }}>
+        {t('character_select')}
+      </div>
 
       {renderPlayerSection(1)}
 
       {playerCount >= 2 && (
         <>
-          <div style={divider} />
+          <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'linear-gradient(90deg, transparent, #3a3050, transparent)', flexShrink: 0 }} />
           {renderPlayerSection(2)}
         </>
       )}
 
       {playerCount >= 3 && (
         <>
-          <div style={divider} />
+          <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'linear-gradient(90deg, transparent, #3a3050, transparent)', flexShrink: 0 }} />
           {renderPlayerSection(3)}
         </>
       )}
 
       {playerCount >= 4 && (
         <>
-          <div style={divider} />
+          <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'linear-gradient(90deg, transparent, #3a3050, transparent)', flexShrink: 0 }} />
           {renderPlayerSection(4)}
         </>
       )}
 
-      {/* Bot sections */}
+      {/* Bot slots */}
       {botCount > 0 && (
         <>
-          <div style={divider} />
-          <div style={{
-            display: 'flex',
-            gap: 12,
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-          }}>
+          <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'linear-gradient(90deg, transparent, #3a3050, transparent)', flexShrink: 0 }} />
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             {Array.from({ length: botCount }, (_, i) => {
               const botSlot = playerCount + i;
               return (
@@ -699,24 +644,24 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 4,
-                  padding: '8px 16px',
-                  background: '#1a1a2e',
-                  boxShadow: 'inset 0 0 0 2px #2060e0',
-                  opacity: 0.7,
+                  padding: '8px 20px',
+                  background: 'radial-gradient(ellipse at 50% 40%, #1a2040 0%, #0e1428 100%)',
+                  borderRadius: 18,
+                  boxShadow: '0 0 0 3px #3060a0, inset 0 -3px 0 #0a1020',
+                  opacity: 0.75,
+                  animation: `badge-pop 0.5s ease-out ${0.3 + i * 0.1}s both`,
                 }}>
-                  <div style={{ fontSize: 7, color: '#4080ff' }}>
+                  <div style={{ fontSize: 8, color: '#5090ff' }}>
                     {t('bot_label')} {i + 1}
                   </div>
                   <div style={{
-                    fontSize: 16,
-                    color: '#4080ff',
-                    textShadow: '0 0 8px #2060e0',
+                    fontSize: 18,
+                    color: '#5090ff',
+                    textShadow: '0 0 10px #3060c060',
                   }}>
                     P{botSlot + 1}
-                  </div>
-                  <div style={{ fontSize: 6, color: '#666680' }}>
-                    {t('bot_label')}
                   </div>
                 </div>
               );
@@ -725,27 +670,35 @@ export default function CharacterSelect({ playerCount, botCount, onConfirm, onBa
         </>
       )}
 
-      {/* Countdown timer */}
+      {/* Countdown */}
       <div style={{
-        fontSize: 20,
-        color: countdown <= 3 ? '#e02020' : '#ff8020',
-        textShadow: `0 0 ${countdown <= 3 ? 20 : 10}px ${countdown <= 3 ? '#e02020' : '#e06010'}`,
+        fontSize: compact ? 22 : 28,
+        color: countdown <= 3 ? '#ff3030' : '#ffb040',
+        textShadow: countdown <= 3
+          ? '0 0 20px #ff303080, 0 3px 0 #801010'
+          : '0 0 12px #ff802060, 0 3px 0 #8a3000',
         textAlign: 'center',
-        animation: countdown <= 3 ? 'logo-pulse 0.5s ease infinite' : undefined,
-        marginTop: 8,
+        animation: countdown <= 3 ? 'countdown-urgent 0.5s ease infinite' : 'countdown-tick 1s ease both',
+        marginTop: compact ? 2 : 6,
       }}>
         {countdown}
       </div>
-      <div style={{
-        fontSize: 6,
-        color: '#666680',
-        textAlign: 'center',
-        marginTop: 4,
-      }}>
-        Enter / Space
-      </div>
 
-      <button style={backBtn} onClick={onBack}>
+      {/* Back button */}
+      <button
+        style={{
+          fontSize: 8,
+          padding: '8px 20px',
+          background: 'transparent',
+          color: '#5a5a70',
+          border: '2px solid #3a3050',
+          borderRadius: 14,
+          fontFamily: "'Press Start 2P', monospace",
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+        onClick={onBack}
+      >
         Esc
       </button>
     </div>

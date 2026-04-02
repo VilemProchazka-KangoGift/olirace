@@ -65,11 +65,11 @@ export default {
   progress: "Postup",
   // Bots
   bot_opponents: "Boti",
-  bot_count_0: "Bez botu",
+  bot_count_0: "Bez botů",
   bot_count_1: "1 bot",
   bot_count_2: "2 boti",
   bot_count_3: "3 boti",
   bot_label: "BOT",
   select_players: "Hráči",
-  total_racers: "{{count}} závodníků",
+  total_racers: "Závodníků: {{count}}",
 } as const;
