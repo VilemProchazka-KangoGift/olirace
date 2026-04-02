@@ -262,7 +262,7 @@ export function startGame(
         const nearest = player.nearestRoad;
         player.distFromRoadCenter = nearest.distance;
         player.roadHalfWidth = nearest.roadWidth / 2;
-        const onRoad = nearest.distance <= player.roadHalfWidth + LAVA_GRACE_ZONE;
+        const onRoad = nearest.distance <= player.roadHalfWidth + PLAYER_HITBOX_RADIUS + LAVA_GRACE_ZONE;
 
         if (!onRoad) {
           killPlayer(player, i, state);
@@ -392,42 +392,49 @@ export function startGame(
               const bDirY = -Math.sin(b.angle);
               b.speed = b.velocity.x * bDirX + b.velocity.y * bDirY;
 
-              // Exaggerated spin
-              const crossA = nx * aDirY - ny * aDirX;
-              a.angle += crossA * BUMP_SPIN_FORCE;
-              const crossB = nx * bDirY - ny * bDirX;
-              b.angle -= crossB * BUMP_SPIN_FORCE;
+              // Only trigger effects if closing speed is meaningful and both off cooldown
+              if (Math.abs(relVn) > 30 && a.bumpCooldown <= 0 && b.bumpCooldown <= 0) {
+                // Exaggerated spin
+                const crossA = nx * aDirY - ny * aDirX;
+                a.angle += crossA * BUMP_SPIN_FORCE;
+                const crossB = nx * bDirY - ny * bDirX;
+                b.angle -= crossB * BUMP_SPIN_FORCE;
 
-              // Squash on impact
-              a.squashX = 1.3;
-              a.squashY = 0.7;
-              b.squashX = 1.3;
-              b.squashY = 0.7;
+                // Squash on impact
+                a.squashX = 1.3;
+                a.squashY = 0.7;
+                b.squashX = 1.3;
+                b.squashY = 0.7;
 
-              // Expressions
-              a.expression = 'angry';
-              a.expressionTimer = 0.4;
-              b.expression = 'angry';
-              b.expressionTimer = 0.4;
+                // Expressions
+                a.expression = 'angry';
+                a.expressionTimer = 0.4;
+                b.expression = 'angry';
+                b.expressionTimer = 0.4;
 
-              // Track collisions
-              a.collisionCount++;
-              b.collisionCount++;
-              a.bumpsReceived++;
-              b.bumpsReceived++;
+                // Track collisions
+                a.collisionCount++;
+                b.collisionCount++;
+                a.bumpsReceived++;
+                b.bumpsReceived++;
 
-              // Comic text
-              addComicText(
-                randomComicText(COMIC_TEXTS_COLLISION),
-                (a.position.x + b.position.x) / 2,
-                (a.position.y + b.position.y) / 2 - 20,
-                COLORS.yellow,
-              );
+                // Comic text
+                addComicText(
+                  randomComicText(COMIC_TEXTS_COLLISION),
+                  (a.position.x + b.position.x) / 2,
+                  (a.position.y + b.position.y) / 2 - 20,
+                  COLORS.yellow,
+                );
 
-              // Audio and haptic
-              audioManager.playCarBump(Math.min(1, Math.abs(relVn) / 200));
-              triggerHaptic(i, 0.5, 0.1);
-              triggerHaptic(j, 0.5, 0.1);
+                // Audio and haptic
+                audioManager.playCarBump(Math.min(1, Math.abs(relVn) / 200));
+                triggerHaptic(i, 0.5, 0.1);
+                triggerHaptic(j, 0.5, 0.1);
+
+                // Cooldown to prevent rapid re-triggering
+                a.bumpCooldown = 0.4;
+                b.bumpCooldown = 0.4;
+              }
             }
           }
         }

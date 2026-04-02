@@ -14,6 +14,7 @@ import {
   DRIFT_MAX_CHARGE,
   MUD_SPEED_MULTIPLIER,
   SQUASH_RECOVERY_SPEED,
+  STEER_HIGH_SPEED_DAMPING,
 } from '../utils/constants';
 import {
   vec2,
@@ -91,6 +92,7 @@ export function createPlayer(
     // Collision tracking
     collisionCount: 0,
     bumpsReceived: 0,
+    bumpCooldown: 0,
 
     // Ramp
     airborne: false,
@@ -292,12 +294,12 @@ export function updatePlayer(
     }
   }
 
-  // 6. Steering — always responsive, even at low speed or standstill
+  // 6. Steering — most responsive at low speed, stabilizes at high speed
   if (input.steerX !== 0) {
     const speedSign = player.speed >= 0 ? 1 : -1;
     const absSpeedRatio = Math.abs(player.speed) / player.maxSpeed;
-    // Minimum 70% steering so cars always turn well, ramps up to 100% at full speed
-    const steerFactor = Math.max(0.7, absSpeedRatio) * speedSign;
+    // Full steering at standstill, linearly reduces to 50% at max speed
+    const steerFactor = (1.0 - STEER_HIGH_SPEED_DAMPING * absSpeedRatio) * speedSign;
     const driftBoost = player.drifting ? DRIFT_HANDLING_BOOST : 1;
     player.angle -= player.handling * input.steerX * steerFactor * dt * driftBoost;
   }
@@ -317,6 +319,10 @@ export function updatePlayer(
 
   if (player.honkTimer > 0) {
     player.honkTimer -= dt;
+  }
+
+  if (player.bumpCooldown > 0) {
+    player.bumpCooldown -= dt;
   }
 
   if (input.honk && player.honkTimer <= 0) {

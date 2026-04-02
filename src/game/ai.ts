@@ -36,6 +36,10 @@ const JOCKEY_STEER_STRENGTH = 0.4;
 const STUCK_THRESHOLD = 5;
 const STUCK_TIME = 1.0;
 const STUCK_REVERSE_TIME = 0.5;
+const BLOCKED_AHEAD_DIST = 50;       // distance to detect player directly ahead
+const BLOCKED_AHEAD_WIDTH = 25;      // lateral tolerance for "directly ahead"
+const BLOCKED_BRAKE_TIME = 0.3;      // how long blocked before braking hard
+const BLOCKED_REVERSE_TIME = 0.6;    // how long blocked before reversing out
 
 function getPersonality(characterId: string): AIPersonality {
   return PERSONALITIES[characterId] ?? PERSONALITIES.frog;
@@ -123,6 +127,8 @@ export function createInitialAIState(): AIState {
     stuckTimer: 0,
     stuckReverseTimer: 0,
     noisePhase: Math.random() * Math.PI * 2,
+    blockedTimer: 0,
+    reverseSteerDir: 0,
   };
 }
 
@@ -154,7 +160,8 @@ export function computeAIInput(
   if (aiState) {
     if (aiState.stuckReverseTimer > 0) {
       aiState.stuckReverseTimer -= FIXED_TIMESTEP;
-      return { accelerate: 0, brake: 1, steerX: Math.sin(time * 5 + playerIndex) > 0 ? 1 : -1, honk: false };
+      // Steer toward road center while reversing (not randomly)
+      return { accelerate: 0, brake: 1, steerX: aiState.reverseSteerDir, honk: false };
     }
 
     if (Math.abs(player.speed) < STUCK_THRESHOLD && player.stunTimer <= 0) {
@@ -162,7 +169,16 @@ export function computeAIInput(
       if (aiState.stuckTimer > STUCK_TIME) {
         aiState.stuckTimer = 0;
         aiState.stuckReverseTimer = STUCK_REVERSE_TIME;
-        return { accelerate: 0, brake: 1, steerX: 0, honk: false };
+        // Pick reverse steer direction: toward road center
+        const nearestR = player.nearestRoad;
+        const toCenterX = nearestR.centerPoint.x - player.position.x;
+        const toCenterY = nearestR.centerPoint.y - player.position.y;
+        const cosP = Math.cos(player.angle);
+        const sinP = -Math.sin(player.angle);
+        const rightOfCenter = -toCenterX * sinP + toCenterY * cosP;
+        // When reversing, steering is inverted: steer toward center
+        aiState.reverseSteerDir = rightOfCenter > 0 ? -0.7 : 0.7;
+        return { accelerate: 0, brake: 1, steerX: aiState.reverseSteerDir, honk: false };
       }
     } else {
       aiState.stuckTimer = 0;
@@ -235,6 +251,8 @@ export function computeAIInput(
   }
 
   // 5b. Dynamic jockeying — steer away from nearby bots/players
+  let blockedAhead = false;
+  let blockedRightDir = 0; // lateral offset of blocking player
   for (let i = 0; i < gameState.players.length; i++) {
     if (i === playerIndex) continue;
     const other = gameState.players[i];
@@ -244,7 +262,7 @@ export function computeAIInput(
     const dist = Math.sqrt(odx * odx + ody * ody);
     if (dist > JOCKEY_DETECT_RADIUS || dist < 1) continue;
 
-    // Only jockey with players roughly alongside (not far ahead/behind)
+    // Transform to player-local coordinates
     const forward = odx * cosA + ody * sinA;
     if (Math.abs(forward) > JOCKEY_DETECT_RADIUS) continue;
 
@@ -253,6 +271,28 @@ export function computeAIInput(
     const avoidDir = right > 0 ? -1 : 1;
     const urgency = 1 - dist / JOCKEY_DETECT_RADIUS;
     steerX += avoidDir * JOCKEY_STEER_STRENGTH * urgency;
+
+    // Detect player directly ahead blocking our path
+    if (forward > 0 && forward < BLOCKED_AHEAD_DIST && Math.abs(right) < BLOCKED_AHEAD_WIDTH) {
+      blockedAhead = true;
+      blockedRightDir = right;
+    }
+  }
+
+  // Blocked-by-player: brake and eventually reverse to go around
+  if (aiState) {
+    if (blockedAhead && Math.abs(player.speed) < player.maxSpeed * 0.3) {
+      aiState.blockedTimer += FIXED_TIMESTEP;
+      if (aiState.blockedTimer > BLOCKED_REVERSE_TIME) {
+        // Reverse out and steer away from the blocking player
+        aiState.blockedTimer = 0;
+        aiState.stuckReverseTimer = STUCK_REVERSE_TIME;
+        aiState.reverseSteerDir = blockedRightDir > 0 ? 0.7 : -0.7;
+        return { accelerate: 0, brake: 1, steerX: aiState.reverseSteerDir, honk: false };
+      }
+    } else {
+      aiState.blockedTimer = Math.max(0, aiState.blockedTimer - FIXED_TIMESTEP);
+    }
   }
 
   steerX = clamp(steerX, -1, 1);

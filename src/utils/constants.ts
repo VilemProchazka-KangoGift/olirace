@@ -1,7 +1,8 @@
 export const CANVAS_WIDTH = 480;
 export const CANVAS_HEIGHT = 854;
 export const FIXED_TIMESTEP = 1 / 60;
-export const FRICTION_DECAY = 0.97;
+export const FRICTION_DECAY = 0.985;
+export const STEER_HIGH_SPEED_DAMPING = 0.5;  // steering reduces to (1 - this) at max speed
 export const REVERSE_SPEED_MULTIPLIER = 0.4;
 export const BOOST_SPEED_MULTIPLIER = 1.5;
 export const BOOST_DURATION = 2.0;

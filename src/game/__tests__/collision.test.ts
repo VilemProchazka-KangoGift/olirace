@@ -286,10 +286,10 @@ describe('isPointOnRoad', () => {
     expect(result.onRoad).toBe(true);
   });
 
-  it('returns false for point off road (beyond grace zone)', () => {
+  it('returns false for point off road (beyond hitbox + grace zone)', () => {
     const road = createStraightRoad(100);
-    // Half-width = 50, grace = 5, so x=60 should be off road (60 > 55)
-    const result = isPointOnRoad({ x: 60, y: 50 }, road);
+    // Half-width = 50, hitbox = 16, grace = 5, so x=75 should be off road (75 > 71)
+    const result = isPointOnRoad({ x: 75, y: 50 }, road);
     expect(result.onRoad).toBe(false);
   });
 
@@ -311,16 +311,16 @@ describe('isPointOnRoad', () => {
     expect(result.distFromCenter).toBeCloseTo(30);
   });
 
-  it('boundary: exactly at halfWidth + graceZone', () => {
+  it('boundary: exactly at halfWidth + hitbox + graceZone', () => {
     const road = createStraightRoad(100);
-    // halfWidth=50, grace=5 -> threshold=55
-    const result = isPointOnRoad({ x: 55, y: 50 }, road);
+    // halfWidth=50, hitbox=16, grace=5 -> threshold=71
+    const result = isPointOnRoad({ x: 71, y: 50 }, road);
     expect(result.onRoad).toBe(true); // <= check
   });
 
-  it('boundary: just beyond halfWidth + graceZone', () => {
+  it('boundary: just beyond halfWidth + hitbox + graceZone', () => {
     const road = createStraightRoad(100);
-    const result = isPointOnRoad({ x: 55.1, y: 50 }, road);
+    const result = isPointOnRoad({ x: 71.1, y: 50 }, road);
     expect(result.onRoad).toBe(false);
   });
 });

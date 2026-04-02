@@ -285,7 +285,7 @@ describe('Acceleration and speed physics', () => {
     player.speed = 200;
     const state = makeState([player]);
 
-    runFrames(player, state, 300, input());
+    runFrames(player, state, 600, input());
 
     expect(player.speed).toBe(0);
   });

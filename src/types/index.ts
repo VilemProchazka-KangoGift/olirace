@@ -146,6 +146,7 @@ export interface PlayerState {
   // ── Collision tracking ────────────────────────────────────────────
   collisionCount: number;    // for "biggest bully" award
   bumpsReceived: number;     // for various awards
+  bumpCooldown: number;      // prevents collision effect spam at low speeds
 
   // ── Ramp jump ─────────────────────────────────────────────────────
   airborne: boolean;
@@ -276,6 +277,8 @@ export interface AIState {
   stuckTimer: number;
   stuckReverseTimer: number;
   noisePhase: number;
+  blockedTimer: number;       // how long a player has been directly ahead blocking
+  reverseSteerDir: number;    // which way to steer while reversing (-1 or 1)
 }
 
 export interface GameConfig {

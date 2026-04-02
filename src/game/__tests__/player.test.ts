@@ -313,7 +313,7 @@ describe('updatePlayer - steering', () => {
     expect(Math.abs(player.angle)).toBeLessThan(0.1);
   });
 
-  it('steering is proportional to speed ratio', () => {
+  it('steering is stronger at low speed than high speed', () => {
     const slowPlayer = createPlayer('formula', 0, 0, 0, 'primary');
     slowPlayer.speed = 50;
     const fastPlayer = createPlayer('formula', 0, 0, 0, 'primary');
@@ -330,8 +330,8 @@ describe('updatePlayer - steering', () => {
     updatePlayer(fastPlayer, dt, fastState);
     const fastAngle = fastPlayer.angle;
 
-    // Fast player steers more than slow player (higher speedRatio)
-    expect(Math.abs(fastAngle)).toBeGreaterThan(Math.abs(slowAngle));
+    // Slow player steers more than fast player (inverted curve for better control)
+    expect(Math.abs(slowAngle)).toBeGreaterThan(Math.abs(fastAngle));
   });
 
   it('steering inverts when reversing (speed < 0)', () => {

@@ -10,7 +10,7 @@ import {
   rotateVec2,
   vec2,
 } from '../utils/math';
-import { LAVA_GRACE_ZONE } from '../utils/constants';
+import { LAVA_GRACE_ZONE, PLAYER_HITBOX_RADIUS } from '../utils/constants';
 
 export function circleCircle(
   ax: number,
@@ -128,7 +128,7 @@ export function isPointOnRoad(
 } {
   const nearest = findNearestRoadPoint(point, road);
   const halfWidth = nearest.roadWidth / 2;
-  const onRoad = nearest.distance <= halfWidth + LAVA_GRACE_ZONE;
+  const onRoad = nearest.distance <= halfWidth + PLAYER_HITBOX_RADIUS + LAVA_GRACE_ZONE;
   return {
     onRoad,
     nearestSegIdx: nearest.segIdx,
