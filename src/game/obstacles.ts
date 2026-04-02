@@ -15,6 +15,15 @@ import {
   MUD_EFFECT_DURATION,
   BOUNCY_WALL_RESTITUTION,
   DESTRUCTIBLE_RESPAWN_TIME,
+  DESTRUCTIBLE_BOOST_FRACTION,
+  DESTRUCTIBLE_BOOST_DURATION,
+  DESTRUCTIBLE_HEAVY_SLOWDOWN,
+  DESTRUCTIBLE_LIGHT_SLOWDOWN,
+  SLINGSHOT_SPEED_THRESHOLD,
+  SLINGSHOT_SPEED_MULTIPLIER,
+  SLINGSHOT_DURATION,
+  PATROL_PAUSE_THRESHOLD,
+  PATROL_PAUSE_DURATION,
 } from '../utils/constants';
 import { distance, vec2, directionFromAngle, add, scale } from '../utils/math';
 import { circleCircle, circleAABB, circleOBB } from './collision';
@@ -28,7 +37,7 @@ const OBSTACLE_DEFAULTS: Record<
   spikes: { width: 32, height: 16 },
   log: { width: 60, height: 20 },
   rotating_spikes: { width: 40, height: 40 },
-  ramp: { width: 50, height: 30 },
+  ramp: { width: 120, height: 30 },
   destructible: { width: 24, height: 24 },
   mud_zone: { width: 60, height: 60 },
   bouncy_wall: { width: 60, height: 12 },
@@ -62,6 +71,8 @@ export function createObstacleStates(
       destroyTimer: 0,
       respawnTimer: 0,
       bounceTimer: 0,
+      patrolPauseTimer: 0,
+      patrolFrozenOffset: 0,
     };
   });
 }
@@ -72,14 +83,35 @@ export function updateObstacles(
   dt: number,
 ): void {
   for (const obs of obstacles) {
-    // Update patrol positions
+    // Update patrol positions with windshield-wiper pause at extremes
     if (obs.patrolDistance > 0 && obs.patrolSpeed > 0) {
-      const offset =
-        Math.sin(time * obs.patrolSpeed) * obs.patrolDistance;
-      if (obs.patrolAxis === 'x') {
-        obs.x = obs.baseX + offset;
+      const sinVal = Math.sin(time * obs.patrolSpeed);
+
+      if (Math.abs(sinVal) > PATROL_PAUSE_THRESHOLD) {
+        // Near extreme — pause briefly
+        if (obs.patrolPauseTimer <= 0) {
+          // Just entered pause zone — freeze at current offset
+          obs.patrolFrozenOffset = sinVal > 0
+            ? obs.patrolDistance
+            : -obs.patrolDistance;
+          obs.patrolPauseTimer = PATROL_PAUSE_DURATION;
+        }
+        obs.patrolPauseTimer -= dt;
+        // Use frozen position during pause
+        if (obs.patrolAxis === 'x') {
+          obs.x = obs.baseX + obs.patrolFrozenOffset;
+        } else {
+          obs.y = obs.baseY + obs.patrolFrozenOffset;
+        }
       } else {
-        obs.y = obs.baseY + offset;
+        // Normal movement
+        obs.patrolPauseTimer = 0;
+        const offset = sinVal * obs.patrolDistance;
+        if (obs.patrolAxis === 'x') {
+          obs.x = obs.baseX + offset;
+        } else {
+          obs.y = obs.baseY + offset;
+        }
       }
     }
 
@@ -157,17 +189,29 @@ export function checkObstacleCollisions(
         if (
           circleOBB(px, py, pr, obs.x, obs.y, obs.width, obs.height, obs.angle)
         ) {
+          // Same log can't re-stun you until you move away (prevents infinite knockback loop)
+          if (obs.triggeredBy.has(playerIndex)) continue;
+          obs.triggeredBy.add(playerIndex);
           player.stunTimer = LOG_STUN_DURATION;
-          const knockDir = directionFromAngle(player.angle + Math.PI);
+          // Knock opposite to movement direction (not facing direction)
+          // so reversing into a log pushes you backward, not forward
+          const knockAngle = player.speed >= 0 ? player.angle + Math.PI : player.angle;
+          const knockDir = directionFromAngle(knockAngle);
           const knockback = scale(knockDir, BASE_KNOCKBACK);
           player.position = add(player.position, knockback);
-          player.speed *= -0.3;
+          player.speed *= -0.1;
           // Squash on log hit
           player.squashX = 1.4;
           player.squashY = 0.6;
           player.expression = 'angry';
           player.expressionTimer = 0.5;
           return 'knockback';
+        } else {
+          // Reset when player moves far enough away
+          const dist = distance(player.position, vec2(obs.x, obs.y));
+          if (dist > 80 && obs.triggeredBy.has(playerIndex)) {
+            obs.triggeredBy.delete(playerIndex);
+          }
         }
         break;
       }
@@ -230,11 +274,19 @@ export function checkObstacleCollisions(
           // Destroy it!
           obs.destroyed = true;
           obs.respawnTimer = DESTRUCTIBLE_RESPAWN_TIME;
-          // Slight slowdown
-          player.speed *= 0.8;
-          // Squash
-          player.squashX = 1.2;
-          player.squashY = 0.85;
+          // Weight-based slowdown: heavy chars smash through easier
+          const slowdown = player.weight > 0.5
+            ? DESTRUCTIBLE_HEAVY_SLOWDOWN
+            : DESTRUCTIBLE_LIGHT_SLOWDOWN;
+          player.speed *= slowdown;
+          // Micro-boost reward for smashing!
+          player.boostTimer = DESTRUCTIBLE_BOOST_DURATION;
+          player.speed += player.maxSpeed * DESTRUCTIBLE_BOOST_FRACTION;
+          // Squash + happy expression (smashing feels good!)
+          player.squashX = 0.85;
+          player.squashY = 1.2;
+          player.expression = 'happy';
+          player.expressionTimer = 0.4;
           return 'destroy';
         }
         break;
@@ -256,6 +308,10 @@ export function checkObstacleCollisions(
         if (
           circleOBB(px, py, pr, obs.x, obs.y, obs.width, obs.height, obs.angle)
         ) {
+          // Check speed BEFORE bounce for slingshot
+          const speedRatio = Math.abs(player.speed) / player.maxSpeed;
+          const isSlingshot = speedRatio > SLINGSHOT_SPEED_THRESHOLD;
+
           // Bounce the player away like a pinball
           const dx = px - obs.x;
           const dy = py - obs.y;
@@ -277,6 +333,17 @@ export function checkObstacleCollisions(
           const dirY = -Math.sin(player.angle);
           player.speed = player.velocity.x * dirX + player.velocity.y * dirY;
 
+          // Slingshot: high-speed bounce gives speed boost
+          if (isSlingshot) {
+            player.speed *= SLINGSHOT_SPEED_MULTIPLIER;
+            player.boostTimer = SLINGSHOT_DURATION;
+            player.expression = 'happy';
+            player.expressionTimer = 0.5;
+          } else {
+            player.expression = 'angry';
+            player.expressionTimer = 0.3;
+          }
+
           // Push out
           player.position.x += nx * 5;
           player.position.y += ny * 5;
@@ -285,8 +352,6 @@ export function checkObstacleCollisions(
           obs.bounceTimer = 0.3;
           player.squashX = 1.3;
           player.squashY = 0.7;
-          player.expression = 'angry';
-          player.expressionTimer = 0.3;
 
           return 'bounce';
         }

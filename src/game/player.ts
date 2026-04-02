@@ -13,8 +13,13 @@ import {
   DRIFT_EXIT_SPEED_BONUS,
   DRIFT_MAX_CHARGE,
   MUD_SPEED_MULTIPLIER,
+  MUD_DRIFT_CHARGE_MULTIPLIER,
   SQUASH_RECOVERY_SPEED,
   STEER_HIGH_SPEED_DAMPING,
+  LAUNCH_BOOST_MULTIPLIER,
+  LAUNCH_BOOST_SPEED_THRESHOLD,
+  RAMP_AIRBORNE_DURATION,
+  RAMP_MAX_HEIGHT,
 } from '../utils/constants';
 import {
   vec2,
@@ -154,8 +159,8 @@ export function updatePlayer(
   // Airborne physics
   if (player.airborne) {
     player.airborneTimer -= dt;
-    const progress = 1 - Math.max(0, player.airborneTimer / 0.6);
-    player.airborneHeight = Math.sin(progress * Math.PI) * 30;
+    const progress = 1 - Math.max(0, player.airborneTimer / RAMP_AIRBORNE_DURATION);
+    player.airborneHeight = Math.sin(progress * Math.PI) * RAMP_MAX_HEIGHT;
     if (player.airborneTimer <= 0) {
       player.airborne = false;
       player.airborneHeight = 0;
@@ -228,7 +233,12 @@ export function updatePlayer(
     + player.turboStartBonus;
 
   if (input.accelerate > 0) {
-    player.speed += player.acceleration * input.accelerate * dt * mudMultiplier;
+    // Launch boost: faster acceleration from standstill
+    const speedFraction = Math.abs(player.speed) / player.maxSpeed;
+    const launchBoost = speedFraction < LAUNCH_BOOST_SPEED_THRESHOLD
+      ? LAUNCH_BOOST_MULTIPLIER
+      : 1;
+    player.speed += player.acceleration * input.accelerate * dt * mudMultiplier * launchBoost;
     if (player.speed > currentMaxSpeed) {
       player.speed = currentMaxSpeed;
     }
@@ -256,8 +266,10 @@ export function updatePlayer(
     // Enter/continue drift
     player.drifting = true;
     player.driftTimer += dt;
+    // Drift charges 2x faster in mud — risk/reward!
+    const driftChargeRate = player.mudTimer > 0 ? MUD_DRIFT_CHARGE_MULTIPLIER : 1;
     player.driftBoostCharge = Math.min(
-      player.driftBoostCharge + dt,
+      player.driftBoostCharge + dt * driftChargeRate,
       DRIFT_MAX_CHARGE,
     );
     // Visual drift angle
@@ -296,7 +308,9 @@ export function updatePlayer(
 
   // 6. Steering — most responsive at low speed, stabilizes at high speed
   if (input.steerX !== 0) {
-    const speedSign = player.speed >= 0 ? 1 : -1;
+    // Only reverse steering when intentionally driving in reverse (brake held + clearly moving backward)
+    const reverseThreshold = player.maxSpeed * 0.05;
+    const speedSign = (player.speed < -reverseThreshold && input.brake > 0) ? -1 : 1;
     const absSpeedRatio = Math.abs(player.speed) / player.maxSpeed;
     // Full steering at standstill, linearly reduces to 50% at max speed
     const steerFactor = (1.0 - STEER_HIGH_SPEED_DAMPING * absSpeedRatio) * speedSign;

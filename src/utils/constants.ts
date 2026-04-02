@@ -6,25 +6,29 @@ export const STEER_HIGH_SPEED_DAMPING = 0.5;  // steering reduces to (1 - this) 
 export const REVERSE_SPEED_MULTIPLIER = 0.4;
 export const BOOST_SPEED_MULTIPLIER = 1.5;
 export const BOOST_DURATION = 2.0;
-export const BASE_KNOCKBACK = 60;
-export const LOG_STUN_DURATION = 0.3;
+export const BASE_KNOCKBACK = 25;
+export const LOG_STUN_DURATION = 0.15;
 export const DEATH_ANIMATION_DURATION = 0.42;
 export const RESPAWN_DISTANCE = 200;
 export const INVINCIBILITY_DURATION = 1.5;
 export const INVINCIBILITY_BLINK_RATE = 0.1;
 export const PLAYER_HITBOX_RADIUS = 16;
 export const CAMERA_LERP = 0.08;
-export const CAMERA_LOOK_AHEAD = 150;
+export const CAMERA_LOOK_AHEAD = 280;
 export const CAMERA_LEADER_BIAS = 0.3;
 export const TETHER_WARNING_DISTANCE = 400;
 export const TETHER_TELEPORT_DISTANCE = 500;
-export const TETHER_TELEPORT_BEHIND = 100;
+export const TETHER_TELEPORT_BEHIND = 150;
+export const TETHER_SPEED_MULTIPLIER = 1.2;    // shoot forward at 120% leader speed
+export const TETHER_INVINCIBILITY = 3.0;       // seconds of invincibility after catch-up
 export const PUSH_STRENGTH = 120;
 export const COUNTDOWN_STEP_DURATION = 0.8;
 export const GO_DISPLAY_DURATION = 0.5;
 export const ARROW_PAD_RETRIGGER_DISTANCE = 200;
 export const LAVA_GRACE_ZONE = 5;
 export const ROTATING_SPIKE_HITBOX_RADIUS = 20;
+export const PATROL_PAUSE_THRESHOLD = 0.95;  // pause when sin > this (near extremes)
+export const PATROL_PAUSE_DURATION = 0.3;    // seconds of pause at each end
 export const ROAD_EDGE_LINE_WIDTH = 2;
 export const ROAD_CENTER_LINE_WIDTH = 4;
 export const ROAD_CENTER_DASH = 20;
@@ -35,8 +39,13 @@ export const ROAD_SHOULDER_INSET = 8;
 export const DRIFT_SPEED_THRESHOLD = 0.4;  // must be going > 40% maxSpeed to drift
 export const DRIFT_FRICTION = 0.985;        // higher than normal friction during drift
 export const DRIFT_HANDLING_BOOST = 1.6;    // steering multiplier while drifting
-export const DRIFT_EXIT_SPEED_BONUS = 0.15; // % of maxSpeed bonus per second of drift
+export const DRIFT_EXIT_SPEED_BONUS = 0.20; // % of maxSpeed bonus per second of drift
 export const DRIFT_MAX_CHARGE = 1.5;        // max seconds of drift charge
+export const MUD_DRIFT_CHARGE_MULTIPLIER = 2.0; // drift charges 2x faster in mud
+
+// ── Standstill acceleration boost ───────────────────────────────────
+export const LAUNCH_BOOST_MULTIPLIER = 1.8;    // acceleration multiplier from standstill
+export const LAUNCH_BOOST_SPEED_THRESHOLD = 0.1; // below 10% maxSpeed
 
 // ── Turbo start ─────────────────────────────────────────────────────
 export const TURBO_START_WINDOW = 0.3;      // seconds after GO to press accelerate
@@ -69,8 +78,8 @@ export const SPEED_LINES_THRESHOLD = 0.7;   // show speed lines above 70% max sp
 export const FLASH_DURATION = 0.15;
 
 // ── Ramp ────────────────────────────────────────────────────────────
-export const RAMP_AIRBORNE_DURATION = 0.6;   // seconds airborne
-export const RAMP_MAX_HEIGHT = 30;           // visual pixel height
+export const RAMP_AIRBORNE_DURATION = 1.0;   // seconds airborne (longer jumps!)
+export const RAMP_MAX_HEIGHT = 45;           // visual pixel height
 
 // ── Mud zone ────────────────────────────────────────────────────────
 export const MUD_SPEED_MULTIPLIER = 0.5;     // 50% speed in mud
@@ -78,14 +87,21 @@ export const MUD_EFFECT_DURATION = 0.5;      // lingers after leaving mud
 
 // ── Bouncy wall ─────────────────────────────────────────────────────
 export const BOUNCY_WALL_RESTITUTION = 1.5;  // exaggerated bounce
+export const SLINGSHOT_SPEED_THRESHOLD = 0.7; // >70% maxSpeed triggers slingshot
+export const SLINGSHOT_SPEED_MULTIPLIER = 1.2; // 20% speed boost on slingshot
+export const SLINGSHOT_DURATION = 1.0;         // seconds of slingshot boost
 
 // ── Destructible ────────────────────────────────────────────────────
 export const DESTRUCTIBLE_RESPAWN_TIME = 8;  // seconds to respawn
+export const DESTRUCTIBLE_BOOST_FRACTION = 0.12;  // 12% maxSpeed micro-boost on smash
+export const DESTRUCTIBLE_BOOST_DURATION = 0.5;   // seconds of micro-boost
+export const DESTRUCTIBLE_HEAVY_SLOWDOWN = 0.95;  // heavy chars barely slow
+export const DESTRUCTIBLE_LIGHT_SLOWDOWN = 0.85;  // light chars feel the crunch
 
 // ── Exaggerated bumping ─────────────────────────────────────────────
 export const BUMP_RESTITUTION = 1.2;         // bouncy collisions!
 export const BUMP_SPIN_FORCE = 0.3;          // more spin on hit
-export const BUMP_WEIGHT_EXAGGERATION = 2.5; // amplify weight difference
+export const BUMP_WEIGHT_EXAGGERATION = 3.5; // amplify weight difference (dramatic!)
 
 // ── Random events ───────────────────────────────────────────────────
 export const RANDOM_EVENT_INTERVAL = 15;     // average seconds between events

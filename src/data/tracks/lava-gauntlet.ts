@@ -55,6 +55,9 @@ function joinSegments(
   return result;
 }
 
+// Segment 0: Y 5600→5000, extension before start
+const seg0 = straight(240, 5600, 5000, 240);
+
 // Segment 1: Y 5000→4600, straight, width 240
 const seg1 = straight(240, 5000, 4600, 240);
 
@@ -70,11 +73,11 @@ const seg4 = straight(290, 3800, 3400, 200);
 // Segment 5: Y 3400→2800, left curve (moderate), width 200→180
 const seg5 = curve(290, 3400, 2800, -80, 200, 180);
 
-// Segment 6: Y 2800→2400, straight, width 180
-const seg6 = straight(210, 2800, 2400, 180);
+// Segment 6: Y 2800→2400, FORK SECTION: widens to 380px
+const seg6 = curve(210, 2800, 2400, 0, 180, 380);
 
-// Segment 7: Y 2400→1800, S-curve (right then left), width 180→160
-const seg7a = curve(210, 2400, 2100, 70, 180, 170, 30);
+// Segment 7: Y 2400→1800, S-curve (right then left), narrows back from fork
+const seg7a = curve(210, 2400, 2100, 70, 380, 170, 30);
 const seg7b = curve(280, 2100, 1800, -70, 170, 160, 30);
 const seg7 = [...seg7a, ...seg7b.slice(1)];
 
@@ -87,10 +90,10 @@ const seg9 = curve(210, 1200, 800, 40, 160, 200);
 // Segment 10: Y 800→400, straight, width 200
 const seg10 = straight(250, 800, 400, 200);
 
-// Segment 11: Extension past finish line Y=400→0 to prevent lava death
-const seg11 = straight(250, 400, 0, 200);
+// Segment 11: Extension past finish line Y=400→-600
+const seg11 = straight(250, 400, -600, 200);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11);
+const road = joinSegments(seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11);
 
 // Find road index closest to a Y value
 function indexAtY(y: number): number {
@@ -116,13 +119,13 @@ const startLineIdx = indexAtY(5000);
 const finishLineIdx = indexAtY(500);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Segment 1: Arrow pad at Y=4800, centered (forward) ---
+  // --- Arrow pad to start ---
   { type: 'arrow_pad', x: roadAt(4800).x, y: 4800, angle: 0 },
 
-  // --- Mud zone on racing line through seg 2 curve ---
-  { type: 'mud_zone', x: roadAt(4600).x, y: 4600, angle: 0 },
+  // --- Mud zone on curve apex (drift through!) ---
+  { type: 'mud_zone', x: roadAt(4600).x, y: 4600, angle: 0, width: 70 },
 
-  // --- Destructible barrel before log section ---
+  // --- Destructible barrel ---
   {
     type: 'destructible',
     x: roadAt(4400).x + roadAt(4400).width * 0.2,
@@ -130,99 +133,115 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
   },
 
-  // --- Segment 3: Logs ---
-  // Y=4100, offset left 0.3
+  // --- Logs ---
   {
     type: 'log',
     x: roadAt(4100).x - roadAt(4100).width * 0.3,
     y: 4100,
     angle: 0.3,
   },
-  // Y=4000, offset right 0.4
   {
     type: 'log',
-    x: roadAt(4000).x + roadAt(4000).width * 0.4,
-    y: 4000,
+    x: roadAt(3900).x + roadAt(3900).width * 0.2,
+    y: 3900,
     angle: -0.2,
   },
-  // Y=3900, offset left 0.2
-  {
-    type: 'log',
-    x: roadAt(3900).x - roadAt(3900).width * 0.2,
-    y: 3900,
-    angle: 0.5,
-  },
 
-  // --- Segment 4: Static spikes ---
-  // Y=3700, spanning left 60% of road. Gap on right.
+  // --- Alternating spikes: force zigzag ---
   {
     type: 'spikes',
     x: roadAt(3700).x - roadAt(3700).width * 0.2,
     y: 3700,
     angle: 0,
-    width: roadAt(3700).width * 0.6,
+    width: roadAt(3700).width * 0.5,
   },
-  // Y=3500, spanning right 50% of road. Gap on left.
   {
     type: 'spikes',
-    x: roadAt(3500).x + roadAt(3500).width * 0.25,
+    x: roadAt(3500).x + roadAt(3500).width * 0.2,
     y: 3500,
     angle: 0,
     width: roadAt(3500).width * 0.5,
   },
 
-  // --- Ramp to fly over rotating spikes section ---
-  { type: 'ramp', x: roadAt(3300).x, y: 3300, angle: 0 },
-
-  // --- Destructible barrel in the gap ---
-  {
-    type: 'destructible',
-    x: roadAt(3100).x - roadAt(3100).width * 0.15,
-    y: 3100,
-    angle: 0,
-  },
-
-  // --- Bouncy wall at S-curve exit ---
-  {
-    type: 'bouncy_wall',
-    x: roadAt(2900).x + roadAt(2900).width * 0.3,
-    y: 2900,
-    angle: 0.3,
-  },
-
-  // --- Segment 6: Arrow pad (sideways right!) and rotating spikes ---
-  { type: 'arrow_pad', x: roadAt(2700).x, y: 2700, angle: 0 },
+  // --- COMBO: Arrow pad → ramp (fly over rotating spike gauntlet!) ---
+  { type: 'arrow_pad', x: roadAt(3300).x, y: 3300, angle: 0 },
+  { type: 'ramp', x: roadAt(3150).x, y: 3150, angle: 0 },
+  // Rotating spike below the ramp — skilled players jump over
   {
     type: 'rotating_spikes',
-    x: roadAt(2500).x,
-    y: 2500,
+    x: roadAt(3000).x,
+    y: 3000,
     angle: 0,
     patrolAxis: 'x',
-    patrolDistance: 60,
-    patrolSpeed: 6,
+    patrolDistance: 50,
+    patrolSpeed: 5,
   },
-  // Extra rotating spike in segment 6
+
+  // --- Bouncy wall corridor before S-curve (chaos!) ---
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2850).x - roadAt(2850).width * 0.25,
+    y: 2850,
+    angle: 0.4,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2750).x + roadAt(2750).width * 0.25,
+    y: 2750,
+    angle: -0.3,
+  },
+
+  // === FORK SECTION (Y 2700→2500, road widens to 380px) ===
+  // Center: rotating spike splits the paths
   {
     type: 'rotating_spikes',
-    x: roadAt(2600).x + roadAt(2600).width * 0.15,
+    x: roadAt(2600).x,
     y: 2600,
     angle: 0,
     patrolAxis: 'y',
     patrolDistance: 30,
-    patrolSpeed: 4.5,
+    patrolSpeed: 4,
   },
+  // Left path: mud zone (drift opportunity!)
+  {
+    type: 'mud_zone',
+    x: roadAt(2600).x - roadAt(2600).width * 0.3,
+    y: 2600,
+    angle: 0,
+    width: 70,
+  },
+  // Left path: arrow pad at exit (mud catapult!)
+  {
+    type: 'arrow_pad',
+    x: roadAt(2500).x - roadAt(2500).width * 0.25,
+    y: 2500,
+    angle: 0,
+  },
+  // Right path: destructibles (smash for micro-boost)
+  {
+    type: 'destructible',
+    x: roadAt(2650).x + roadAt(2650).width * 0.25,
+    y: 2650,
+    angle: 0,
+  },
+  {
+    type: 'destructible',
+    x: roadAt(2550).x + roadAt(2550).width * 0.25,
+    y: 2550,
+    angle: 0,
+  },
+  // === END FORK ===
 
-  // --- Mud zone on racing line through straight ---
-  { type: 'mud_zone', x: roadAt(2300).x, y: 2300, angle: 0 },
+  // --- S-curve: angled arrow pad (diagonal slingshot!) ---
+  { type: 'arrow_pad', x: roadAt(2200).x, y: 2200, angle: 0.4 },
 
-  // --- Mid-track ramp for variety ---
-  { type: 'ramp', x: roadAt(2100).x, y: 2100, angle: 0 },
+  // --- Ramp in S-curve ---
+  { type: 'ramp', x: roadAt(2000).x, y: 2000, angle: 0 },
 
-  // --- Mud zone in S-curve ---
-  { type: 'mud_zone', x: roadAt(1900).x, y: 1900, angle: 0 },
+  // --- Mud on S-curve apex (drift opportunity) ---
+  { type: 'mud_zone', x: roadAt(1900).x, y: 1900, angle: 0, width: 60 },
 
-  // --- Segment 8: Rotating spike pair + logs ---
-  // Y=1700, patrols left half (slower)
+  // --- Rotating spike gauntlet (pair on opposite sides) ---
   {
     type: 'rotating_spikes',
     x: roadAt(1700).x - roadAt(1700).width * 0.2,
@@ -230,9 +249,8 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 6.75,
+    patrolSpeed: 5.5,
   },
-  // Y=1500, patrols right half (slower)
   {
     type: 'rotating_spikes',
     x: roadAt(1500).x + roadAt(1500).width * 0.2,
@@ -240,38 +258,22 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 35,
-    patrolSpeed: 5.25,
+    patrolSpeed: 5,
   },
-  // Extra rotating spike at Y=1600, center
-  {
-    type: 'rotating_spikes',
-    x: roadAt(1600).x,
-    y: 1600,
-    angle: 0,
-    patrolAxis: 'y',
-    patrolDistance: 25,
-    patrolSpeed: 6,
-  },
-  // Log at Y=1400, centered
-  { type: 'log', x: roadAt(1400).x, y: 1400, angle: 0.1 },
-  // Log at Y=1300, offset right 0.3
-  {
-    type: 'log',
-    x: roadAt(1300).x + roadAt(1300).width * 0.3,
-    y: 1300,
-    angle: -0.4,
-  },
+
+  // --- Logs ---
+  { type: 'log', x: roadAt(1300).x, y: 1300, angle: 0.1 },
 
   // --- Bouncy wall before final stretch ---
   {
     type: 'bouncy_wall',
-    x: roadAt(1150).x - roadAt(1150).width * 0.25,
-    y: 1150,
+    x: roadAt(1100).x - roadAt(1100).width * 0.25,
+    y: 1100,
     angle: -0.3,
   },
 
-  // --- Segment 9: Arrow pad at Y=1000, backward boost (surprise!) ---
-  { type: 'arrow_pad', x: roadAt(1000).x, y: 1000, angle: 0 },
+  // --- Final boost ---
+  { type: 'arrow_pad', x: roadAt(900).x, y: 900, angle: 0 },
 ];
 
 const startRoad = roadAt(4960);

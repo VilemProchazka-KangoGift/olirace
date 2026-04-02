@@ -184,7 +184,7 @@ describe('Steering direction correctness', () => {
 describe('Reverse steering', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('steering right while reversing turns the car LEFT (opposite)', () => {
+  it('steering right while intentionally reversing (brake held) turns the car LEFT', () => {
     // Car faces up, has negative speed (reversing)
     const forwardPlayer = createPlayer('formula', 240, 3000, Math.PI / 2, 'primary');
     forwardPlayer.speed = 100;
@@ -194,17 +194,33 @@ describe('Reverse steering', () => {
     const fState = makeState([forwardPlayer]);
     const rState = makeState([reversePlayer]);
 
-    // Steer right in both
+    // Steer right while going forward
     mockInput.mockReturnValue(input({ steerX: 1 }));
     updatePlayer(forwardPlayer, DT, fState);
-    mockInput.mockReturnValue(input({ steerX: 1 }));
+    // Steer right while brake held + reversing — should invert
+    mockInput.mockReturnValue(input({ steerX: 1, brake: 1 }));
     updatePlayer(reversePlayer, DT, rState);
 
     // Forward: steerRight decreases angle (turns CW on screen)
-    // Reverse: steerRight should increase angle (turns CCW on screen — opposite)
+    // Reverse with brake: steerRight should increase angle (turns CCW — opposite)
     const forwardDelta = forwardPlayer.angle - Math.PI / 2;
     const reverseDelta = reversePlayer.angle - Math.PI / 2;
     expect(Math.sign(forwardDelta)).not.toBe(Math.sign(reverseDelta));
+  });
+
+  it('steering does NOT flip when speed dips slightly negative (no brake)', () => {
+    const player = createPlayer('formula', 240, 3000, Math.PI / 2, 'primary');
+    player.speed = -3; // Tiny negative from braking overshoot
+
+    const state = makeState([player]);
+
+    // Steer right without brake — should NOT flip
+    mockInput.mockReturnValue(input({ steerX: 1 }));
+    updatePlayer(player, DT, state);
+
+    const delta = player.angle - Math.PI / 2;
+    // Should turn same direction as forward (negative delta = clockwise)
+    expect(delta).toBeLessThan(0);
   });
 
   it('car can reverse in a straight line', () => {
@@ -238,11 +254,11 @@ describe('Acceleration and speed physics', () => {
     const player = createPlayer('formula', 240, 5000, Math.PI / 2, 'primary');
     const state = makeState([player]);
 
-    // Formula accel = 200 px/s²
+    // Formula accel = 200 px/s², with 1.8x launch boost from standstill
     mockInput.mockReturnValue(input({ accelerate: 1 }));
     updatePlayer(player, DT, state);
 
-    const expectedSpeed = 200 * DT; // 200 * (1/60) ≈ 3.33
+    const expectedSpeed = 200 * 1.8 * DT; // launch boost at standstill
     expect(player.speed).toBeCloseTo(expectedSpeed, 2);
   });
 

@@ -234,6 +234,448 @@ function getVolcanoCanvas(): HTMLCanvasElement {
   return volcanoCache;
 }
 
+// ── Horizon skyline cache ───────────────────────────────────────────
+
+const horizonCache = new Map<string, HTMLCanvasElement>();
+const HORIZON_STRIP_W = 1200;
+const HORIZON_STRIP_H = 500;
+
+function getHorizonCanvas(trackName: string): HTMLCanvasElement {
+  const cached = horizonCache.get(trackName);
+  if (cached) return cached;
+
+  const c = document.createElement('canvas');
+  c.width = HORIZON_STRIP_W;
+  c.height = HORIZON_STRIP_H;
+  const hc = c.getContext('2d')!;
+
+  const theme = getHorizonTheme(trackName);
+  theme(hc, HORIZON_STRIP_W, HORIZON_STRIP_H);
+
+  horizonCache.set(trackName, c);
+  return c;
+}
+
+function getHorizonTheme(trackName: string): (ctx: CanvasRenderingContext2D, w: number, h: number) => void {
+  switch (trackName) {
+    case 'Sunday Drive': return drawHorizonHills;
+    case 'Mud Runner': return drawHorizonSwamp;
+    case 'Lava Gauntlet': return drawHorizonVolcanoes;
+    case 'Pinball Alley': return drawHorizonCity;
+    case "Devil's Highway": return drawHorizonJaggedPeaks;
+    case 'Sky Bridge': return drawHorizonCloudPeaks;
+    default: return drawHorizonVolcanoes;
+  }
+}
+
+// --- Sunday Drive: Rolling green hills with trees and a farmhouse ---
+function drawHorizonHills(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Bright blue-to-green sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+  sky.addColorStop(0, '#5090d0');
+  sky.addColorStop(1, '#70b060');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.55);
+
+  // Far hills
+  ctx.fillStyle = '#307030';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x += 3) {
+    const y = h * 0.4 + Math.sin(x * 0.008) * 30 + Math.sin(x * 0.003 + 1) * 45;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Near hills (brighter)
+  ctx.fillStyle = '#50a050';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x += 3) {
+    const y = h * 0.5 + Math.sin(x * 0.012 + 2) * 25 + Math.sin(x * 0.005) * 35;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Trees on hills
+  for (let i = 0; i < 14; i++) {
+    const tx = seededRand(i * 67 + 100) * w;
+    const hillY = h * 0.5 + Math.sin(tx * 0.012 + 2) * 25 + Math.sin(tx * 0.005) * 35;
+    const treeH = 20 + seededRand(i * 31 + 50) * 20;
+    ctx.fillStyle = '#6a4a20';
+    ctx.fillRect(tx - 2, hillY - treeH, 4, treeH * 0.4);
+    ctx.fillStyle = '#308030';
+    ctx.beginPath();
+    ctx.arc(tx, hillY - treeH, treeH * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Farmhouse
+  ctx.fillStyle = '#c05030';
+  ctx.fillRect(w * 0.7, h * 0.42, 30, 22);
+  ctx.fillStyle = '#804020';
+  ctx.beginPath();
+  ctx.moveTo(w * 0.7 - 4, h * 0.42);
+  ctx.lineTo(w * 0.7 + 15, h * 0.42 - 16);
+  ctx.lineTo(w * 0.7 + 34, h * 0.42);
+  ctx.fill();
+
+  // Fade to transparent at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// --- Mud Runner: Misty swamp with dead trees ---
+function drawHorizonSwamp(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Murky olive sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+  sky.addColorStop(0, '#506848');
+  sky.addColorStop(1, '#607840');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.55);
+
+  // Swamp treeline
+  ctx.fillStyle = '#385028';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x += 3) {
+    const y = h * 0.35 + Math.sin(x * 0.006) * 20 + Math.sin(x * 0.015 + 3) * 15;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Dead trees
+  for (let i = 0; i < 18; i++) {
+    const tx = seededRand(i * 83 + 200) * w;
+    const baseY = h * 0.35 + Math.sin(tx * 0.006) * 20 + Math.sin(tx * 0.015 + 3) * 15;
+    const treeH = 30 + seededRand(i * 47 + 10) * 35;
+    ctx.strokeStyle = '#5a4020';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(tx, baseY);
+    ctx.lineTo(tx + (seededRand(i * 19) - 0.5) * 6, baseY - treeH);
+    ctx.stroke();
+    const branchY = baseY - treeH * 0.6;
+    ctx.beginPath();
+    ctx.moveTo(tx, branchY);
+    ctx.lineTo(tx + 12 * (seededRand(i * 23) > 0.5 ? 1 : -1), branchY - 12);
+    ctx.stroke();
+  }
+
+  // Mist layer
+  ctx.fillStyle = 'rgba(120,150,90,0.25)';
+  ctx.fillRect(0, h * 0.3, w, h * 0.25);
+
+  // Fade out at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// --- Lava Gauntlet: Volcanic mountain range with lava glow ---
+function drawHorizonVolcanoes(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Fiery sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+  sky.addColorStop(0, '#401008');
+  sky.addColorStop(1, '#803010');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.55);
+
+  // Far mountain range
+  ctx.fillStyle = '#301010';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x += 2) {
+    const y = h * 0.3 + Math.sin(x * 0.005) * 40 + Math.abs(Math.sin(x * 0.02)) * 25;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Volcanoes with bright glowing peaks
+  const volcPositions = [0.12, 0.35, 0.58, 0.82];
+  for (let i = 0; i < volcPositions.length; i++) {
+    const cx = volcPositions[i] * w;
+    const volcH = 70 + seededRand(i * 71 + 300) * 50;
+    const volcW = 80 + seededRand(i * 43 + 310) * 60;
+    const baseY = h * 0.5;
+    ctx.fillStyle = '#200808';
+    ctx.beginPath();
+    ctx.moveTo(cx - volcW / 2, baseY);
+    ctx.lineTo(cx - 10, baseY - volcH);
+    ctx.lineTo(cx + 10, baseY - volcH);
+    ctx.lineTo(cx + volcW / 2, baseY);
+    ctx.fill();
+    // Bright lava glow at peak
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    const glow = ctx.createRadialGradient(cx, baseY - volcH, 5, cx, baseY - volcH, 35);
+    glow.addColorStop(0, '#ff8030');
+    glow.addColorStop(0.5, '#ff4010');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - 40, baseY - volcH - 25, 80, 50);
+    ctx.restore();
+  }
+
+  // Fade out at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// --- Pinball Alley: Neon city skyline ---
+function drawHorizonCity(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Purple-blue sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+  sky.addColorStop(0, '#1a1050');
+  sky.addColorStop(1, '#2a1848');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.5);
+
+  // Skyline as a continuous silhouette (no gaps between buildings)
+  const baseY = h * 0.55;
+  // Predefined building heights for clean seamless tiling
+  const buildings = [60, 90, 45, 110, 70, 35, 95, 55, 80, 40, 100, 65, 50, 85, 75];
+  const bw = w / buildings.length;
+
+  // Dark silhouette layer
+  ctx.fillStyle = '#0c0818';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let i = 0; i < buildings.length; i++) {
+    const bh = buildings[i] * (h / 500);
+    const x = i * bw;
+    ctx.lineTo(x, baseY - bh);
+    ctx.lineTo(x + bw - 2, baseY - bh);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Windows as tiny lit dots
+  for (let i = 0; i < buildings.length; i++) {
+    const bh = buildings[i] * (h / 500);
+    const x = i * bw;
+    const colors = ['#ffaa40', '#60d0ff', '#ff6090'];
+    ctx.fillStyle = colors[i % colors.length];
+    for (let wy = baseY - bh + 8; wy < baseY - 4; wy += 10) {
+      for (let wx = x + 4; wx < x + bw - 6; wx += 8) {
+        if (seededRand(Math.floor(wx * 7 + wy * 13 + i * 97)) > 0.4) {
+          ctx.fillRect(wx, wy, 3, 3);
+        }
+      }
+    }
+  }
+
+  // Fade out at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// --- Devil's Highway: Jagged dark peaks with red sky ---
+function drawHorizonJaggedPeaks(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Blood-red sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+  sky.addColorStop(0, '#401010');
+  sky.addColorStop(1, '#802020');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.55);
+
+  // Far jagged peaks
+  ctx.fillStyle = '#200808';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  let x = 0;
+  while (x <= w) {
+    const peakH = 50 + seededRand(x * 0.01 + 500) * 80;
+    const peakW = 25 + seededRand(x * 0.01 + 510) * 45;
+    ctx.lineTo(x, h * 0.4 - peakH);
+    x += peakW * 0.5;
+    ctx.lineTo(x, h * 0.4 - peakH * 0.2);
+    x += peakW * 0.5;
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Near peaks
+  ctx.fillStyle = '#301010';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  x = 15;
+  while (x <= w) {
+    const peakH = 30 + seededRand(x * 0.01 + 600) * 60;
+    const peakW = 30 + seededRand(x * 0.01 + 610) * 40;
+    ctx.lineTo(x, h * 0.5 - peakH);
+    x += peakW * 0.6;
+    ctx.lineTo(x, h * 0.5 - peakH * 0.15);
+    x += peakW * 0.4;
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Red glow along horizon
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  const glow = ctx.createLinearGradient(0, h * 0.25, 0, h * 0.5);
+  glow.addColorStop(0, '#ff3000');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, h * 0.25, w, h * 0.25);
+  ctx.restore();
+
+  // Fade out at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// --- Sky Bridge: Mountain peaks above clouds ---
+function drawHorizonCloudPeaks(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  // Blue sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+  sky.addColorStop(0, '#2050a0');
+  sky.addColorStop(1, '#4080c0');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h * 0.55);
+
+  // Mountain range
+  ctx.fillStyle = '#304060';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (let px = 0; px <= w; px += 2) {
+    const y = h * 0.25 + Math.sin(px * 0.004) * 45 + Math.abs(Math.sin(px * 0.015)) * 35;
+    ctx.lineTo(px, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  // Snow caps (bright white)
+  ctx.fillStyle = '#e0e8f0';
+  ctx.beginPath();
+  for (let px = 0; px <= w; px += 2) {
+    const peakY = h * 0.25 + Math.sin(px * 0.004) * 45 + Math.abs(Math.sin(px * 0.015)) * 35;
+    ctx.lineTo(px, peakY);
+  }
+  // Close path by going back along snowline
+  for (let px = w; px >= 0; px -= 2) {
+    const peakY = h * 0.25 + Math.sin(px * 0.004) * 45 + Math.abs(Math.sin(px * 0.015)) * 35;
+    ctx.lineTo(px, peakY + 12);
+  }
+  ctx.fill();
+
+  // Cloud layer (prominent)
+  ctx.fillStyle = 'rgba(220,230,250,0.5)';
+  for (let i = 0; i < 12; i++) {
+    const cx = seededRand(i * 51 + 700) * w;
+    const cy = h * 0.5 + seededRand(i * 33 + 710) * 20;
+    const cw = 50 + seededRand(i * 27 + 720) * 80;
+    const ch = 12 + seededRand(i * 19 + 730) * 12;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, cw, ch, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Fade out at bottom
+  const fade = ctx.createLinearGradient(0, h * 0.75, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ── Horizon overlay: skyline + hill-crest fade at top of screen ──
+
+const HORIZON_SKY_H = 70;     // thin skyline strip at very top
+const HORIZON_FADE_H = 120;   // gradient below skyline that fades road out
+
+// Base colors per track for the hill-crest gradient
+const HORIZON_BASE_COLORS: Record<string, string> = {
+  'Sunday Drive':    '#50a050',
+  'Mud Runner':      '#385028',
+  'Lava Gauntlet':   '#301010',
+  'Pinball Alley':   '#1a1040',
+  "Devil's Highway": '#200808',
+  'Sky Bridge':      '#304060',
+};
+
+export function drawHorizonOverlay(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  canvasH: number,
+  trackName: string,
+): void {
+  const horizon = getHorizonCanvas(trackName);
+
+  // Scale heights proportionally to canvas
+  const skyH = canvasH * 0.12;
+  const fadeH = canvasH * 0.10;
+
+  // 1. Draw the thin skyline strip at the very top, full window width
+  ctx.drawImage(
+    horizon,
+    0, 0, HORIZON_STRIP_W, HORIZON_STRIP_H * 0.5,
+    0, 0, canvasW, skyH,
+  );
+
+  // 2. "Over the hill" gradient: fades from the horizon base color (opaque)
+  //    to transparent. Covers the road so it looks like it crests a hill.
+  const baseColor = HORIZON_BASE_COLORS[trackName] ?? '#301010';
+
+  const fade = ctx.createLinearGradient(0, skyH, 0, skyH + fadeH);
+  fade.addColorStop(0, baseColor);
+  fade.addColorStop(1, 'rgba(0,0,0,0)');
+
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, skyH, canvasW, fadeH);
+}
+
+// ── Color blending helper for atmospheric perspective ────────────────
+
+function parseHex(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.substring(0, 2), 16),
+    parseInt(h.substring(2, 4), 16),
+    parseInt(h.substring(4, 6), 16),
+  ];
+}
+
+function blendColor(colorA: string, colorB: string, t: number): string {
+  const [ar, ag, ab] = parseHex(colorA);
+  const [br, bg, bb] = parseHex(colorB);
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const b = Math.round(ab + (bb - ab) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
 // ── Per-difficulty visual config ─────────────────────────────────────
 
 const TRACK_VISUALS: Record<string, {
@@ -250,11 +692,52 @@ const TRACK_VISUALS: Record<string, {
 
 // ── World-to-screen transform ────────────────────────────────────────
 
+// Perspective convergence: road narrows toward the top of the screen.
+// At screenY = CANVAS_HEIGHT (bottom), scale = 1.0 (full width).
+// At screenY = 0 (top), scale = PERSPECTIVE_MIN (narrower).
+const PERSPECTIVE_MIN = 0.7;
+
+function perspectiveScale(screenY: number): number {
+  const t = Math.max(0, Math.min(1, screenY / CANVAS_HEIGHT));
+  return PERSPECTIVE_MIN + (1 - PERSPECTIVE_MIN) * t;
+}
+
+function applyPerspective(screenX: number, screenY: number): number {
+  const scale = perspectiveScale(screenY);
+  const cx = CANVAS_WIDTH / 2;
+  return cx + (screenX - cx) * scale;
+}
+
+// Y-axis foreshortening: compress vertical distances near the top of the screen.
+// Uses a power curve so the bottom is ~1:1 and the top is squished.
+const FORESHORTEN_POWER = 0.88; // <1 compresses top, 1 = no effect
+
+function applyForeshortenY(rawScreenY: number): number {
+  // Only apply foreshortening within the visible screen area.
+  // Off-screen coordinates pass through unchanged to avoid collapsing.
+  if (rawScreenY <= 0 || rawScreenY >= CANVAS_HEIGHT) return rawScreenY;
+  const t = rawScreenY / CANVAS_HEIGHT;
+  const bent = Math.pow(t, FORESHORTEN_POWER);
+  return bent * CANVAS_HEIGHT;
+}
+
 function toScreenX(worldX: number, cameraX: number): number {
   return worldX - cameraX + CANVAS_WIDTH / 2;
 }
 
 function toScreenY(worldY: number, cameraY: number): number {
+  const raw = worldY - cameraY + CANVAS_HEIGHT / 2;
+  return applyForeshortenY(raw);
+}
+
+// Perspective-aware versions: compute screenX then squeeze toward center
+function toScreenXP(worldX: number, cameraX: number, cameraY: number, worldY: number): number {
+  const sx = worldX - cameraX + CANVAS_WIDTH / 2;
+  const sy = worldY - cameraY + CANVAS_HEIGHT / 2;
+  return applyPerspective(sx, sy);
+}
+
+function toScreenYP(worldY: number, cameraY: number): number {
   return worldY - cameraY + CANVAS_HEIGHT / 2;
 }
 
@@ -434,6 +917,7 @@ export function renderLavaFullscreen(
     }
   }
   ctx.restore();
+
 }
 
 export function render(
@@ -449,7 +933,7 @@ export function render(
   const camY = state.camera.position.y;
 
   // 1. Lava background — drawn fullscreen in engine.ts (parallax).
-  //    No need to redraw here; the fullscreen pass already covers everything.
+  //    Horizon skyline is drawn at the top of the window in that pass.
 
   // 2. Road
   drawRoad(ctx, state, camX, camY, state.time);
@@ -622,14 +1106,14 @@ function drawRoad(
     const e0 = edges[i];
     const e1 = edges[i + 1];
 
-    const l0x = toScreenX(e0.lx, camX) + 6;
     const l0y = toScreenY(e0.ly, camY) + 6;
-    const r0x = toScreenX(e0.rx, camX) + 6;
     const r0y = toScreenY(e0.ry, camY) + 6;
-    const l1x = toScreenX(e1.lx, camX) + 6;
     const l1y = toScreenY(e1.ly, camY) + 6;
-    const r1x = toScreenX(e1.rx, camX) + 6;
     const r1y = toScreenY(e1.ry, camY) + 6;
+    const l0x = applyPerspective(toScreenX(e0.lx, camX) + 6, l0y);
+    const r0x = applyPerspective(toScreenX(e0.rx, camX) + 6, r0y);
+    const l1x = applyPerspective(toScreenX(e1.lx, camX) + 6, l1y);
+    const r1x = applyPerspective(toScreenX(e1.rx, camX) + 6, r1y);
 
     const minX = Math.min(l0x, r0x, l1x, r1x);
     const maxX = Math.max(l0x, r0x, l1x, r1x);
@@ -655,22 +1139,21 @@ function drawRoad(
     asphaltPattern = ctx.createPattern(asphaltTex, 'repeat');
   } catch { /* fallback to no texture */ }
 
-  // Per-track road surface color
+  // Per-track road surface color + atmospheric blend target
   const roadColor = (TRACK_VISUALS[state.track.difficulty] ?? TRACK_VISUALS.medium).roadColor;
-
-  ctx.fillStyle = roadColor;
+  const horizonColor = HORIZON_BASE_COLORS[state.track.name] ?? '#301010';
   for (let i = 0; i < road.length - 1; i++) {
     const e0 = edges[i];
     const e1 = edges[i + 1];
 
-    const l0x = toScreenX(e0.lx, camX);
     const l0y = toScreenY(e0.ly, camY);
-    const r0x = toScreenX(e0.rx, camX);
     const r0y = toScreenY(e0.ry, camY);
-    const l1x = toScreenX(e1.lx, camX);
     const l1y = toScreenY(e1.ly, camY);
-    const r1x = toScreenX(e1.rx, camX);
     const r1y = toScreenY(e1.ry, camY);
+    const l0x = applyPerspective(toScreenX(e0.lx, camX), l0y);
+    const r0x = applyPerspective(toScreenX(e0.rx, camX), r0y);
+    const l1x = applyPerspective(toScreenX(e1.lx, camX), l1y);
+    const r1x = applyPerspective(toScreenX(e1.rx, camX), r1y);
 
     const minX = Math.min(l0x, r0x, l1x, r1x);
     const maxX = Math.max(l0x, r0x, l1x, r1x);
@@ -688,8 +1171,11 @@ function drawRoad(
     ctx.lineTo(r0x, r0y);
     ctx.closePath();
 
-    // Base road color fill
-    ctx.fillStyle = roadColor;
+    // Base road color with atmospheric perspective (fades toward horizon color at top)
+    const segAvgY = (l0y + l1y + r0y + r1y) / 4;
+    const depthT = Math.max(0, 1 - segAvgY / CANVAS_HEIGHT); // 0 at bottom, 1 at top
+    const atmosBlend = depthT * depthT * depthT; // cubic: only strong near very top
+    ctx.fillStyle = atmosBlend > 0.01 ? blendColor(roadColor, horizonColor, Math.min(atmosBlend, 0.5)) : roadColor;
     ctx.fill();
 
     // Overlay asphalt texture within the clipped segment shape
@@ -723,14 +1209,14 @@ function drawRoad(
     const insideT0 = curv > 0 ? 0.15 : 0.85;
     const insideT1 = insideT0;
 
-    const s0lx = toScreenX(lerp(re0.lx, re0.rx, insideT0 - 0.075), camX);
     const s0ly = toScreenY(lerp(re0.ly, re0.ry, insideT0 - 0.075), camY);
-    const s0rx = toScreenX(lerp(re0.lx, re0.rx, insideT0 + 0.075), camX);
     const s0ry = toScreenY(lerp(re0.ly, re0.ry, insideT0 + 0.075), camY);
-    const s1lx = toScreenX(lerp(re1.lx, re1.rx, insideT1 - 0.075), camX);
     const s1ly = toScreenY(lerp(re1.ly, re1.ry, insideT1 - 0.075), camY);
-    const s1rx = toScreenX(lerp(re1.lx, re1.rx, insideT1 + 0.075), camX);
     const s1ry = toScreenY(lerp(re1.ly, re1.ry, insideT1 + 0.075), camY);
+    const s0lx = applyPerspective(toScreenX(lerp(re0.lx, re0.rx, insideT0 - 0.075), camX), s0ly);
+    const s0rx = applyPerspective(toScreenX(lerp(re0.lx, re0.rx, insideT0 + 0.075), camX), s0ry);
+    const s1lx = applyPerspective(toScreenX(lerp(re1.lx, re1.rx, insideT1 - 0.075), camX), s1ly);
+    const s1rx = applyPerspective(toScreenX(lerp(re1.lx, re1.rx, insideT1 + 0.075), camX), s1ry);
 
     if (!isQuadOnScreen(s0lx, s0ly, s0rx, s0ry, s1lx, s1ly, s1rx, s1ry)) continue;
 
@@ -750,16 +1236,16 @@ function drawRoad(
     const e1 = edges[i + 1];
 
     // Left edge underglow
-    const ll0x = toScreenX(e0.lx, camX);
     const ll0y = toScreenY(e0.ly, camY);
-    const ll1x = toScreenX(e1.lx, camX);
     const ll1y = toScreenY(e1.ly, camY);
+    const ll0x = applyPerspective(toScreenX(e0.lx, camX), ll0y);
+    const ll1x = applyPerspective(toScreenX(e1.lx, camX), ll1y);
 
     // Right edge underglow
-    const rr0x = toScreenX(e0.rx, camX);
     const rr0y = toScreenY(e0.ry, camY);
-    const rr1x = toScreenX(e1.rx, camX);
     const rr1y = toScreenY(e1.ry, camY);
+    const rr0x = applyPerspective(toScreenX(e0.rx, camX), rr0y);
+    const rr1x = applyPerspective(toScreenX(e1.rx, camX), rr1y);
 
     // Compute perpendicular outward direction for left edge
     const pt0 = road[i];
@@ -892,13 +1378,12 @@ function drawCenterLine(
 
   ctx.beginPath();
   for (let i = 0; i < road.length; i++) {
-    const sx = toScreenX(road[i].x, camX);
     const sy = toScreenY(road[i].y, camY);
+    const sx = applyPerspective(toScreenX(road[i].x, camX), sy);
     if (i === 0) ctx.moveTo(sx, sy);
     else ctx.lineTo(sx, sy);
   }
   ctx.stroke();
-
   ctx.setLineDash([]);
 }
 
@@ -1041,8 +1526,8 @@ function drawGuardRails(
   ctx.beginPath();
   let started = false;
   for (let i = 0; i < edges.length; i += 6) {
-    const lx = toScreenX(edges[i].lx, camX);
     const ly = toScreenY(edges[i].ly, camY);
+    const lx = applyPerspective(toScreenX(edges[i].lx, camX), ly);
     if (lx < -50 || lx > CANVAS_WIDTH + 50 || ly < -50 || ly > CANVAS_HEIGHT + 50) {
       started = false;
       continue;
@@ -1055,8 +1540,8 @@ function drawGuardRails(
   ctx.beginPath();
   started = false;
   for (let i = 0; i < edges.length; i += 6) {
-    const lx = toScreenX(edges[i].lx, camX);
     const ly = toScreenY(edges[i].ly, camY);
+    const lx = applyPerspective(toScreenX(edges[i].lx, camX), ly);
     if (lx < -50 || lx > CANVAS_WIDTH + 50 || ly < -50 || ly > CANVAS_HEIGHT + 50) {
       started = false;
       continue;
@@ -1070,8 +1555,8 @@ function drawGuardRails(
   ctx.beginPath();
   started = false;
   for (let i = 0; i < edges.length; i += 6) {
-    const rx = toScreenX(edges[i].rx, camX);
     const ry = toScreenY(edges[i].ry, camY);
+    const rx = applyPerspective(toScreenX(edges[i].rx, camX), ry);
     if (rx < -50 || rx > CANVAS_WIDTH + 50 || ry < -50 || ry > CANVAS_HEIGHT + 50) {
       started = false;
       continue;
@@ -1084,8 +1569,8 @@ function drawGuardRails(
   ctx.beginPath();
   started = false;
   for (let i = 0; i < edges.length; i += 6) {
-    const rx = toScreenX(edges[i].rx, camX);
     const ry = toScreenY(edges[i].ry, camY);
+    const rx = applyPerspective(toScreenX(edges[i].rx, camX), ry);
     if (rx < -50 || rx > CANVAS_WIDTH + 50 || ry < -50 || ry > CANVAS_HEIGHT + 50) {
       started = false;
       continue;
@@ -1161,8 +1646,8 @@ function drawEdgeLines(
   ctx.beginPath();
   let inGap = false;
   for (let i = 0; i < edges.length; i++) {
-    const sx = toScreenX(edges[i].lx, camX);
     const sy = toScreenY(edges[i].ly, camY);
+    const sx = applyPerspective(toScreenX(edges[i].lx, camX), sy);
     const shouldGap = gapSet.has(i);
     if (shouldGap && !inGap) {
       ctx.stroke();
@@ -1182,8 +1667,8 @@ function drawEdgeLines(
   ctx.beginPath();
   inGap = false;
   for (let i = 0; i < edges.length; i++) {
-    const sx = toScreenX(edges[i].rx, camX);
     const sy = toScreenY(edges[i].ry, camY);
+    const sx = applyPerspective(toScreenX(edges[i].rx, camX), sy);
     const shouldGap = gapSet.has(i);
     if (shouldGap && !inGap) {
       ctx.stroke();
@@ -1245,14 +1730,14 @@ function drawGrassEdge(
     const perp1y = dir1.dx;
 
     // Left grass strip
-    const gll0x = toScreenX(e0.lx, camX);
     const gll0y = toScreenY(e0.ly, camY);
-    const gll1x = toScreenX(e1.lx, camX);
     const gll1y = toScreenY(e1.ly, camY);
-    const glo0x = toScreenX(e0.lx + perp0x * grassWidth, camX);
+    const gll0x = applyPerspective(toScreenX(e0.lx, camX), gll0y);
+    const gll1x = applyPerspective(toScreenX(e1.lx, camX), gll1y);
     const glo0y = toScreenY(e0.ly + perp0y * grassWidth, camY);
-    const glo1x = toScreenX(e1.lx + perp1x * grassWidth, camX);
     const glo1y = toScreenY(e1.ly + perp1y * grassWidth, camY);
+    const glo0x = applyPerspective(toScreenX(e0.lx + perp0x * grassWidth, camX), glo0y);
+    const glo1x = applyPerspective(toScreenX(e1.lx + perp1x * grassWidth, camX), glo1y);
 
     if (isQuadOnScreen(gll0x, gll0y, glo0x, glo0y, gll1x, gll1y, glo1x, glo1y)) {
       ctx.fillStyle = '#2a5a20';
@@ -1279,14 +1764,14 @@ function drawGrassEdge(
     }
 
     // Right grass strip
-    const grl0x = toScreenX(e0.rx, camX);
     const grl0y = toScreenY(e0.ry, camY);
-    const grl1x = toScreenX(e1.rx, camX);
     const grl1y = toScreenY(e1.ry, camY);
-    const gro0x = toScreenX(e0.rx - perp0x * grassWidth, camX);
+    const grl0x = applyPerspective(toScreenX(e0.rx, camX), grl0y);
+    const grl1x = applyPerspective(toScreenX(e1.rx, camX), grl1y);
     const gro0y = toScreenY(e0.ry - perp0y * grassWidth, camY);
-    const gro1x = toScreenX(e1.rx - perp1x * grassWidth, camX);
     const gro1y = toScreenY(e1.ry - perp1y * grassWidth, camY);
+    const gro0x = applyPerspective(toScreenX(e0.rx - perp0x * grassWidth, camX), gro0y);
+    const gro1x = applyPerspective(toScreenX(e1.rx - perp1x * grassWidth, camX), gro1y);
 
     if (isQuadOnScreen(grl0x, grl0y, gro0x, gro0y, grl1x, grl1y, gro1x, gro1y)) {
       ctx.fillStyle = '#2a5a20';
@@ -1461,8 +1946,8 @@ function drawBrakingZones(
       const brakePerpX = -dir.dy;
       const brakePerpY = dir.dx;
 
-      const bcx = toScreenX(p.x, camX);
       const bcy = toScreenY(p.y, camY);
+      const bcx = applyPerspective(toScreenX(p.x, camX), bcy);
       const mx1 = bcx + brakePerpX * halfMarkW;
       const my1 = bcy + brakePerpY * halfMarkW;
       const mx2 = bcx - brakePerpX * halfMarkW;
@@ -1758,11 +2243,11 @@ function drawHeatDistortion(
     const edges = computeEdges(road, i);
 
     // Left edge point
-    const lsx = toScreenX(edges.lx, camX);
     const lsy = toScreenY(edges.ly, camY);
+    const lsx = applyPerspective(toScreenX(edges.lx, camX), lsy);
     // Right edge point
-    const rsx = toScreenX(edges.rx, camX);
     const rsy = toScreenY(edges.ry, camY);
+    const rsx = applyPerspective(toScreenX(edges.rx, camX), rsy);
 
     // Skip off-screen points
     if (lsx < -20 || lsx > CANVAS_WIDTH + 20 || lsy < -20 || lsy > CANVAS_HEIGHT + 20) {
@@ -1869,10 +2354,10 @@ function drawCheckerLine(
   if (segIndex < 0 || segIndex >= road.length) return;
 
   const edges = computeEdges(road, segIndex);
-  const lx = toScreenX(edges.lx, camX);
   const ly = toScreenY(edges.ly, camY);
-  const rx = toScreenX(edges.rx, camX);
+  const lx = applyPerspective(toScreenX(edges.lx, camX), ly);
   const ry = toScreenY(edges.ry, camY);
+  const rx = applyPerspective(toScreenX(edges.rx, camX), ry);
 
   const dx = rx - lx;
   const dy = ry - ly;
@@ -2239,11 +2724,11 @@ function drawLightingPosts(
     const postEdges = computeEdges(road, i);
 
     // Left edge post
-    const lsx = toScreenX(postEdges.lx, camX);
     const lsy = toScreenY(postEdges.ly, camY);
+    const lsx = applyPerspective(toScreenX(postEdges.lx, camX), lsy);
     // Right edge post
-    const rsx = toScreenX(postEdges.rx, camX);
     const rsy = toScreenY(postEdges.ry, camY);
+    const rsx = applyPerspective(toScreenX(postEdges.rx, camX), rsy);
 
     const posts = [
       { x: lsx, y: lsy },
@@ -2295,8 +2780,8 @@ function drawObstacles(
       continue;
     }
 
-    const sx = toScreenX(obs.x, camX);
     const sy = toScreenY(obs.y, camY);
+    const sx = applyPerspective(toScreenX(obs.x, camX), sy);
 
     const halfSize = Math.max(obs.width, obs.height) / 2 + 10;
     if (sx + halfSize < 0 || sx - halfSize > CANVAS_WIDTH ||
@@ -2316,10 +2801,11 @@ function drawObstacles(
       ctx.restore();
     }
 
-    // ── Scale up obstacles by 1.25x ──
+    // ── Scale obstacles: 1.25x base * depth scaling ──
+    const obsDepth = perspectiveScale(sy) * 1.25;
     ctx.save();
     ctx.translate(sx, sy);
-    ctx.scale(1.25, 1.25);
+    ctx.scale(obsDepth, obsDepth);
     ctx.translate(-sx, -sy);
 
     switch (obs.type) {
@@ -2500,8 +2986,8 @@ function drawDestructible(ctx: CanvasRenderingContext2D, obs: ObstacleState, sx:
 }
 
 function drawDestroyedRubble(ctx: CanvasRenderingContext2D, obs: ObstacleState, camX: number, camY: number, time: number): void {
-  const sx = toScreenX(obs.x, camX);
   const sy = toScreenY(obs.y, camY);
+  const sx = applyPerspective(toScreenX(obs.x, camX), sy);
   if (sx < -30 || sx > CANVAS_WIDTH + 30 || sy < -30 || sy > CANVAS_HEIGHT + 30) return;
 
   // Small rubble pieces
@@ -2656,8 +3142,8 @@ function drawPlayer(
   time: number,
 ): void {
   const pos = lerpVec2(player.prevPosition, player.position, alpha);
-  const sx = toScreenX(pos.x, camX);
   const sy = toScreenY(pos.y, camY);
+  const sx = applyPerspective(toScreenX(pos.x, camX), sy);
 
   if (sx < -60 || sx > CANVAS_WIDTH + 60 || sy < -60 || sy > CANVAS_HEIGHT + 60) return;
 
@@ -2669,8 +3155,9 @@ function drawPlayer(
     if (blinkPhase % 2 === 0) ctx.globalAlpha = 0.4;
   }
 
-  // ── Drop shadow under car (radial gradient) ──
-  drawGradientShadow(ctx, sx, sy + 4, 20, 8, 0.25);
+  // ── Drop shadow under car (radial gradient, scaled by depth) ──
+  const _ds = perspectiveScale(sy);
+  drawGradientShadow(ctx, sx, sy + 4, 20 * _ds, 8 * _ds, 0.25);
 
   // Death animation (ragdoll tumble)
   if (!player.alive) {
@@ -2707,6 +3194,10 @@ function drawPlayer(
   // Normal rendering with squash/stretch and drift visual
   ctx.save();
   ctx.translate(sx, sy - jumpOffset + wobbleOffset);
+
+  // Depth scaling: objects shrink toward the top of the screen
+  const depthScale = perspectiveScale(sy);
+  ctx.scale(depthScale, depthScale);
 
   const visualAngle = -(player.angle - Math.PI / 2) + (player.driftAngle ?? 0);
   ctx.rotate(visualAngle);
@@ -2965,8 +3456,8 @@ function drawParticles(
   if (particles.length === 0) return;
 
   for (const p of particles) {
-    const sx = toScreenX(p.x, camX);
     const sy = toScreenY(p.y, camY);
+    const sx = applyPerspective(toScreenX(p.x, camX), sy);
 
     if (sx < -10 || sx > CANVAS_WIDTH + 10 || sy < -10 || sy > CANVAS_HEIGHT + 10) continue;
 

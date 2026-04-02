@@ -223,6 +223,9 @@ export interface ObstacleState {
   respawnTimer: number;
   // Bouncy wall
   bounceTimer: number;
+  // Patrol pause (windshield-wiper)
+  patrolPauseTimer: number;
+  patrolFrozenOffset: number;
 }
 
 export interface GameState {
@@ -279,6 +282,8 @@ export interface AIState {
   noisePhase: number;
   blockedTimer: number;       // how long a player has been directly ahead blocking
   reverseSteerDir: number;    // which way to steer while reversing (-1 or 1)
+  honkCooldown: number;       // seconds until next honk allowed
+  lastHitTime: number;        // game time of last collision (for frustrated honking)
 }
 
 export interface GameConfig {

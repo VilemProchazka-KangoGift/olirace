@@ -56,6 +56,9 @@ function joinSegments(
 // === MUD RUNNER: Easy, wide, messy and fun ===
 // Total length: ~4000px (Y: 4500 → 500)
 
+// Seg 0: Y 5100→4500 - Extension before start
+const seg0 = straight(240, 5100, 4500, 260);
+
 // Seg 1: Y 4500→4100 - Wide opening straight, width 260
 const seg1 = straight(240, 4500, 4100, 260);
 
@@ -68,11 +71,11 @@ const seg3 = curve(275, 3700, 3300, -15, 250, 270);
 // Seg 4: Y 3300→2900 - Gentle left curve, width 270→240
 const seg4 = curve(260, 3300, 2900, -40, 270, 240);
 
-// Seg 5: Y 2900→2500 - Straight, width 240→260
-const seg5 = curve(220, 2900, 2500, 20, 240, 260);
+// Seg 5: Y 2900→2500 - FORK SECTION: widens to 380px
+const seg5 = curve(220, 2900, 2500, 20, 240, 380);
 
-// Seg 6: Y 2500→2000 - Gentle right curve, width 260→220
-const seg6 = curve(240, 2500, 2000, 45, 260, 220);
+// Seg 6: Y 2500→2000 - Gentle right curve, narrows back from fork
+const seg6 = curve(240, 2500, 2000, 45, 380, 220);
 
 // Seg 7: Y 2000→1500 - Straight, width 220→250
 const seg7 = curve(285, 2000, 1500, -25, 220, 250);
@@ -83,10 +86,10 @@ const seg8 = curve(260, 1500, 1000, -30, 250, 260);
 // Seg 9: Y 1000→500 - Final straight, width 260
 const seg9 = straight(230, 1000, 500, 260);
 
-// Seg 10: Extension past finish Y=500→100
-const seg10 = straight(230, 500, 100, 260);
+// Seg 10: Extension past finish Y=500→-500
+const seg10 = straight(230, 500, -500, 260);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10);
+const road = joinSegments(seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10);
 
 function indexAtY(y: number): number {
   let best = 0;
@@ -110,21 +113,23 @@ const startLineIdx = indexAtY(4500);
 const finishLineIdx = indexAtY(600);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Seg 1: Arrow pad to start + first mud zone ---
+  // --- Arrow pad to start ---
   { type: 'arrow_pad', x: roadAt(4350).x, y: 4350, angle: 0 },
+
+  // --- First mud zone on curve apex (drift through for boost!) ---
   {
     type: 'mud_zone',
-    x: roadAt(4200).x + roadAt(4200).width * 0.1,
-    y: 4200,
+    x: roadAt(4100).x,
+    y: 4100,
     angle: 0,
-    width: 90,
+    width: 100,
   },
 
-  // --- Seg 2: Destructible barrels in the curve ---
+  // --- Destructible barrels in the curve ---
   {
     type: 'destructible',
-    x: roadAt(4000).x - roadAt(4000).width * 0.2,
-    y: 4000,
+    x: roadAt(3900).x - roadAt(3900).width * 0.2,
+    y: 3900,
     angle: 0.2,
   },
   {
@@ -134,115 +139,111 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.1,
   },
 
-  // --- Arrow pad after the curve ---
+  // --- Arrow pad after curve ---
   { type: 'arrow_pad', x: roadAt(3700).x, y: 3700, angle: 0 },
 
-  // --- Seg 3: Big mud pit + logs ---
+  // --- Big mud pit on curve apex (drift opportunity!) ---
   {
     type: 'mud_zone',
-    x: roadAt(3550).x - roadAt(3550).width * 0.15,
-    y: 3550,
+    x: roadAt(3500).x,
+    y: 3500,
     angle: 0,
-    width: 100,
+    width: 110,
   },
+
+  // --- Log between mud zones ---
   {
     type: 'log',
-    x: roadAt(3400).x + roadAt(3400).width * 0.2,
-    y: 3400,
+    x: roadAt(3350).x + roadAt(3350).width * 0.2,
+    y: 3350,
     angle: -0.3,
   },
+
+  // --- Mud then arrow pad: "mud catapult" combo ---
   {
     type: 'mud_zone',
-    x: roadAt(3250).x + roadAt(3250).width * 0.1,
-    y: 3250,
+    x: roadAt(3200).x,
+    y: 3200,
+    angle: 0,
+    width: 90,
+  },
+  { type: 'arrow_pad', x: roadAt(3050).x, y: 3050, angle: 0 },
+
+  // --- Ramp to jump over next section ---
+  { type: 'ramp', x: roadAt(2950).x, y: 2950, angle: 0 },
+
+  // === FORK SECTION (Y 2800→2600, road widens to 380px) ===
+  // Center: bouncy wall divides paths (fun, not deadly!)
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2700).x,
+    y: 2700,
+    angle: 0,
+  },
+  // Left path: mud zone (drift opportunity — risk/reward!)
+  {
+    type: 'mud_zone',
+    x: roadAt(2700).x - roadAt(2700).width * 0.3,
+    y: 2700,
     angle: 0,
     width: 80,
   },
-
-  // --- Seg 4: Destructibles + ramp ---
+  // Right path: destructibles (smash through for micro-boost)
   {
     type: 'destructible',
-    x: roadAt(3100).x,
-    y: 3100,
+    x: roadAt(2750).x + roadAt(2750).width * 0.28,
+    y: 2750,
     angle: 0,
-  },
-  {
-    type: 'ramp',
-    x: roadAt(2950).x,
-    y: 2950,
-    angle: 0,
-  },
-
-  // --- Seg 5: Logs + arrow pad ---
-  {
-    type: 'log',
-    x: roadAt(2800).x - roadAt(2800).width * 0.2,
-    y: 2800,
-    angle: 0.4,
-  },
-  { type: 'arrow_pad', x: roadAt(2650).x, y: 2650, angle: 0 },
-
-  // --- Seg 6: Mud + destructibles + bouncy wall ---
-  {
-    type: 'mud_zone',
-    x: roadAt(2450).x - roadAt(2450).width * 0.1,
-    y: 2450,
-    angle: 0,
-    width: 85,
   },
   {
     type: 'destructible',
-    x: roadAt(2300).x + roadAt(2300).width * 0.2,
-    y: 2300,
-    angle: 0.3,
+    x: roadAt(2680).x + roadAt(2680).width * 0.28,
+    y: 2680,
+    angle: 0,
   },
+  // === END FORK ===
+
+  // --- Bouncy wall after fork ---
   {
     type: 'bouncy_wall',
-    x: roadAt(2150).x - roadAt(2150).width * 0.2,
-    y: 2150,
+    x: roadAt(2300).x - roadAt(2300).width * 0.2,
+    y: 2300,
     angle: 0.5,
   },
 
-  // --- Seg 7: Log + mud + ramp combo ---
-  {
-    type: 'log',
-    x: roadAt(1950).x + roadAt(1950).width * 0.15,
-    y: 1950,
-    angle: -0.2,
-  },
+  // --- Mud zone on curve apex (drift through!) ---
   {
     type: 'mud_zone',
-    x: roadAt(1800).x,
-    y: 1800,
+    x: roadAt(2100).x,
+    y: 2100,
     angle: 0,
-    width: 95,
-  },
-  {
-    type: 'ramp',
-    x: roadAt(1650).x,
-    y: 1650,
-    angle: 0,
+    width: 90,
   },
 
-  // --- Arrow pad after the ramp ---
-  { type: 'arrow_pad', x: roadAt(1500).x, y: 1500, angle: 0 },
+  // --- Ramp to jump ---
+  { type: 'ramp', x: roadAt(1850).x, y: 1850, angle: 0 },
 
-  // --- Seg 8: Final mud gauntlet + destructible ---
+  // --- Arrow pad after ramp ---
+  { type: 'arrow_pad', x: roadAt(1650).x, y: 1650, angle: 0 },
+
+  // --- Final mud on curve apex ---
   {
     type: 'mud_zone',
-    x: roadAt(1300).x + roadAt(1300).width * 0.1,
+    x: roadAt(1300).x,
     y: 1300,
     angle: 0,
     width: 90,
   },
+
+  // --- Log before finish ---
   {
-    type: 'destructible',
-    x: roadAt(1150).x - roadAt(1150).width * 0.15,
-    y: 1150,
-    angle: 0,
+    type: 'log',
+    x: roadAt(1100).x + roadAt(1100).width * 0.15,
+    y: 1100,
+    angle: -0.2,
   },
 
-  // --- Seg 9: Final boost ---
+  // --- Final boost ---
   { type: 'arrow_pad', x: roadAt(800).x, y: 800, angle: 0 },
 ];
 

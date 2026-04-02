@@ -56,6 +56,9 @@ function joinSegments(
 // === PINBALL ALLEY: Medium difficulty, wide and chaotic with bouncy walls ===
 // Total length: ~5000px (Y: 5500 → 500)
 
+// Seg 0: Y 6100→5500 - Extension before start
+const seg0 = straight(240, 6100, 5500, 240);
+
 // Seg 1: Y 5500→5100 - Wide opening straight, width 240
 const seg1 = straight(240, 5500, 5100, 240);
 
@@ -71,11 +74,11 @@ const seg4 = curve(270, 4300, 3800, -60, 250, 230);
 // Seg 5: Y 3800→3300 - Straight, width 230→240
 const seg5 = curve(210, 3800, 3300, 30, 230, 240);
 
-// Seg 6: Y 3300→2800 - Right curve, width 240→200
-const seg6 = curve(240, 3300, 2800, 55, 240, 200);
+// Seg 6: Y 3300→2800 - Right curve, FORK SECTION: widens to 400px
+const seg6 = curve(240, 3300, 2800, 55, 240, 400);
 
-// Seg 7: Y 2800→2300 - Straight, width 200→220
-const seg7 = curve(295, 2800, 2300, -40, 200, 220);
+// Seg 7: Y 2800→2300 - Straight, narrows back from fork
+const seg7 = curve(295, 2800, 2300, -40, 400, 220);
 
 // Seg 8: Y 2300→1800 - Left curve, width 220→180 (narrowing for tension)
 const seg8 = curve(255, 2300, 1800, -50, 220, 180);
@@ -89,10 +92,10 @@ const seg10 = curve(230, 1300, 800, 30, 210, 230);
 // Seg 11: Y 800→500 - Final straight, width 230
 const seg11 = straight(260, 800, 500, 230);
 
-// Seg 12: Extension past finish Y=500→100
-const seg12 = straight(260, 500, 100, 230);
+// Seg 12: Extension past finish Y=500→-500
+const seg12 = straight(260, 500, -500, 230);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12);
+const road = joinSegments(seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12);
 
 function indexAtY(y: number): number {
   let best = 0;
@@ -116,16 +119,18 @@ const startLineIdx = indexAtY(5500);
 const finishLineIdx = indexAtY(600);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Seg 1: Arrow pad to get going ---
+  // --- Arrow pad to get going ---
   { type: 'arrow_pad', x: roadAt(5300).x, y: 5300, angle: 0 },
 
-  // --- Seg 2: First bouncy wall pair — pinball intro ---
+  // --- First bouncy wall pair — pinball intro ---
   {
     type: 'bouncy_wall',
     x: roadAt(5000).x - roadAt(5000).width * 0.25,
     y: 5000,
     angle: 0.4,
   },
+  // Arrow pad after bouncy wall (slingshot into boost!) ---
+  { type: 'arrow_pad', x: roadAt(4900).x, y: 4900, angle: 0 },
   {
     type: 'bouncy_wall',
     x: roadAt(4800).x + roadAt(4800).width * 0.25,
@@ -133,7 +138,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.3,
   },
 
-  // --- Seg 3: Destructibles scattered in the wide section ---
+  // --- Destructibles ---
   {
     type: 'destructible',
     x: roadAt(4600).x - roadAt(4600).width * 0.2,
@@ -142,12 +147,12 @@ const obstacles: ObstaclePlacement[] = [
   },
   {
     type: 'destructible',
-    x: roadAt(4450).x + roadAt(4450).width * 0.15,
-    y: 4450,
+    x: roadAt(4500).x + roadAt(4500).width * 0.15,
+    y: 4500,
     angle: 0.3,
   },
 
-  // --- Mud zone to slow down before the curve ---
+  // --- Mud zone ---
   {
     type: 'mud_zone',
     x: roadAt(4350).x,
@@ -156,114 +161,132 @@ const obstacles: ObstaclePlacement[] = [
     width: 80,
   },
 
-  // --- Seg 4: Bouncy wall at curve apex + ramp ---
+  // --- Bouncy wall at curve + arrow pad (slingshot combo!) ---
   {
     type: 'bouncy_wall',
     x: roadAt(4100).x + roadAt(4100).width * 0.2,
     y: 4100,
     angle: -0.5,
   },
-  {
-    type: 'ramp',
-    x: roadAt(3900).x,
-    y: 3900,
-    angle: 0,
-  },
+  { type: 'arrow_pad', x: roadAt(4000).x, y: 4000, angle: 0 },
 
-  // --- Seg 5: Arrow pad + logs ---
-  { type: 'arrow_pad', x: roadAt(3700).x, y: 3700, angle: 0 },
+  // --- Ramp ---
+  { type: 'ramp', x: roadAt(3850).x, y: 3850, angle: 0 },
+
+  // --- Logs ---
   {
     type: 'log',
-    x: roadAt(3550).x - roadAt(3550).width * 0.2,
-    y: 3550,
+    x: roadAt(3600).x - roadAt(3600).width * 0.2,
+    y: 3600,
     angle: 0.3,
   },
   {
     type: 'log',
-    x: roadAt(3400).x + roadAt(3400).width * 0.15,
-    y: 3400,
+    x: roadAt(3450).x + roadAt(3450).width * 0.15,
+    y: 3450,
     angle: -0.2,
   },
 
-  // --- Seg 6: Bouncy wall gauntlet — the main pinball section ---
+  // === PINBALL MACHINE SECTION ===
+  // Two bouncy walls narrowing with ramp in middle — bounce off walls, hit ramp, fly over!
   {
     type: 'bouncy_wall',
-    x: roadAt(3200).x - roadAt(3200).width * 0.2,
+    x: roadAt(3200).x - roadAt(3200).width * 0.25,
     y: 3200,
     angle: 0.6,
   },
-  {
-    type: 'destructible',
-    x: roadAt(3050).x,
-    y: 3050,
-    angle: 0,
-  },
+  { type: 'ramp', x: roadAt(3100).x, y: 3100, angle: 0 },
   {
     type: 'bouncy_wall',
-    x: roadAt(2900).x + roadAt(2900).width * 0.2,
-    y: 2900,
+    x: roadAt(3000).x + roadAt(3000).width * 0.25,
+    y: 3000,
     angle: -0.4,
   },
 
-  // --- Seg 7: Rotating spike (the one real danger) + mud ---
+  // === FORK SECTION (Y 2900→2700, widens to 400px) ===
+  // Center: bouncy wall divides paths (pinball-themed!)
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2850).x,
+    y: 2850,
+    angle: 0,
+  },
+  // Left path: bouncy wall corridor (pinball chaos!)
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2850).x - roadAt(2850).width * 0.3,
+    y: 2850,
+    angle: 0.3,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2750).x - roadAt(2750).width * 0.25,
+    y: 2750,
+    angle: -0.4,
+  },
+  // Right path: mud zone (drift opportunity)
+  {
+    type: 'mud_zone',
+    x: roadAt(2800).x + roadAt(2800).width * 0.3,
+    y: 2800,
+    angle: 0,
+    width: 70,
+  },
+  // === END FORK ===
+
+  // --- Rotating spike with patrol (the real danger) ---
   {
     type: 'rotating_spikes',
-    x: roadAt(2700).x,
-    y: 2700,
+    x: roadAt(2500).x,
+    y: 2500,
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 50,
     patrolSpeed: 4,
   },
-  {
-    type: 'mud_zone',
-    x: roadAt(2500).x + roadAt(2500).width * 0.1,
-    y: 2500,
-    angle: 0,
-    width: 70,
-  },
 
   // --- Arrow pad after danger ---
   { type: 'arrow_pad', x: roadAt(2350).x, y: 2350, angle: 0 },
 
-  // --- Seg 8: Ramp + bouncy wall combo ---
-  {
-    type: 'ramp',
-    x: roadAt(2150).x,
-    y: 2150,
-    angle: 0,
-  },
+  // --- Bouncy wall + arrow pad slingshot combo ---
   {
     type: 'bouncy_wall',
-    x: roadAt(2000).x - roadAt(2000).width * 0.2,
-    y: 2000,
+    x: roadAt(2100).x - roadAt(2100).width * 0.2,
+    y: 2100,
     angle: 0.5,
   },
+  { type: 'arrow_pad', x: roadAt(2000).x, y: 2000, angle: 0 },
 
-  // --- Seg 9: Logs + arrow pad ---
+  // --- Final pinball chaos ---
   {
-    type: 'log',
-    x: roadAt(1700).x + roadAt(1700).width * 0.2,
-    y: 1700,
-    angle: -0.4,
+    type: 'bouncy_wall',
+    x: roadAt(1600).x + roadAt(1600).width * 0.2,
+    y: 1600,
+    angle: -0.6,
+    patrolAxis: 'x',
+    patrolDistance: 30,
+    patrolSpeed: 3,
   },
-  { type: 'arrow_pad', x: roadAt(1500).x, y: 1500, angle: 0 },
-
-  // --- Seg 10: Final pinball chaos ---
   {
     type: 'log',
-    x: roadAt(1200).x - roadAt(1200).width * 0.15,
-    y: 1200,
+    x: roadAt(1400).x - roadAt(1400).width * 0.15,
+    y: 1400,
     angle: 0.2,
   },
   {
     type: 'bouncy_wall',
-    x: roadAt(1050).x + roadAt(1050).width * 0.2,
+    x: roadAt(1200).x - roadAt(1200).width * 0.2,
+    y: 1200,
+    angle: 0.5,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(1050).x + roadAt(1050).width * 0.25,
     y: 1050,
-    angle: -0.6,
+    angle: -0.4,
   },
 
-  // --- Seg 11: Final boost to the finish ---
+  // --- Final boost ---
   { type: 'arrow_pad', x: roadAt(750).x, y: 750, angle: 0 },
 ];
 

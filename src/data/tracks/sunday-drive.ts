@@ -56,6 +56,9 @@ function joinSegments(
 // === SUNDAY DRIVE: Easy, wide, friendly ===
 // Total length: ~4500px (Y: 4800 → 300)
 
+// Seg 0: Y 5400→4800 - Extension before start (invisible to player, road keeps going)
+const seg0 = straight(240, 5400, 4800, 280);
+
 // Seg 1: Y 4800→4400 - Wide opening straight, width 280
 const seg1 = straight(240, 4800, 4400, 280);
 
@@ -68,11 +71,11 @@ const seg3 = straight(210, 4000, 3600, 260);
 // Seg 4: Y 3600→3200 - Gentle right bend, width 260→250
 const seg4 = curve(210, 3600, 3200, 40, 260, 250);
 
-// Seg 5: Y 3200→2800 - Straight, width 250
-const seg5 = straight(250, 3200, 2800, 250);
+// Seg 5: Y 3200→2800 - FORK SECTION: widens to 400px for choose-your-line
+const seg5 = curve(250, 3200, 2800, 0, 250, 400);
 
-// Seg 6: Y 2800→2400 - Gentle left bend, width 250→240
-const seg6 = curve(250, 2800, 2400, -35, 250, 240);
+// Seg 6: Y 2800→2400 - Gentle left bend, narrows back from fork
+const seg6 = curve(250, 2800, 2400, -35, 400, 240);
 
 // Seg 7: Y 2400→2000 - Straight, width 240
 const seg7 = straight(215, 2400, 2000, 240);
@@ -89,10 +92,10 @@ const seg10 = curve(260, 1200, 800, -30, 230, 240);
 // Seg 11: Y 800→300 - Final straight, width 240→260 (widens for finish)
 const seg11 = curve(230, 800, 300, 10, 240, 260, 40);
 
-// Segment 12: Extension past finish line Y=300→-100
-const seg12 = straight(240, 300, -100, 260);
+// Segment 12: Extension past finish line Y=300→-700
+const seg12 = straight(240, 300, -700, 260);
 
-const road = joinSegments(seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12);
+const road = joinSegments(seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12);
 
 function indexAtY(y: number): number {
   let best = 0;
@@ -116,21 +119,33 @@ const startLineIdx = indexAtY(4800);
 const finishLineIdx = indexAtY(400);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Early boost to get players going (forward) ---
+  // --- Early boost to get players going ---
   { type: 'arrow_pad', x: roadAt(4600).x, y: 4600, angle: 0 },
 
   // --- Fun ramp jump on opening straight ---
   { type: 'ramp', x: roadAt(4350).x, y: 4350, angle: 0 },
 
-  // --- Smashable barrel before logs ---
+  // --- Barrel stack: 3 smashable destructibles (satisfying!) ---
   {
     type: 'destructible',
-    x: roadAt(4100).x + roadAt(4100).width * 0.2,
+    x: roadAt(4100).x - 20,
     y: 4100,
     angle: 0,
   },
+  {
+    type: 'destructible',
+    x: roadAt(4100).x + 20,
+    y: 4100,
+    angle: 0,
+  },
+  {
+    type: 'destructible',
+    x: roadAt(4050).x,
+    y: 4050,
+    angle: 0,
+  },
 
-  // --- A few friendly logs in Seg 3, well spaced ---
+  // --- Friendly logs, well spaced ---
   {
     type: 'log',
     x: roadAt(3900).x - roadAt(3900).width * 0.2,
@@ -144,47 +159,47 @@ const obstacles: ObstaclePlacement[] = [
     angle: -0.2,
   },
 
-  // --- Arrow pad reward after logs (sideways left!) ---
+  // --- Arrow pad reward after logs ---
   { type: 'arrow_pad', x: roadAt(3400).x, y: 3400, angle: 0 },
 
-  // --- Single log in the bend ---
+  // === FORK SECTION (Y 3200→2800, road widens to 400px) ===
+  // Center: bouncy wall divides left/right paths (fun, not deadly!)
   {
-    type: 'log',
-    x: roadAt(3100).x,
-    y: 3100,
-    angle: 0.4,
-  },
-
-  // --- Gentle spike introduction: narrow strip, easy to dodge ---
-  {
-    type: 'spikes',
-    x: roadAt(2900).x,
-    y: 2900,
+    type: 'bouncy_wall',
+    x: roadAt(3050).x,
+    y: 3050,
     angle: 0,
-    width: 60,
   },
-
-  // --- Arrow pad as encouragement (forward) ---
-  { type: 'arrow_pad', x: roadAt(2600).x, y: 2600, angle: 0 },
-
-  // --- Fun ramp before the log pair ---
-  { type: 'ramp', x: roadAt(2400).x, y: 2400, angle: 0 },
-
-  // --- Pair of logs, staggered ---
+  // Left path: destructibles (bulldozer path — now gives micro-boost!)
   {
-    type: 'log',
-    x: roadAt(2200).x - roadAt(2200).width * 0.15,
-    y: 2200,
-    angle: 0.1,
+    type: 'destructible',
+    x: roadAt(3100).x - roadAt(3100).width * 0.3,
+    y: 3100,
+    angle: 0,
   },
   {
+    type: 'destructible',
+    x: roadAt(3000).x - roadAt(3000).width * 0.3,
+    y: 3000,
+    angle: 0,
+  },
+  // Right path: clean with a log to dodge
+  {
     type: 'log',
-    x: roadAt(2100).x + roadAt(2100).width * 0.2,
-    y: 2100,
+    x: roadAt(3050).x + roadAt(3050).width * 0.25,
+    y: 3050,
     angle: -0.3,
   },
+  // === END FORK ===
 
-  // --- A slow rotating spike, easy to time (reduced speed) ---
+  // --- Arrow pad after fork ---
+  { type: 'arrow_pad', x: roadAt(2600).x, y: 2600, angle: 0 },
+
+  // --- Combo: arrow pad aimed at ramp (teach the combo!) ---
+  { type: 'arrow_pad', x: roadAt(2400).x, y: 2400, angle: 0 },
+  { type: 'ramp', x: roadAt(2200).x, y: 2200, angle: 0 },
+
+  // --- Gentle rotating spike, easy to time with pause ---
   {
     type: 'rotating_spikes',
     x: roadAt(1900).x,
@@ -194,21 +209,11 @@ const obstacles: ObstaclePlacement[] = [
     patrolDistance: 40,
     patrolSpeed: 3,
   },
-  // Extra rotating spike at Y=1500
-  {
-    type: 'rotating_spikes',
-    x: roadAt(1500).x - roadAt(1500).width * 0.15,
-    y: 1500,
-    angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 35,
-    patrolSpeed: 3.75,
-  },
 
-  // --- Mid-track boost (sideways right for fun!) ---
+  // --- Mid-track boost ---
   { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: 0 },
 
-  // --- Log chicane before finish area ---
+  // --- Log chicane before finish ---
   {
     type: 'log',
     x: roadAt(1400).x - roadAt(1400).width * 0.2,
@@ -221,31 +226,31 @@ const obstacles: ObstaclePlacement[] = [
     y: 1300,
     angle: -0.1,
   },
-  {
-    type: 'log',
-    x: roadAt(1100).x,
-    y: 1100,
-    angle: 0.2,
-  },
 
-  // --- Small spike strip near end, lots of room to dodge ---
-  {
-    type: 'spikes',
-    x: roadAt(900).x + roadAt(900).width * 0.15,
-    y: 900,
-    angle: 0,
-    width: 50,
-  },
+  // --- Mud zone on bend apex (drift through for boost!) ---
+  { type: 'mud_zone', x: roadAt(1100).x, y: 1100, angle: 0, width: 80 },
 
-  // --- Bouncy wall at curve exit for pinball fun ---
+  // === PINBALL FINISH: 3 bouncy walls for chaotic ending ===
   {
     type: 'bouncy_wall',
-    x: roadAt(750).x + roadAt(750).width * 0.3,
-    y: 750,
-    angle: 0.3,
+    x: roadAt(900).x - roadAt(900).width * 0.25,
+    y: 900,
+    angle: 0.4,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(800).x + roadAt(800).width * 0.25,
+    y: 800,
+    angle: -0.3,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(700).x - roadAt(700).width * 0.2,
+    y: 700,
+    angle: 0.5,
   },
 
-  // --- Final boost before finish (forward) ---
+  // --- Final boost before finish ---
   { type: 'arrow_pad', x: roadAt(600).x, y: 600, angle: 0 },
 ];
 

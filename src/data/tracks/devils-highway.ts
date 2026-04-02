@@ -56,6 +56,9 @@ function joinSegments(
 // === DEVIL'S HIGHWAY: Hard, narrow, punishing ===
 // Total length: ~5500px (Y: 5800 → 300)
 
+// Seg 0: Y 6400→5800 - Extension before start
+const seg0 = straight(240, 6400, 5800, 180);
+
 // Seg 1: Y 5800→5500 - Short starting straight, width 180 (the widest you'll get)
 const seg1 = straight(240, 5800, 5500, 180);
 
@@ -82,11 +85,11 @@ const seg7 = curve(220, 3500, 3100, -90, 120, 140);
 // Seg 8: Y 3100→2700 - Right hairpin, width 140→130
 const seg8 = curve(130, 3100, 2700, 110, 140, 130);
 
-// Seg 9: Y 2700→2300 - Straight, width 130
-const seg9 = straight(240, 2700, 2300, 130);
+// Seg 9: Y 2700→2300 - FORK SECTION: widens to 350px
+const seg9 = curve(240, 2700, 2300, 0, 130, 350);
 
-// Seg 10: Y 2300→1800 - Triple S-curve, width 130→140
-const seg10a = curve(240, 2300, 2100, 60, 130, 130, 25);
+// Seg 10: Y 2300→1800 - Triple S-curve, narrows back from fork
+const seg10a = curve(240, 2300, 2100, 60, 350, 130, 25);
 const seg10b = curve(300, 2100, 1900, -80, 130, 135, 25);
 const seg10c = curve(220, 1900, 1800, 40, 135, 140, 25);
 const seg10 = [...seg10a, ...seg10b.slice(1), ...seg10c.slice(1)];
@@ -103,11 +106,11 @@ const seg13 = curve(190, 1000, 600, 30, 150, 160, 30);
 // Seg 14: Y 600→300 - Final straight, width 160
 const seg14 = straight(220, 600, 300, 160);
 
-// Segment 15: Extension past finish line Y=300→-100
-const seg15 = straight(220, 300, -100, 160);
+// Segment 15: Extension past finish line Y=300→-700
+const seg15 = straight(220, 300, -700, 160);
 
 const road = joinSegments(
-  seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12, seg13, seg14, seg15,
+  seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12, seg13, seg14, seg15,
 );
 
 function indexAtY(y: number): number {
@@ -132,10 +135,10 @@ const startLineIdx = indexAtY(5800);
 const finishLineIdx = indexAtY(400);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Seg 1: Arrow pad to start ---
+  // --- Arrow pad to start ---
   { type: 'arrow_pad', x: roadAt(5650).x, y: 5650, angle: 0 },
 
-  // --- Destructible barrel blocking part of narrow curve ---
+  // --- Destructible ---
   {
     type: 'destructible',
     x: roadAt(5475).x + roadAt(5475).width * 0.15,
@@ -143,7 +146,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
   },
 
-  // --- Seg 2: Spike strip on outside of curve ---
+  // --- Spike strip on outside of curve ---
   {
     type: 'spikes',
     x: roadAt(5300).x + roadAt(5300).width * 0.2,
@@ -152,17 +155,16 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(5300).width * 0.35,
   },
 
-  // --- Mud zone at hairpin apex — punishes bad lines ---
-  { type: 'mud_zone', x: roadAt(5150).x, y: 5150, angle: 0, width: 40 },
+  // --- Mud on hairpin apex (drift through for boost — expert reward!) ---
+  { type: 'mud_zone', x: roadAt(5150).x, y: 5150, angle: 0, width: 50 },
 
-  // --- Seg 3: Log then rotating spike in the hairpin ---
+  // --- Log + rotating spike in hairpin ---
   {
     type: 'log',
     x: roadAt(5000).x - roadAt(5000).width * 0.2,
     y: 5000,
     angle: 0.4,
   },
-  // Spike ball swings wide (65px patrol = partially off-road, creates clear window)
   {
     type: 'rotating_spikes',
     x: roadAt(4800).x,
@@ -173,7 +175,7 @@ const obstacles: ObstaclePlacement[] = [
     patrolSpeed: 3.5,
   },
 
-  // --- Seg 4: Spike strip ---
+  // --- Spike strip ---
   {
     type: 'spikes',
     x: roadAt(4550).x - roadAt(4550).width * 0.15,
@@ -182,17 +184,16 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(4550).width * 0.3,
   },
 
-  // --- Mud zone at S-curve apex ---
-  { type: 'mud_zone', x: roadAt(4375).x, y: 4375, angle: 0, width: 40 },
+  // --- Mud on S-curve apex (drift opportunity!) ---
+  { type: 'mud_zone', x: roadAt(4375).x, y: 4375, angle: 0, width: 50 },
 
-  // --- Seg 5: S-curve with log ---
+  // --- S-curve with log ---
   {
     type: 'log',
     x: roadAt(4200).x + roadAt(4200).width * 0.15,
     y: 4200,
     angle: -0.3,
   },
-  // Spike ball with wide swing on narrow S-curve
   {
     type: 'rotating_spikes',
     x: roadAt(3950).x,
@@ -203,9 +204,10 @@ const obstacles: ObstaclePlacement[] = [
     patrolSpeed: 3,
   },
 
-  // --- Seg 6: The gauntlet (narrowest section) ---
-  { type: 'arrow_pad', x: roadAt(3750).x, y: 3750, angle: 0 },
-  // Alternating spike walls — narrow, well spaced
+  // --- The gauntlet: arrow pad → ramp to bypass spike walls! ---
+  { type: 'arrow_pad', x: roadAt(3800).x, y: 3800, angle: 0 },
+  { type: 'ramp', x: roadAt(3700).x, y: 3700, angle: 0 },
+  // Spike walls below — skilled players jump over with arrow pad + ramp combo
   {
     type: 'spikes',
     x: roadAt(3600).x - roadAt(3600).width * 0.2,
@@ -221,44 +223,57 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(3400).width * 0.3,
   },
 
-  // --- Seg 7-8: Hairpin pair — fewer obstacles, more spaced ---
+  // --- Hairpin pair: pinch point for car-car collisions ---
   {
     type: 'log',
     x: roadAt(3250).x,
     y: 3250,
     angle: -0.5,
   },
-  // Wide-swinging spike ball at hairpin apex
+  // Mud on hairpin apex (drift-boost reward)
+  { type: 'mud_zone', x: roadAt(3000).x, y: 3000, angle: 0, width: 45 },
   {
     type: 'rotating_spikes',
-    x: roadAt(3000).x,
-    y: 3000,
+    x: roadAt(2900).x,
+    y: 2900,
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 70,
     patrolSpeed: 3,
   },
-  {
-    type: 'log',
-    x: roadAt(2800).x + roadAt(2800).width * 0.15,
-    y: 2800,
-    angle: 0.3,
-  },
 
-  // --- Seg 9: Straight of death ---
+  // === FORK SECTION (Y 2700→2400, road widens to 350px) ===
   { type: 'arrow_pad', x: roadAt(2650).x, y: 2650, angle: 0 },
-  // Single rotating spike — wide patrol, slow
+  // Center: rotating spike divides paths
   {
     type: 'rotating_spikes',
-    x: roadAt(2450).x,
-    y: 2450,
+    x: roadAt(2550).x,
+    y: 2550,
     angle: 0,
-    patrolAxis: 'x',
-    patrolDistance: 60,
+    patrolAxis: 'y',
+    patrolDistance: 40,
     patrolSpeed: 3.5,
   },
+  // Left path: rotating spike gauntlet (dangerous shortcut!)
+  {
+    type: 'rotating_spikes',
+    x: roadAt(2500).x - roadAt(2500).width * 0.25,
+    y: 2500,
+    angle: 0,
+    patrolAxis: 'x',
+    patrolDistance: 30,
+    patrolSpeed: 3,
+  },
+  // Right path: safe but longer (log to dodge)
+  {
+    type: 'log',
+    x: roadAt(2500).x + roadAt(2500).width * 0.25,
+    y: 2500,
+    angle: 0.3,
+  },
+  // === END FORK ===
 
-  // --- Seg 10: Triple S-curve ---
+  // --- Triple S-curve ---
   {
     type: 'log',
     x: roadAt(2200).x,
@@ -272,7 +287,6 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     width: roadAt(2000).width * 0.35,
   },
-  // Wide-swinging spike ball
   {
     type: 'rotating_spikes',
     x: roadAt(1850).x,
@@ -283,7 +297,7 @@ const obstacles: ObstaclePlacement[] = [
     patrolSpeed: 3,
   },
 
-  // --- Seg 11: Straight gauntlet ---
+  // --- Straight: arrow pad + spike + log ---
   { type: 'arrow_pad', x: roadAt(1700).x, y: 1700, angle: 0 },
   {
     type: 'spikes',
@@ -292,14 +306,8 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     width: roadAt(1550).width * 0.35,
   },
-  {
-    type: 'log',
-    x: roadAt(1400).x + roadAt(1400).width * 0.2,
-    y: 1400,
-    angle: -0.4,
-  },
 
-  // --- Seg 12: Tight curve with rotating spike at apex ---
+  // --- Tight curve with rotating spike ---
   {
     type: 'rotating_spikes',
     x: roadAt(1200).x,
@@ -310,10 +318,8 @@ const obstacles: ObstaclePlacement[] = [
     patrolSpeed: 3.5,
   },
 
-  // --- Ramp as escape route — fly over the spike strip at Y=900! ---
+  // --- Ramp to fly over final spikes ---
   { type: 'ramp', x: roadAt(1050).x, y: 1050, angle: 0 },
-
-  // --- Seg 13: Approach to finish ---
   {
     type: 'spikes',
     x: roadAt(900).x - roadAt(900).width * 0.1,
@@ -322,7 +328,7 @@ const obstacles: ObstaclePlacement[] = [
     width: roadAt(900).width * 0.3,
   },
 
-  // --- Bouncy wall at hairpin exit before final gauntlet ---
+  // --- Bouncy wall before finish ---
   {
     type: 'bouncy_wall',
     x: roadAt(700).x + roadAt(700).width * 0.25,
@@ -330,7 +336,7 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0.4,
   },
 
-  // --- Seg 14: Final straight ---
+  // --- Final rotating spike ---
   {
     type: 'rotating_spikes',
     x: roadAt(500).x,

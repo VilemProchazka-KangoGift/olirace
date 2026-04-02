@@ -334,7 +334,7 @@ describe('updatePlayer - steering', () => {
     expect(Math.abs(slowAngle)).toBeGreaterThan(Math.abs(fastAngle));
   });
 
-  it('steering inverts when reversing (speed < 0)', () => {
+  it('steering inverts when intentionally reversing (brake held + speed < 0)', () => {
     const forwardPlayer = createPlayer('formula', 0, 0, 0, 'primary');
     forwardPlayer.speed = 100;
     const reversePlayer = createPlayer('formula', 0, 0, 0, 'primary');
@@ -348,12 +348,33 @@ describe('updatePlayer - steering', () => {
     updatePlayer(forwardPlayer, dt, forwardState);
     const forwardAngle = forwardPlayer.angle;
 
-    mockReadPlayerInput.mockReturnValue(steerRightInput());
+    // Brake held while reversing — steering should invert
+    mockReadPlayerInput.mockReturnValue({ accelerate: 0, brake: 1, steerX: 1, honk: false });
     updatePlayer(reversePlayer, dt, reverseState);
     const reverseAngle = reversePlayer.angle;
 
-    // Steering direction inverts because speedRatio is negative
+    // Steering direction inverts only when brake is held
     expect(Math.sign(forwardAngle)).not.toBe(Math.sign(reverseAngle));
+  });
+
+  it('steering does NOT invert at small negative speed without brake (prevents accidental flip)', () => {
+    const player = createPlayer('formula', 0, 0, 0, 'primary');
+    player.speed = -5; // Tiny negative speed from braking overshoot
+
+    const state = createMinimalGameState([player]);
+    const dt = 1 / 60;
+
+    mockReadPlayerInput.mockReturnValue(steerRightInput());
+    updatePlayer(player, dt, state);
+
+    // Should steer same direction as forward — no surprise flip
+    const forwardPlayer = createPlayer('formula', 0, 0, 0, 'primary');
+    forwardPlayer.speed = 100;
+    const forwardState = createMinimalGameState([forwardPlayer]);
+    mockReadPlayerInput.mockReturnValue(steerRightInput());
+    updatePlayer(forwardPlayer, dt, forwardState);
+
+    expect(Math.sign(player.angle)).toBe(Math.sign(forwardPlayer.angle));
   });
 
   it('left steering changes angle in opposite direction to right', () => {

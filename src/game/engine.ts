@@ -17,6 +17,8 @@ import {
   INVINCIBILITY_DURATION,
   TETHER_TELEPORT_DISTANCE,
   TETHER_TELEPORT_BEHIND,
+  TETHER_SPEED_MULTIPLIER,
+  TETHER_INVINCIBILITY,
   PLAYER_HITBOX_RADIUS,
   SKID_MARK_INTERVAL,
   MAX_SKID_MARKS,
@@ -48,6 +50,7 @@ import {
   normalize,
   randomRange,
   randomAngle,
+  directionFromAngle,
 } from '../utils/math';
 import { initInput, destroyInput, readPlayerInput, setAIContext } from './input';
 import { createGameState } from './state';
@@ -72,7 +75,7 @@ import {
 import { updateCountdown } from './countdown';
 import { findNearestRoadPoint } from './collision';
 import { getCharacter } from '../data/characters';
-import { render as renderGame, renderLavaFullscreen } from './renderer';
+import { render as renderGame, renderLavaFullscreen, drawHorizonOverlay } from './renderer';
 import { audioManager } from './audio';
 
 export function startGame(
@@ -265,7 +268,8 @@ export function startGame(
         const onRoad = nearest.distance <= player.roadHalfWidth + PLAYER_HITBOX_RADIUS + LAVA_GRACE_ZONE;
 
         if (!onRoad) {
-          killPlayer(player, i, state);
+          // Rescue: snap back to road, shoot forward, invincibility
+          rescuePlayer(player, i, state);
         } else {
           // Sparks when scraping edge
           const edgeRatio = player.distFromRoadCenter / player.roadHalfWidth;
@@ -315,6 +319,7 @@ export function startGame(
           audioManager.play('sfx_log');
           addComicText('BONK!', player.position.x, player.position.y - 30, COLORS.orange);
           triggerHaptic(i, 0.7, 0.2);
+          if (state.aiStates[i]) state.aiStates[i].lastHitTime = state.time;
         } else if (result === 'ramp') {
           audioManager.play('sfx_ramp_launch');
           addComicText('JUMP!', player.position.x, player.position.y - 30, COLORS.green);
@@ -331,6 +336,7 @@ export function startGame(
           audioManager.play('sfx_boing');
           addComicText('BOING!', player.position.x, player.position.y - 30, COLORS.yellow);
           triggerHaptic(i, 0.6, 0.15);
+          if (state.aiStates[i]) state.aiStates[i].lastHitTime = state.time;
         }
       }
     }
@@ -674,6 +680,47 @@ export function startGame(
     audioManager.play('sfx_respawn');
   }
 
+  function rescuePlayer(
+    player: (typeof state.players)[0],
+    _playerIndex: number,
+    gs: GameState,
+  ): void {
+    // Only snap horizontally to road center — keep same Y position
+    const nearest = findNearestRoadPoint(player.position, track.road);
+    player.position.x = nearest.centerPoint.x;
+    player.prevPosition.x = nearest.centerPoint.x;
+
+    // Point in road direction
+    if (nearest.segIdx < track.road.length - 1) {
+      const segStart = track.road[nearest.segIdx];
+      const segEnd = track.road[nearest.segIdx + 1];
+      const dir = normalize(
+        sub(vec2(segEnd.x, segEnd.y), vec2(segStart.x, segStart.y)),
+      );
+      player.angle = Math.atan2(-dir.y, dir.x);
+    }
+
+    // Kill speed — this is a penalty, you have to re-accelerate
+    player.speed = 0;
+    player.velocity = vec2(0, 0);
+
+    // Brief invincibility so you don't immediately die again
+    player.invincibleTimer = INVINCIBILITY_DURATION;
+
+    // Visual feedback
+    player.squashX = 1.3;
+    player.squashY = 0.7;
+    player.expression = 'scared';
+    player.expressionTimer = 0.5;
+
+    // Count as a death for awards tracking
+    player.deaths++;
+    player.damageCount = Math.min(3, player.damageCount + 1);
+
+    emitRespawnParticles(player.position.x, player.position.y, gs.particles);
+    audioManager.play('sfx_respawn');
+  }
+
   function findRespawnPosition(
     segIdx: number, t: number, distBack: number, road: typeof track.road,
   ): Vec2 {
@@ -843,7 +890,12 @@ export function startGame(
 
         p.position = { ...teleportPos };
         p.prevPosition = { ...teleportPos };
-        p.speed = leader.speed * 0.5;
+        // Shoot forward at 120% leader speed + invincibility
+        p.speed = leader.speed * TETHER_SPEED_MULTIPLIER;
+        p.invincibleTimer = TETHER_INVINCIBILITY;
+        p.boostTimer = 1.0; // brief boost flame visual
+        p.expression = 'happy';
+        p.expressionTimer = 1.0;
 
         emitRespawnParticles(p.position.x, p.position.y, gs.particles);
       }
@@ -956,6 +1008,9 @@ export function startGame(
     renderGame(ctx, state, alpha);
 
     ctx.restore();
+
+    // Phase 2b: Horizon overlay at raw resolution (full window width)
+    drawHorizonOverlay(ctx, canvas.width, canvas.height, track.name);
 
     // Phase 3: Post-processing effects at raw resolution
 

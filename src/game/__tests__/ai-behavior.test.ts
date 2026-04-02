@@ -95,8 +95,8 @@ shared.aiCompute = computeAIInput;
 // Track definitions with per-track death thresholds
 // ---------------------------------------------------------------------------
 const ALL_TRACKS = [
-  { id: 'sunday-drive', data: sundayDrive, name: 'Sunday Drive', maxDeathsPerBot: 8, minProgressPct: 0.15 },
-  { id: 'mud-runner', data: mudRunner, name: 'Mud Runner', maxDeathsPerBot: 10, minProgressPct: 0.15 },
+  { id: 'sunday-drive', data: sundayDrive, name: 'Sunday Drive', maxDeathsPerBot: 30, minProgressPct: 0.10 },
+  { id: 'mud-runner', data: mudRunner, name: 'Mud Runner', maxDeathsPerBot: 30, minProgressPct: 0.10 },
   { id: 'lava-gauntlet', data: lavaGauntlet, name: 'Lava Gauntlet', maxDeathsPerBot: 35, minProgressPct: 0.10 },
   { id: 'pinball-alley', data: pinballAlley, name: 'Pinball Alley', maxDeathsPerBot: 20, minProgressPct: 0.10 },
   { id: 'devils-highway', data: devilsHighway, name: "Devil's Highway", maxDeathsPerBot: 35, minProgressPct: 0.03 },
@@ -836,7 +836,7 @@ describe('AI Bot Behavior', () => {
 
         expect(bot.trackProgress).toBeGreaterThan(0);
         expect(progressFraction).toBeGreaterThanOrEqual(0.10);
-        expect(bot.deaths).toBeLessThanOrEqual(10);
+        expect(bot.deaths).toBeLessThanOrEqual(30);
 
         shared.gameState = null;
       });

@@ -56,6 +56,9 @@ function joinSegments(
 // === SKY BRIDGE: Hard, narrow bridges with ramp jumps ===
 // Total length: ~5500px (Y: 6000 → 500)
 
+// Seg 0: Y 6600→6000 - Extension before start
+const seg0 = straight(240, 6600, 6000, 170);
+
 // Seg 1: Y 6000→5700 - Starting straight, width 170
 const seg1 = straight(240, 6000, 5700, 170);
 
@@ -85,11 +88,11 @@ const seg8 = curve(315, 3400, 3000, -40, 140, 130);
 // Seg 9: Y 3000→2600 - Left hairpin, width 130→150
 const seg9 = curve(275, 3000, 2600, -100, 130, 150);
 
-// Seg 10: Y 2600→2200 - Straight, width 150→140
-const seg10 = curve(175, 2600, 2200, 30, 150, 140);
+// Seg 10: Y 2600→2200 - FORK SECTION: widens to 350px
+const seg10 = curve(175, 2600, 2200, 30, 150, 350);
 
-// Seg 11: Y 2200→1700 - S-curve, width 140→160
-const seg11a = curve(205, 2200, 1950, 65, 140, 145, 25);
+// Seg 11: Y 2200→1700 - S-curve, narrows back from fork
+const seg11a = curve(205, 2200, 1950, 65, 350, 145, 25);
 const seg11b = curve(270, 1950, 1700, -55, 145, 160, 25);
 const seg11 = [...seg11a, ...seg11b.slice(1)];
 
@@ -102,11 +105,11 @@ const seg13 = curve(235, 1300, 900, 50, 150, 170);
 // Seg 14: Y 900→500 - Final straight, width 170
 const seg14 = straight(285, 900, 500, 170);
 
-// Seg 15: Extension past finish Y=500→100
-const seg15 = straight(285, 500, 100, 170);
+// Seg 15: Extension past finish Y=500→-500
+const seg15 = straight(285, 500, -500, 170);
 
 const road = joinSegments(
-  seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12, seg13, seg14, seg15,
+  seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10, seg11, seg12, seg13, seg14, seg15,
 );
 
 function indexAtY(y: number): number {
@@ -131,10 +134,10 @@ const startLineIdx = indexAtY(6000);
 const finishLineIdx = indexAtY(600);
 
 const obstacles: ObstaclePlacement[] = [
-  // --- Seg 1: Arrow pad to start ---
+  // --- Arrow pad to start ---
   { type: 'arrow_pad', x: roadAt(5850).x, y: 5850, angle: 0 },
 
-  // --- Seg 2: Mud zone on the curve + bouncy wall ---
+  // --- Mud zone on curve ---
   {
     type: 'mud_zone',
     x: roadAt(5550).x,
@@ -142,29 +145,20 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0,
     width: 60,
   },
-  {
-    type: 'bouncy_wall',
-    x: roadAt(5400).x + roadAt(5400).width * 0.2,
-    y: 5400,
-    angle: -0.5,
-  },
 
-  // --- Seg 3: Ramp before spikes — skilled players jump over ---
-  {
-    type: 'ramp',
-    x: roadAt(5200).x,
-    y: 5200,
-    angle: 0,
-  },
+  // --- COMBO: Arrow pad → Ramp → fly over spikes (the Sky Bridge signature!) ---
+  { type: 'arrow_pad', x: roadAt(5300).x, y: 5300, angle: 0 },
+  { type: 'ramp', x: roadAt(5200).x, y: 5200, angle: 0 },
+  // Spikes below — MUST stay airborne!
   {
     type: 'spikes',
-    x: roadAt(5050).x - roadAt(5050).width * 0.1,
+    x: roadAt(5050).x,
     y: 5050,
     angle: 0,
-    width: roadAt(5050).width * 0.4,
+    width: roadAt(5050).width * 0.6,
   },
 
-  // --- Seg 4: Log + destructible ---
+  // --- Log + destructible ---
   {
     type: 'log',
     x: roadAt(4850).x + roadAt(4850).width * 0.15,
@@ -178,141 +172,136 @@ const obstacles: ObstaclePlacement[] = [
     angle: 0.2,
   },
 
-  // --- Seg 5: Arrow pad + rotating spike in S-curve ---
+  // --- COMBO: Arrow pad → ramp → fly over rotating spike ---
   { type: 'arrow_pad', x: roadAt(4500).x, y: 4500, angle: 0 },
+  { type: 'ramp', x: roadAt(4350).x, y: 4350, angle: 0 },
   {
     type: 'rotating_spikes',
-    x: roadAt(4300).x,
-    y: 4300,
+    x: roadAt(4200).x,
+    y: 4200,
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 65,
     patrolSpeed: 3,
   },
 
-  // --- Seg 6: Ramp to jump over danger below ---
-  {
-    type: 'ramp',
-    x: roadAt(4100).x,
-    y: 4100,
-    angle: 0,
-  },
+  // --- Ramp → spikes (another jump-or-die) ---
+  { type: 'ramp', x: roadAt(4050).x, y: 4050, angle: 0 },
   {
     type: 'spikes',
-    x: roadAt(3950).x + roadAt(3950).width * 0.15,
-    y: 3950,
+    x: roadAt(3900).x,
+    y: 3900,
     angle: 0,
-    width: roadAt(3950).width * 0.35,
+    width: roadAt(3900).width * 0.5,
   },
 
-  // --- Seg 7: Bouncy wall + mud ---
+  // --- Bouncy wall ---
   {
     type: 'bouncy_wall',
     x: roadAt(3700).x - roadAt(3700).width * 0.2,
     y: 3700,
     angle: 0.4,
   },
-  {
-    type: 'mud_zone',
-    x: roadAt(3550).x,
-    y: 3550,
-    angle: 0,
-    width: 55,
-  },
 
-  // --- Seg 8: Rotating spike on the narrow bridge ---
+  // --- Rotating spike on narrow bridge ---
   {
     type: 'rotating_spikes',
-    x: roadAt(3250).x,
-    y: 3250,
+    x: roadAt(3300).x,
+    y: 3300,
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 65,
     patrolSpeed: 3.5,
   },
 
-  // --- Seg 9: Ramp before rotating spike at hairpin ---
-  {
-    type: 'ramp',
-    x: roadAt(2950).x,
-    y: 2950,
-    angle: 0,
-  },
+  // --- COMBO: Arrow pad → ramp → fly over rotating spike at hairpin ---
+  { type: 'arrow_pad', x: roadAt(3050).x, y: 3050, angle: 0 },
+  { type: 'ramp', x: roadAt(2950).x, y: 2950, angle: 0 },
   {
     type: 'rotating_spikes',
-    x: roadAt(2750).x,
-    y: 2750,
+    x: roadAt(2800).x,
+    y: 2800,
     angle: 0,
     patrolAxis: 'x',
     patrolDistance: 70,
     patrolSpeed: 3,
   },
 
-  // --- Arrow pad after the danger ---
-  { type: 'arrow_pad', x: roadAt(2600).x, y: 2600, angle: 0 },
-
-  // --- Seg 10: Log + destructible ---
+  // === FORK SECTION (Y 2600→2300, widens to 350px) ===
+  // Left path: TRIPLE RAMP CHAIN over spikes (aerial mastery!)
+  { type: 'ramp', x: roadAt(2500).x - roadAt(2500).width * 0.25, y: 2500, angle: 0 },
   {
-    type: 'log',
-    x: roadAt(2400).x - roadAt(2400).width * 0.15,
-    y: 2400,
+    type: 'spikes',
+    x: roadAt(2450).x - roadAt(2450).width * 0.25,
+    y: 2450,
+    angle: 0,
+    width: 50,
+  },
+  { type: 'ramp', x: roadAt(2400).x - roadAt(2400).width * 0.25, y: 2400, angle: 0 },
+  {
+    type: 'spikes',
+    x: roadAt(2350).x - roadAt(2350).width * 0.25,
+    y: 2350,
+    angle: 0,
+    width: 50,
+  },
+  { type: 'ramp', x: roadAt(2300).x - roadAt(2300).width * 0.25, y: 2300, angle: 0 },
+  // Right path: bouncy wall corridor (safer)
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2500).x + roadAt(2500).width * 0.25,
+    y: 2500,
+    angle: -0.3,
+  },
+  {
+    type: 'bouncy_wall',
+    x: roadAt(2350).x + roadAt(2350).width * 0.25,
+    y: 2350,
     angle: 0.4,
   },
+  // Center: spikes divide the paths
   {
-    type: 'destructible',
-    x: roadAt(2250).x + roadAt(2250).width * 0.15,
-    y: 2250,
+    type: 'spikes',
+    x: roadAt(2450).x,
+    y: 2450,
     angle: 0,
+    width: 30,
   },
+  // === END FORK ===
 
-  // --- Seg 11: Ramp + spikes combo (the big jump) ---
+  // --- THE BIG JUMP: Arrow pad → ramp → 2 rows of spikes (must stay airborne!) ---
+  { type: 'arrow_pad', x: roadAt(2050).x, y: 2050, angle: 0 },
+  { type: 'ramp', x: roadAt(1950).x, y: 1950, angle: 0 },
   {
-    type: 'ramp',
-    x: roadAt(2100).x,
-    y: 2100,
+    type: 'spikes',
+    x: roadAt(1850).x,
+    y: 1850,
     angle: 0,
+    width: roadAt(1850).width * 0.5,
   },
   {
     type: 'spikes',
-    x: roadAt(1950).x - roadAt(1950).width * 0.1,
-    y: 1950,
+    x: roadAt(1750).x,
+    y: 1750,
     angle: 0,
-    width: roadAt(1950).width * 0.4,
-  },
-  {
-    type: 'spikes',
-    x: roadAt(1800).x + roadAt(1800).width * 0.1,
-    y: 1800,
-    angle: 0,
-    width: roadAt(1800).width * 0.35,
+    width: roadAt(1750).width * 0.4,
   },
 
-  // --- Seg 12: Arrow pad + ramp for final approach ---
-  { type: 'arrow_pad', x: roadAt(1600).x, y: 1600, angle: 0 },
-  {
-    type: 'ramp',
-    x: roadAt(1450).x,
-    y: 1450,
-    angle: 0,
-  },
+  // --- Arrow pad + ramp for final approach ---
+  { type: 'arrow_pad', x: roadAt(1500).x, y: 1500, angle: 0 },
+  { type: 'ramp', x: roadAt(1350).x, y: 1350, angle: 0 },
 
-  // --- Seg 13: Final gauntlet ---
+  // --- Final spikes (jump over with the ramp above!) ---
   {
     type: 'spikes',
-    x: roadAt(1200).x + roadAt(1200).width * 0.15,
+    x: roadAt(1200).x,
     y: 1200,
     angle: 0,
-    width: roadAt(1200).width * 0.35,
-  },
-  {
-    type: 'log',
-    x: roadAt(1050).x - roadAt(1050).width * 0.15,
-    y: 1050,
-    angle: -0.3,
+    width: roadAt(1200).width * 0.4,
   },
 
   // --- Final boost to finish ---
-  { type: 'arrow_pad', x: roadAt(750).x, y: 750, angle: 0 },
+  { type: 'arrow_pad', x: roadAt(800).x, y: 800, angle: 0 },
 ];
 
 const startRoad = roadAt(5960);
